@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+<!-- http://synthesis.sbecker.net/articles/2012/07/16/learning-d3-part-6-scales-colors -->
+body {
+  background: #fcfcfa;
+}
+
+.stroke {
+  fill: none;
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+.fill {
+  fill: #fff;
+}
+
+.graticule {
+  fill: none;
+  stroke: #777;
+  stroke-width: .5px;
+  stroke-opacity: .5;
+}
+
+.land {
+  fill: #222;
+}
+
+.boundary {
+  fill: none;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var width = 960,
+    height = 580;
+
+var color = d3.scale.linear().domain([-100,1000]).range(["white", "blue"]);
+
+var projection = d3.geo.kavrayskiy7()
+    .scale(170)
+    .translate([width / 2, height / 2])
+    .precision(.1);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var graticule = d3.geo.graticule();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.append("defs").append("path")
+    .datum({type: "Sphere"})
+    .attr("id", "sphere")
+    .attr("d", path);
+
+svg.append("use")
+    .attr("class", "stroke")
+    .attr("xlink:href", "#sphere");
+
+svg.append("use")
+    .attr("class", "fill")
+    .attr("xlink:href", "#sphere");
+
+svg.append("path")
+    .datum(graticule)
+    .attr("class", "graticule")
+    .attr("d", path);
+
+d3.json("world-50m.json", function(error, world) {
+  if (error) throw error;
+
+  var countries = topojson.feature(world, world.objects.countries).features;
+
+  svg.selectAll(".country")
+     .data(countries)
+     .enter().insert("path", ".graticule")
+     .attr("class", "country")
+     .attr("d", path)
+     .style("fill", function(d, i)
+{
+  // Aquí "i" hace referencia a la posición dentro del fichero
+  // world-50. El código del país está en countries[i].id
+  // Habrá que construir un índice inverso para poder hacer una
+  // asignación de color tal que d.color = data[countries[i].id].
+  // Por ahora sólo se utiliza el código del país para darle un
+  // color entre 0 y 1000.
+
+  return color(d.color = countries[i].id);
+});
+
+  svg.insert("path", ".graticule")
+      .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+      .attr("class", "boundary")
+      .attr("d", path);
+});
+
+d3.select(self.frameElement).style("height", height + "px");
+
+</script>
+
+</html>
