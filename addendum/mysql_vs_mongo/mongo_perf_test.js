@@ -75,3 +75,5 @@ db.sensorLog.find({
 (new Date() - start)
 
 // 14
+
+db.dropDatabase()

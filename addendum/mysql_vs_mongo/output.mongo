@@ -1,0 +1,47 @@
+MongoDB shell version: 2.6.10
+connecting to: test
+switched to db db
+1473465600000
+{
+	"_id" : 1000000,
+	"location" : 0,
+	"reading" : 0,
+	"readingDate" : ISODate("2016-05-17T06:13:20Z")
+}
+BulkWriteResult({
+	"writeErrors" : [ ],
+	"writeConcernErrors" : [ ],
+	"nInserted" : 1000000,
+	"nUpserted" : 0,
+	"nMatched" : 0,
+	"nModified" : 0,
+	"nRemoved" : 0,
+	"upserted" : [ ]
+})
+25.888
+ISODate("2016-09-10T11:06:05.825Z")
+{
+	"createdCollectionAutomatically" : false,
+	"numIndexesBefore" : 1,
+	"numIndexesAfter" : 2,
+	"ok" : 1
+}
+2.184
+1473465600000
+ISODate("2016-09-10T11:06:08.011Z")
+WriteResult({ "nMatched" : 8640, "nUpserted" : 0, "nModified" : 8640 })
+205
+ISODate("2016-09-10T11:06:08.217Z")
+WriteResult({ "nRemoved" : 8640 })
+114
+ISODate("2016-09-10T11:06:08.332Z")
+991360
+1
+ISODate("2016-09-10T11:06:08.334Z")
+{ "_id" : 999980, "location" : 980, "reading" : 80, "readingDate" : ISODate("2016-05-17T06:16:40Z") }
+{ "_id" : 999979, "location" : 979, "reading" : 79, "readingDate" : ISODate("2016-05-17T06:16:50Z") }
+{ "_id" : 999978, "location" : 978, "reading" : 78, "readingDate" : ISODate("2016-05-17T06:17:00Z") }
+{ "_id" : 999977, "location" : 977, "reading" : 77, "readingDate" : ISODate("2016-05-17T06:17:10Z") }
+{ "_id" : 999976, "location" : 976, "reading" : 76, "readingDate" : ISODate("2016-05-17T06:17:20Z") }
+2
+bye
