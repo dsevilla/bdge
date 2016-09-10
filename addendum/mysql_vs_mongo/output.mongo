@@ -18,30 +18,41 @@ BulkWriteResult({
 	"nRemoved" : 0,
 	"upserted" : [ ]
 })
-25.888
-ISODate("2016-09-10T11:06:05.825Z")
+24.758
+ISODate("2016-09-10T20:49:45.432Z")
 {
 	"createdCollectionAutomatically" : false,
 	"numIndexesBefore" : 1,
 	"numIndexesAfter" : 2,
 	"ok" : 1
 }
-2.184
+2.075
 1473465600000
-ISODate("2016-09-10T11:06:08.011Z")
+ISODate("2016-09-10T20:49:47.511Z")
 WriteResult({ "nMatched" : 8640, "nUpserted" : 0, "nModified" : 8640 })
-205
-ISODate("2016-09-10T11:06:08.217Z")
+0.126
+ISODate("2016-09-10T20:49:47.638Z")
 WriteResult({ "nRemoved" : 8640 })
-114
-ISODate("2016-09-10T11:06:08.332Z")
+0.106
+ISODate("2016-09-10T20:49:47.746Z")
 991360
-1
-ISODate("2016-09-10T11:06:08.334Z")
+0.001
+ISODate("2016-09-10T20:49:47.747Z")
 { "_id" : 999980, "location" : 980, "reading" : 80, "readingDate" : ISODate("2016-05-17T06:16:40Z") }
 { "_id" : 999979, "location" : 979, "reading" : 79, "readingDate" : ISODate("2016-05-17T06:16:50Z") }
 { "_id" : 999978, "location" : 978, "reading" : 78, "readingDate" : ISODate("2016-05-17T06:17:00Z") }
 { "_id" : 999977, "location" : 977, "reading" : 77, "readingDate" : ISODate("2016-05-17T06:17:10Z") }
 { "_id" : 999976, "location" : 976, "reading" : 76, "readingDate" : ISODate("2016-05-17T06:17:20Z") }
-2
+0.002
+{
+	"mongo" : {
+		"1" : 24.758,
+		"2" : 2.075,
+		"3" : 0.126,
+		"4" : 0.106,
+		"5" : 0.001,
+		"6" : 0.002
+	}
+}
+{ "dropped" : "db", "ok" : 1 }
 bye

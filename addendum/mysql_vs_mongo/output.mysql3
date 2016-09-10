@@ -1,0 +1,15 @@
+COUNT(*)
+1039936
+id	location	reading	reading_date
+1048555	555	55	2016-05-11 15:20:50
+1048554	554	54	2016-05-11 15:21:00
+1048553	553	53	2016-05-11 15:21:10
+1048552	552	52	2016-05-11 15:21:20
+1048551	551	51	2016-05-11 15:21:30
+Query_ID	Duration	Query
+1	10.03874100	INSERT INTO sensor_log (id, location, reading, reading_date)\nSELECT g.n, g.n % 1000, g.n % 100,\n       CURRENT_DATE() - INTERVAL (g.n * 10) SECOND\n  FROM generator_1m g
+2	1.57850450	CREATE INDEX idx_sensor_log_date\n    ON sensor_log (reading_date)
+3	0.69800350	UPDATE sensor_log\n   SET reading = reading + 1\n WHERE reading_date >= CURRENT_DATE() - INTERVAL 8 DAY\n   AND reading_date < CURRENT_DATE() - INTERVAL 7 DAY
+4	0.17310650	DELETE FROM sensor_log\n WHERE reading_date >= CURRENT_DATE() - INTERVAL 9 DAY\n   AND reading_date < CURRENT_DATE() - INTERVAL 8 DAY
+5	2.22566450	SELECT COUNT(*) FROM sensor_log
+6	0.00068625	SELECT *\n  FROM sensor_log\n WHERE reading_date < CURRENT_DATE() - INTERVAL 2 WEEK\n ORDER BY reading_date ASC\n LIMIT 5\n OFFSET 20

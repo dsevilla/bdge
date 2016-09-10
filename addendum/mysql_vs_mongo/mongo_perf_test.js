@@ -1,6 +1,8 @@
 // http://bonesmoses.org/2016/07/15/pg-phriday-a-postgres-persepctive-on-mongodb/
 use db
 
+var timing = new Array()
+
 var currentDate = new Date();
 currentDate.setHours(0,0,0,0)
 var batch = new Array()
@@ -17,13 +19,14 @@ for (var i = 1; i <= 1000000; i++) {
 
 db.sensorLog.insert(batch)
 
-(new Date() - start) / 1000
+// We start at 1 to match the ID of the MySQL query performance data
+timing[1] = (new Date() - start) / 1000
 
 // 13.638
 
 start = new Date()
 db.sensorLog.ensureIndex( { readingDate: 1 } )
-(new Date() - start) / 1000
+timing[2] = (new Date() - start) / 1000
 
 // 3.013
 
@@ -40,7 +43,7 @@ db.sensorLog.update({
   { $inc: { reading: 1 } },
   { multi: true }
 )
-(new Date() - start)
+timing[3] = (new Date() - start) / 1000
 
 //WriteResult({ "nMatched" : 8640, "nUpserted" : 0, "nModified" : 8640 })
 // 77
@@ -53,7 +56,7 @@ db.sensorLog.remove({
     }
   }
 )
-(new Date() - start)
+timing[4] = (new Date() - start) / 1000
 
 // WriteResult({ "nRemoved" : 8640 })
 
@@ -61,7 +64,7 @@ db.sensorLog.remove({
 
 start = new Date()
 db.sensorLog.count()
-(new Date() - start)
+timing[5] = (new Date() - start) / 1000
 
 // 4
 
@@ -72,8 +75,18 @@ db.sensorLog.find({
     }
   }
 ).sort({readingDate: 1}).skip(20).limit(5)
-(new Date() - start)
+timing[6] = (new Date() - start) / 1000
 
 // 14
+
+timing.shift(); // Remove the 0th position
+
+// 
+var output = {};
+var v = 1;
+timing.forEach(function(e) { this.output[this.v++] = e;});
+
+// Produce the series (data frame)
+q = { "mongo"  : output }
 
 db.dropDatabase()
