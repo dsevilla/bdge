@@ -79,7 +79,25 @@ SELECT *
 
 -- 0.00070475 s
 
-SELECT QUERY_ID, FORMAT(sum(DURATION),6) AS DURATION FROM INFORMATION_SCHEMA.PROFILING GROUP BY QUERY_ID 
+SET profiling=0;
+
+-- Create a pretty table with labels in each of the queries instead of numbers
+CREATE OR REPLACE VIEW QueryText
+AS SELECT 1 AS id, 'Fill' AS t UNION ALL
+   SELECT 2, 'Index' UNION ALL
+   SELECT 3, 'Update' UNION ALL
+   SELECT 4, 'Delete' UNION ALL
+   SELECT 5, 'Count' UNION ALL
+   SELECT 6, 'Interval';
+
+SELECT * FROM
+       (SELECT 'Query', 'Duration (ms)'
+       UNION
+       SELECT QT.t, FORMAT(sum(DURATION),6) AS DURATION
+       FROM INFORMATION_SCHEMA.PROFILING P, QueryText QT
+       WHERE QT.id = P.QUERY_ID
+       GROUP BY QUERY_ID
+       LIMIT 7) AS Q
 INTO OUTFILE '/tmp/mysql.csv'
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
