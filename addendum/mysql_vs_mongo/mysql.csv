@@ -1,4 +1,4 @@
-"Query #","Duration (ms)"
+"query","duration"
 "Fill","11.366532"
 "Index","2.153368"
 "Update","0.454594"
