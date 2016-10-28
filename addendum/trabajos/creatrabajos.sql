@@ -24,6 +24,8 @@ GRANT INSERT ON trabajos.asignacion_trabajos TO 'alumno'@'%';
 GRANT SELECT ON trabajos.trabajos TO 'alumno'@'%';
 GRANT SELECT ON trabajos.asignados TO 'alumno'@'%';
 
+FLUSH PRIVILEGES;
+
 DELIMITER $$
 CREATE TRIGGER comprueba_asignacion BEFORE INSERT ON asignacion_trabajos
 FOR EACH ROW
