@@ -1,0 +1,16 @@
+version: '3'
+services:
+
+  mysql:
+    image: mysql
+    ports:
+      - 3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+
+  notebook:
+    image: "jupyter/all-spark-notebook"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ..:/home/jovyan/bdge

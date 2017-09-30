@@ -1,0 +1,8 @@
+version: '3'
+services:
+  notebook:
+    image: "jupyter/all-spark-notebook"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ..:/home/jovyan/bdge
