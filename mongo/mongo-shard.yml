@@ -1,26 +1,23 @@
 version: "2"
 services:
 
-  mongors1n1:
-    container_name: mongors1n1
+  mongors1:
     image: mongo
-    command: mongod --replSet mongors1 --shardsvr --noauth
+    command: mongod --replSet mongors1 --shardsvr --noauth --port 27017
     ports:
       - 27017
 
   mongocfg1:
-    container_name: mongocfg1
     image: mongo
     command: mongod --replSet configrs --configsvr --noauth --port 27017
     ports:
       - 27017
 
-  mongos1:
-    container_name: mongos1
+  mongos:
     image: mongo
     depends_on:
       - mongocfg1
-      - mongors1n1
+      - mongors1
     command: mongos --configdb configrs/mongocfg1:27017 --port 27017
     ports:
       - "27017:27017"
