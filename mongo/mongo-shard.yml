@@ -4,12 +4,14 @@ services:
   mongors1:
     image: mongo
     command: mongod --replSet mongors1 --shardsvr --noauth --port 27017
+    restart: on-failure
     ports:
       - 27017
 
   mongocfg1:
     image: mongo
     command: mongod --replSet configrs --configsvr --noauth --port 27017
+    restart: on-failure
     ports:
       - 27017
 
@@ -19,10 +21,11 @@ services:
       - mongocfg1
       - mongors1
     command: mongos --configdb configrs/mongocfg1:27017 --port 27017
+    restart: on-failure
     ports:
       - "27017:27017"
 
-    notebook:
+  notebook:
     image: "jupyter/all-spark-notebook"
     ports:
       - "8888:8888"
