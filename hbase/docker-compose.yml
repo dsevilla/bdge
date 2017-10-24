@@ -1,0 +1,77 @@
+version: "2"
+services:
+
+  master.krejcmat.com:
+    container_name: master.krejcmat.com
+    hostname: master
+    domainname: master.krejcmat.com
+    image: krejcmat/hadoop-hbase-master
+    working_dir: /root
+    privileged: true
+    dns: 127.0.0.1
+    #    stdin_open: true
+    #tty: true
+    #command: /bin/bash
+    ports:
+      - 7373
+      - 22
+      - 7946
+      - 8030
+      - 8031
+      - 8032
+      - 8033
+      - 8040
+      - 8042
+      - 8060
+      - 8088
+      - 9000
+      - 50010
+      - 50020
+      - 50060
+      - 50070
+      - 50075
+      - 50090
+      - 50475
+      - "9090:9090"
+
+  slave1.krejcmat.com:
+    container_name: slave1.krejcmat.com
+    hostname: slave1
+    domainname: slave1.krejcmat.com
+    image: krejcmat/hadoop-hbase-slave
+    working_dir: /root
+    privileged: true
+    environment:
+      - "JOIN_IP=master.krejcmat.com"
+    dns: 127.0.0.1
+    depends_on:
+      - master.krejcmat.com
+    ports:
+      - 7373
+      - 22
+      - 7946
+      - 8030
+      - 8031
+      - 8032
+      - 8033
+      - 8040
+      - 8042
+      - 8060
+      - 8088
+      - 9000
+      - 50010
+      - 50020
+      - 50060
+      - 50070
+      - 50075
+      - 50090
+      - 50475
+
+  # notebook:
+  #   image: "jupyter/all-spark-notebook"
+  #   ports:
+  #     - "8888:8888"
+  #   volumes:
+  #     - ..:/home/jovyan/bdge
+  #   depends_on:
+  #     - master.krejcmat.com
