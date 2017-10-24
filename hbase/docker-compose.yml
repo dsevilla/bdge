@@ -2,16 +2,15 @@ version: "2"
 services:
 
   master.krejcmat.com:
-    container_name: master.krejcmat.com
+          #container_name: master.krejcmat.com
     hostname: master
-    domainname: master.krejcmat.com
+    domainname: krejcmat.com
     image: krejcmat/hadoop-hbase-master
     working_dir: /root
     privileged: true
-    dns: 127.0.0.1
-    #    stdin_open: true
-    #tty: true
-    #command: /bin/bash
+    stdin_open: true
+    tty: true
+    command: "/bin/bash -c '/root/start-ssh-serf.sh;/root/configure-slaves.sh;/bin/bash'"
     ports:
       - 7373
       - 22
@@ -35,15 +34,17 @@ services:
       - "9090:9090"
 
   slave1.krejcmat.com:
-    container_name: slave1.krejcmat.com
+          #container_name: slave1.krejcmat.com
     hostname: slave1
-    domainname: slave1.krejcmat.com
+    domainname: krejcmat.com
     image: krejcmat/hadoop-hbase-slave
     working_dir: /root
     privileged: true
     environment:
       - "JOIN_IP=master.krejcmat.com"
-    dns: 127.0.0.1
+    stdin_open: true
+    tty: true
+    command: "/bin/sh -c '/root/start-ssh-serf.sh;/bin/bash'"
     depends_on:
       - master.krejcmat.com
     ports:
