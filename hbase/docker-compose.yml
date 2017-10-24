@@ -2,7 +2,7 @@ version: "2"
 services:
 
   master.krejcmat.com:
-          #container_name: master.krejcmat.com
+    container_name: master.krejcmat.com
     hostname: master
     domainname: krejcmat.com
     image: krejcmat/hadoop-hbase-master
@@ -34,7 +34,7 @@ services:
       - "9090:9090"
 
   slave1.krejcmat.com:
-          #container_name: slave1.krejcmat.com
+    container_name: slave1.krejcmat.com
     hostname: slave1
     domainname: krejcmat.com
     image: krejcmat/hadoop-hbase-slave
@@ -72,7 +72,10 @@ services:
   #   image: "jupyter/all-spark-notebook"
   #   ports:
   #     - "8888:8888"
+  #   environment:
+  #     - "GRANT_SUDO=yes"
   #   volumes:
   #     - ..:/home/jovyan/bdge
   #   depends_on:
   #     - master.krejcmat.com
+
