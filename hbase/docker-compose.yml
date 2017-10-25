@@ -10,7 +10,7 @@ services:
     privileged: true
     stdin_open: true
     tty: true
-    command: "/bin/bash -c '/root/start-ssh-serf.sh;/root/configure-slaves.sh;/bin/bash'"
+    command: "/bin/bash -c '/root/start-ssh-serf.sh;/bin/bash'"
     ports:
       - 7373
       - 22
