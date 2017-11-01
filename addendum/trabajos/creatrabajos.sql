@@ -1,5 +1,6 @@
+-- -*- mode: sql; sql-product: mysql; -*-
 
-CREATE USER 'alumno'@'%' IDENTIFIED BY PASSWORD '';
+CREATE USER 'alumno'@'%' IDENTIFIED BY PASSWORD '*50C99A96D0745ECBB85B746B138E4A24C7BF6BF9';
 
 CREATE DATABASE IF NOT EXISTS trabajos;
 USE trabajos;
@@ -55,80 +56,260 @@ END
 $$
 DELIMITER ;
 
-insert into trabajos values ('T01','Apache CouchDB',
-'Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, framework de procesamiento map/reduce, replicación multiservidor, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de agregación siguiendo el modelo de documentos); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+
+
+insert into trabajos values('T01','Open TSDB',
+  '
+  - Pasos de instalación de la base de datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, framework de procesamiento map/reduce, replicación
+    multiservidor, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de series de datos, como si, por ejemplo, comentarios,
+    posts, etc. se ejecutaran en un stream)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+  - \url{http://opentsdb.net/}
+  ');
 
 
 
 
-insert into trabajos values ('T02','Apache Cassandra',
-'Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, framework de procesamiento map/reduce, replicación multiservidor, lenguaje de consultas CQL, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de agregación siguiendo el modelo de documentos); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+insert into trabajos values('T02','Apache Cassandra',
+  '
+  - Pasos de instalación de la base de datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, framework de procesamiento map/reduce, replicación
+    multiservidor, lenguaje de consultas CQL, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de agregación siguiendo el modelo de documentos)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+  ');
 
 
 
 
-
-insert into trabajos values ('T03','OrientDB',
-'Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, framework de procesamiento map/reduce, replicación multiservidor, lenguaje de consultas, grafos vs. documentos, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de agregación y grafos); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
-
-
-
-
-insert into trabajos values ('T04','Redis',
-'Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, {\em framework} de procesamiento map/reduce, replicación multiservidor, lenguaje de consultas, uso de varias estructuras de datos (listas, mapas), etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de diferentes estructuras de datos); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
-
-
-
-
-insert into trabajos values ('T05','Elasticsearch',
-'Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, organización en etiquetas, búsquedas complejas, replicación multiservidor, lenguaje de consultas, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (organización de etiquetas); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
-
-
-
-
-insert into trabajos values ('T06','CouchBase \& N1QL',
-'Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, organización en etiquetas, búsquedas complejas, replicación multiservidor, lenguaje de consultas N1QL, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (documentos y consultas); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+insert into trabajos values('T03','OrientDB',
+  '
+  -  Pasos de instalación de la base de datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, framework de procesamiento map/reduce, replicación
+    multiservidor, lenguaje de consultas, grafos vs. documentos, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de agregación y grafos)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+  ');
 
 
 
 
-insert into trabajos values ('T07','Riak',
-'Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, framework de procesamiento map/reduce, replicación multiservidor, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de agregación siguiendo el modelo de documentos); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+insert into trabajos values('T04','Redis',
+  '
+  - Pasos de instalación de la base de datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, {\em framework} de procesamiento map/reduce, replicación
+    multiservidor, lenguaje de consultas, uso de varias estructuras de
+    datos (listas, mapas), etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de diferentes estructuras de datos)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+  ');
 
 
 
 
-insert into trabajos values ('T08','RethinkDB',
-'{https://rethinkdb.com/}. Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, framework de procesamiento map/reduce, replicación multiservidor, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de agregación donde sea posible); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+insert into trabajos values('T05','Elasticsearch',
+  '
+  - Pasos de instalación de la base de datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, organización en etiquetas, búsquedas complejas,
+    replicación multiservidor, lenguaje de consultas, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (organización de etiquetas)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+  ');
+
+
+
+insert into trabajos values('T06','CouchBase \& N1QL',
+  '
+  - Pasos de instalación de la base de datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, organización en etiquetas, búsquedas complejas,
+    replicación multiservidor, lenguaje de consultas N1QL, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (documentos y consultas)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+  ');
 
 
 
 
-insert into trabajos values ('T09','InfluxDB',
-'{https://www.influxdata.com/time-series-platform/influxdb/}. Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, tratamiento de series temporales, uso del API HTTP, replicación multiservidor, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de agregación donde sea posible); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+insert into trabajos values('T07','Riak',
+  '
+  - Pasos de instalación de la base de datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, framework de procesamiento map/reduce, replicación
+    multiservidor, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de agregación siguiendo el modelo de documentos)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+  ');
 
 
 
 
-insert into trabajos values ('T10','Accumulo',
-'{http://accumulo.apache.org/}. Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, tratamiento de columnas, replicación multiservidor, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de columnas); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+insert into trabajos values('T08','RethinkDB',
+'
+- \url{https://rethinkdb.com/}. Pasos de instalación de la base de
+  datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, framework de procesamiento map/reduce, replicación
+    multiservidor, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de agregación donde sea posible)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+');
 
 
 
 
-insert into trabajos values ('T11','ArangoDB',
-'{https://www.arangodb.com/}. Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, framework de procesamiento map/reduce, replicación multiservidor, lenguaje de consultas AQL, grafos vs. documentos, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de agregación y grafos); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+insert into trabajos values('T09','InfluxDB',
+'
+- \url{https://www.influxdata.com/time-series-platform/influxdb/}.
+  Pasos de instalación de la base de datos (a ser posible en la máquina
+  virtual)
+- Descripción de la base de datos, modo de funcionamiento,
+  posibilidades de modelado de datos y características (si permite
+  transacciones, tratamiento de series temporales, uso del API HTTP,
+  replicación multiservidor, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de agregación donde sea posible)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+');
 
 
 
-insert into trabajos values ('T12','SciDB',
-'{http://www.paradigm4.com/try_scidb/}. Pasos de instalación de la base de datos (a ser posible en la máquina virtual); Descripción de la base de datos, modo de funcionamiento, posibilidades de modelado de datos y características (si permite transacciones, tratamiento de arrays, replicación multiservidor, etc.); Mostrar cómo importar los datos de Stackoverflow; Mostrar cómo redistribuir los datos de Stackoverflow de forma óptima (uso de arrays para cálculos); Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+
+insert into trabajos values('T10','Accumulo',
+'
+- \url{http://accumulo.apache.org/}. Pasos de instalación de la base de
+  datos
+- Descripción de la base de datos, modo de funcionamiento,
+  posibilidades de modelado de datos y características (si permite
+  transacciones, tratamiento de columnas, replicación multiservidor, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de columnas)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+');
 
 
 
 
-insert into trabajos values ('T13','Apache Sqoop',
-'{http://sqoop.apache.org/}. Pasos de instalación de la herramienta (a ser posible en la máquina virtual); Descripción de la herramienta, posibilidades de transformación y carga de datos, modos de funcionamiento, posibilidades de cambio de formato de datos, etc.); Mostrar cómo importar los datos de Stackoverflow (de CSV a MySQL, de CSV a HBase, viendo cómo organizar la base de datos); API de creación de trabajos {\em batch}; Generar código de importación con {\tt sqoop-codegen}');
+insert into trabajos values('T11','ArangoDB',
+'
+- \url{https://www.arangodb.com/}. Pasos de instalación de la base de
+  datos
+  - Descripción de la base de datos, modo de funcionamiento,
+    posibilidades de modelado de datos y características (si permite
+    transacciones, framework de procesamiento map/reduce, replicación
+    multiservidor, lenguaje de consultas AQL, grafos vs. documentos, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow
+  - Mostrar cómo redistribuir los datos de Stackoverflow de forma
+    óptima (uso de agregación y grafos)
+  - Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión 2
+  - Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+');
 
-insert into trabajos values ('T14','Apache Pig',
-'(Pig está instalado en la máquina virtual); Descripción de la herramienta, posibilidades de transformación y carga de datos, modos de funcionamiento, posibilidades de proceso de datos, etc.; Mostrar cómo trabajar con los datos CSV de Stackoverflow y mostrar cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la sesión 2; Realizar pruebas de eficiencia comparada con alguna de las bases de datos vistas en la asignatura');
+
+insert into trabajos values('T12','Tecnologías Serverless',
+'
+- Pasos de uso de cada plataforma. Al menos: AWS Lambda y Azure
+  Functions (también se puede considerar Google UDF)
+- Descripción del modo de funcionamiento,
+  posibilidades de modelado de datos y características
+- Mostrar cómo trabajar con los datos de Stackoverflow
+- Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+    artículos vistos en la sesión2
+- Realizar pruebas de eficiencia comparada con alguna de las bases de
+    datos vistas en la asignatura
+');
+
+
+insert into trabajos values('T13','Apache Sqoop',
+'
+- \url{http://sqoop.apache.org/}. Pasos de instalación de la
+  herramienta
+- Descripción de la herramienta, posibilidades de transformación y
+  carga de datos, modos de funcionamiento, posibilidades de cambio de
+  formato de datos, etc.)
+  - Mostrar cómo importar los datos de Stackoverflow (de CSV a MySQL,
+    de CSV a HBase, viendo cómo organizar la base de datos)
+- API de creación de trabajos {\em batch}
+- Generar código de importación con {\tt sqoop-codegen}
+');
+
+
+
+
+insert into trabajos values('T14','Apache Pig',
+'
+- Pasos de instalación de la herramienta
+- Descripción de la herramienta, posibilidades de transformación y
+  carga de datos, modos de funcionamiento, posibilidades de proceso de
+  datos, etc.
+- Mostrar cómo trabajar con los datos CSV de Stackoverflow y mostrar
+  cómo se realizarían las consultas RQ1 a RQ4 de los artículos vistos en la
+  sesión 2
+- Realizar pruebas de eficiencia comparada con alguna de las bases de
+  datos vistas en la asignatura
+');
