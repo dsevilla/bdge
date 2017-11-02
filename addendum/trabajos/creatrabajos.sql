@@ -6,7 +6,7 @@ CREATE DATABASE IF NOT EXISTS trabajos;
 USE trabajos;
 
 CREATE TABLE trabajos (id VARCHAR(5) PRIMARY KEY, titulo TEXT, spec TEXT)
-  CHARSET 'utf8' COLLATE 'utf8_unicode_ci';
+  CHARSET 'utf8mb4' COLLATE 'utf8_unicode_ci';
 
 CREATE TABLE asignacion_trabajos (
 	dni_alumno VARCHAR(10),
@@ -14,7 +14,7 @@ CREATE TABLE asignacion_trabajos (
 	id_trabajo VARCHAR(5),
        FOREIGN KEY (id_trabajo) REFERENCES trabajos(id),
        PRIMARY KEY (dni_alumno, id_trabajo)
-       ) CHARSET 'utf8' COLLATE 'utf8_unicode_ci';
+       ) CHARSET 'utf8mb4' COLLATE 'utf8_unicode_ci';
 
 CREATE VIEW asignados AS
    SELECT id, titulo, COUNT(DISTINCT dni_alumno) AS nasignados
