@@ -5,11 +5,13 @@ services:
     image: "jupyter/all-spark-notebook"
     ports:
       - "8888:8888"
+      - 9000
     volumes:
       - ..:/home/jovyan/bdge
     user: root
     environment:
       - GRANT_SUDO=yes
+    command: start-notebook.sh --NotebookApp.token=''
     depends_on:
       - neo4j
 
