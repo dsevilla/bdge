@@ -1,0 +1,20 @@
+version: '2'
+services:
+
+  notebook:
+    image: "jupyter/all-spark-notebook"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ..:/home/jovyan/bdge
+    user: root
+    environment:
+      - GRANT_SUDO=yes
+    depends_on:
+      - mongo 
+
+  mongo:
+    image: mongo
+    ports:
+      - 27017 
+
