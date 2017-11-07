@@ -9,6 +9,7 @@ services:
       - ..:/home/jovyan/bdge
     user: root
     environment:
+      - NB_UID=1001
       - GRANT_SUDO=yes
     depends_on:
       - neo4j
@@ -20,4 +21,3 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
-
