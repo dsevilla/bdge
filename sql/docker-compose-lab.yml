@@ -11,6 +11,7 @@ services:
     environment:
       - NB_UID=1001
       - GRANT_SUDO=yes
+    command: start-notebook.sh --NotebookApp.token=''
     depends_on:
       - mysql
 
