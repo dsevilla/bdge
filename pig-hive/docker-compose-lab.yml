@@ -21,7 +21,7 @@ services:
     privileged: true
     ports:
       - "8888:8888"
-      - "8080:80"
+      - "8180:80"
       - "7180:7180"
       - "9090:9090"
     tty: true
