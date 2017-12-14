@@ -11,7 +11,7 @@ fi
 
 # delete old master container and start new master container
 echo "start master container..."
-docker run --rm -d -t --dns 127.0.0.1 -p 60010:60010 -p 50070:50070 -p 9090:9090-p 2022:22 -P --name master.krejcmat.com -h master.krejcmat.com -w /root krejcmat/hadoop-hbase-master&> /dev/null
+docker run --rm -d -t --dns 127.0.0.1 -p 60010:60010 -p 50070:50070 -p 9090:9090 -p 2022:22 -P --name master.krejcmat.com -h master.krejcmat.com -w /root krejcmat/hadoop-hbase-master&> /dev/null
 
 # get the IP address of master container
 FIRST_IP=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" master.krejcmat.com)
