@@ -69,7 +69,7 @@ services:
       - 50475
 
   # notebook:
-  #   image: "jupyter/all-spark-notebook"
+  #   image: "jupyter/scipy-notebook"
   #   ports:
   #     - "8888:8888"
   #   environment:
