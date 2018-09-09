@@ -45,4 +45,3 @@ services:
     depends_on:
       - mongos
 
-
