@@ -34,7 +34,7 @@ services:
       - "27017:27017"
 
   notebook:
-    image: "jupyter/all-spark-notebook"
+    image: "jupyter/scipy-notebook"
     ports:
       - "8888:8888"
     volumes:
@@ -44,5 +44,4 @@ services:
       - GRANT_SUDO=yes
     depends_on:
       - mongos
-
 
