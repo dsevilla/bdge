@@ -5,7 +5,6 @@ services:
     image: "jupyter/scipy-notebook"
     ports:
       - "8888:8888"
-      - 9000
     volumes:
       - ..:/home/jovyan/bdge
     user: root
