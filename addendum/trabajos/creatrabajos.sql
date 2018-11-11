@@ -1,12 +1,12 @@
 -- -*- mode: sql; sql-product: mysql; -*-
 
-CREATE USER 'alumno'@'%' IDENTIFIED BY PASSWORD '*50C99A96D0745ECBB85B746B138E4A24C7BF6BF9';
+CREATE USER IF NOT EXISTS 'alumno'@'%' IDENTIFIED BY '';
 
 CREATE DATABASE IF NOT EXISTS trabajos;
 USE trabajos;
 
 CREATE TABLE trabajos (id VARCHAR(5) PRIMARY KEY, titulo TEXT, spec TEXT)
-  CHARSET 'utf8mb4' COLLATE 'utf8_unicode_ci';
+  CHARSET 'utf8' COLLATE 'utf8_general_ci';
 
 CREATE TABLE asignacion_trabajos (
 	dni_alumno VARCHAR(10),
@@ -14,7 +14,7 @@ CREATE TABLE asignacion_trabajos (
 	id_trabajo VARCHAR(5),
        FOREIGN KEY (id_trabajo) REFERENCES trabajos(id),
        PRIMARY KEY (dni_alumno, id_trabajo)
-       ) CHARSET 'utf8mb4' COLLATE 'utf8_unicode_ci';
+       ) CHARSET 'utf8' COLLATE 'utf8_general_ci';
 
 CREATE VIEW asignados AS
    SELECT id, titulo, COUNT(DISTINCT dni_alumno) AS nasignados
@@ -312,4 +312,27 @@ insert into trabajos values('T14','Apache Pig',
   sesión 2
 - Realizar pruebas de eficiencia comparada con alguna de las bases de
   datos vistas en la asignatura
+');
+
+insert into trabajos values('T15','Apache Nifi',
+'
+- https://nifi.apache.org/
+- Pasos de instalación
+- Descripción de la herramienta, modo de funcionamiento,
+  posibilidades de modelado de datos y características
+- Mostrar cómo importar en flujo los datos de Stackoverflow
+- Mostrar cómo se realizarían las consultas RQ1 a RQ4 de los
+  artículos vistos en la sesión 2.
+');
+
+insert into trabajos values('T16','Apache Atlas',
+'
+- https://atlas.apache.org/
+- Pasos de instalación
+- Descripción de la herramienta, modo de funcionamiento,
+  posibilidades de modelado de datos y características
+- Mostrar cómo importar los datos de Stackoverflow
+- Mostrar consultas sobre la base de datos de StackOverflow y si se
+  podrían realizar las consultas RQ1 a RQ4 de los artículos vistos en la
+  sesión 2.
 ');
