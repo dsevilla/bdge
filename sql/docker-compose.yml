@@ -10,7 +10,6 @@ services:
     user: root
     environment:
       - GRANT_SUDO=yes
-      - JUPYTER_ENABLE_LAB=yes
     command: start-notebook.sh --NotebookApp.token=''
     depends_on:
       - mysql
