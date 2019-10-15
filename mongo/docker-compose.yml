@@ -1,0 +1,22 @@
+version: '2'
+services:
+
+  notebook:
+    image: "jupyter/scipy-notebook"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ..:/home/jovyan/bdge
+    user: root
+    environment:
+      - GRANT_SUDO=yes
+      - JUPYTER_ENABLE_LAB=yes
+    command: start-notebook.sh --NotebookApp.token=''
+    depends_on:
+      - mongo 
+
+  mongo:
+    image: mongo
+    ports:
+      - 27017 
+

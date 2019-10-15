@@ -1,0 +1,29 @@
+version: '2'
+services:
+
+  notebook:
+    image: "jupyter/scipy-notebook"
+    ports:
+      - "8889:8888"
+    volumes:
+      - ..:/home/jovyan/bdge
+    user: root
+    environment:
+      - GRANT_SUDO=yes
+    command: start-notebook.sh --NotebookApp.token=''
+    depends_on:
+      - quickstart.cloudera
+
+  quickstart.cloudera:
+    image: cloudera/quickstart
+    hostname: quickstart.cloudera
+    privileged: true
+    ports:
+      - "8888:8888"
+      - "8180:80"
+      - "7180:7180"
+      - "9090:9090"
+    tty: true
+    stdin_open: true
+    command: /usr/bin/docker-quickstart
+
