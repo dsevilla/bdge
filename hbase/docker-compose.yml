@@ -13,9 +13,9 @@ services:
       - JUPYTER_ENABLE_LAB=yes
     command: start-notebook.sh --NotebookApp.token=''
 
-  namenode:
+  bdgenamenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
-    container_name: namenode
+    container_name: bdgenamenode
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
     environment:
@@ -31,7 +31,7 @@ services:
     volumes:
       - hadoop_datanode:/hadoop/dfs/data
     environment:
-      SERVICE_PRECONDITION: "namenode:50070"
+      SERVICE_PRECONDITION: "bdgenamenode:50070"
     env_file:
       - ./hadoop.env
     ports:
@@ -41,7 +41,7 @@ services:
     image: bde2020/hadoop-resourcemanager:2.0.0-hadoop2.7.4-java8
     container_name: resourcemanager
     environment:
-      SERVICE_PRECONDITION: "namenode:50070 datanode:50075"
+      SERVICE_PRECONDITION: "bdgenamenode:50070 datanode:50075"
     env_file:
       - ./hadoop.env
     ports:
@@ -51,7 +51,7 @@ services:
     image: bde2020/hadoop-nodemanager:2.0.0-hadoop2.7.4-java8
     container_name: nodemanager
     environment:
-      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
+      SERVICE_PRECONDITION: "bdgenamenode:50070 datanode:50075 resourcemanager:8088"
     env_file:
       - ./hadoop.env
     ports:
@@ -63,7 +63,7 @@ services:
     volumes:
       - hadoop_historyserver:/hadoop/yarn/timeline
     environment:
-      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
+      SERVICE_PRECONDITION: "bdgenamenode:50070 datanode:50075 resourcemanager:8088"
     env_file:
       - ./hadoop.env
     ports:
@@ -85,7 +85,7 @@ services:
     env_file:
       - ./hbase-distributed-local.env
     environment:
-      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 zoo:2181"
+      SERVICE_PRECONDITION: "bdgenamenode:50070 datanode:50075 zoo:2181"
     ports:
       - 16010:16010
 
@@ -97,7 +97,7 @@ services:
       - ./hbase-distributed-local.env
     environment:
       HBASE_CONF_hbase_regionserver_hostname: hbase-region
-      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 zoo:2181 hbase-master:16010"
+      SERVICE_PRECONDITION: "bdgenamenode:50070 datanode:50075 zoo:2181 hbase-master:16010"
     ports:
       - 16030:16030
 
@@ -109,7 +109,7 @@ services:
       - ./hbase-distributed-local.env
     environment:
       HBASE_CONF_hbase_regionserver_hostname: hbase-region
-      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 zoo:2181 hbase-master:16010 hbase-regionserver:16030"
+      SERVICE_PRECONDITION: "bdgenamenode:50070 datanode:50075 zoo:2181 hbase-master:16010 hbase-regionserver:16030"
     ports:
       - 9090:9090
 
