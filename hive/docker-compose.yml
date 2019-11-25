@@ -46,6 +46,18 @@ services:
     ports:
       - "8080:8080"
 
+  notebook:
+    image: "jupyter/scipy-notebook"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ..:/home/jovyan/bdge
+    user: root
+    environment:
+      - GRANT_SUDO=yes
+      - JUPYTER_ENABLE_LAB=yes
+    command: start-notebook.sh --NotebookApp.token=''
+
 volumes:
   namenode:
   datanode:
