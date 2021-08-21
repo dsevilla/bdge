@@ -1,3 +1,3 @@
 # bdge
 Recursos para la asignatura BDGE del Máster de Big Data de la UM/USC,
-curso 2020-2021.
+curso 2021-2022.
