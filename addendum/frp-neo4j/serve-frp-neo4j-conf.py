@@ -20,13 +20,13 @@ server_port = 8081
 type = tcp
 local_ip = 127.0.0.1
 local_port = 7474
-remote_port = {0}
+remote_port = {0}  ## Browser
 
 [bolt{1}]
 type = tcp
 local_ip = 127.0.0.1
 local_port = 7687
-remote_port = {1}
+remote_port = {1}  ## Bolt
 '''
 
 # conn number, modulo mod_cn.
