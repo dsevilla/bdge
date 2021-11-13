@@ -11,8 +11,8 @@ mod_cn = 30
 # Base port
 base_port = 8082
 
-frpc_conf = '''
-[common]
+frpc_conf = \
+'''[common]
 server_addr = 155.54.204.57
 server_port = 8081
 
