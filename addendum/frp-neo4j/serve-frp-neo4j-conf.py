@@ -2,7 +2,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 
-hostName = "neuromancer.inf.um.es"
+hostName = "0.0.0.0"
 serverPort = 8080
 
 # modulo configurations
