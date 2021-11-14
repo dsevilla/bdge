@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 
 hostName = "0.0.0.0"
-serverPort = 8080
+serverPort = 4040
 
 # modulo configurations
 mod_cn = 30
@@ -14,19 +14,19 @@ base_port = 8082
 frpc_conf = \
 '''[common]
 server_addr = 155.54.204.57
-server_port = 8081
+server_port = 8080
 
 [browser{0}]
 type = tcp
 local_ip = 127.0.0.1
 local_port = 7474
-remote_port = {0}  ## Browser
+remote_port = {0}
 
 [bolt{1}]
 type = tcp
 local_ip = 127.0.0.1
 local_port = 7687
-remote_port = {1}  ## Bolt
+remote_port = {1}
 '''
 
 # conn number, modulo mod_cn.
