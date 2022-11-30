@@ -2,9 +2,11 @@ FROM nginx:latest
 
 COPY default.conf /etc/nginx/conf.d/
 COPY serve-frp-neo4j-conf.py /
+COPY 90-execute-frps.sh /docker-entrypoint.d/
 COPY 99-execute-serve-frp-neo4j-conf.sh /docker-entrypoint.d/
 COPY frp_0.38.0_linux_amd64.tar.gz /
 
+RUN chmod a+x /docker-entrypoint.d/90-execute-frps.sh
 RUN chmod a+x /docker-entrypoint.d/99-execute-serve-frp-neo4j-conf.sh
 
 RUN apt-get update -qq && apt-get install -y python3
