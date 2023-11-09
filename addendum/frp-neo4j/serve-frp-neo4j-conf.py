@@ -38,7 +38,7 @@ class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
         global frpc_conf, cn, mod_cn, base_port
         self.send_response(200)
-        self.send_header("Content-type", "text/html")
+        self.send_header("Content-type", "text/plain")
         self.end_headers()
         self.wfile.write(bytes(frpc_conf.format(base_port + (cn*2),
             base_port + 1 + (cn*2)), "utf-8"))
