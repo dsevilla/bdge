@@ -13,7 +13,7 @@ base_port = 8082
 
 frpc_conf = \
 '''[common]
-server_addr = 155.54.204.57
+server_addr = 155.54.{2}.{3}
 server_port = 8080
 
 [browser{0}]
@@ -40,8 +40,12 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
-        self.wfile.write(bytes(frpc_conf.format(base_port + (cn*2),
-            base_port + 1 + (cn*2)), "utf-8"))
+        self.wfile.write(bytes(frpc_conf.format(
+            base_port + (cn*2),
+            base_port + 1 + (cn*2),
+            204,
+            149),
+            "utf-8"))
         cn = cn + 1
         cn = cn % mod_cn
 
