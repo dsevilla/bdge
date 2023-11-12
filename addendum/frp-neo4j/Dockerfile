@@ -2,6 +2,7 @@ FROM nginx:latest
 
 COPY default.conf /etc/nginx/conf.d/
 COPY serve-frp-neo4j-conf.py /
+COPY frps.ini /
 COPY 90-execute-frps.sh /docker-entrypoint.d/
 COPY 99-execute-serve-frp-neo4j-conf.sh /docker-entrypoint.d/
 
