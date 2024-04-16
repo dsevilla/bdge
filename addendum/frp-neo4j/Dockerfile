@@ -16,4 +16,4 @@ RUN wget https://github.com/fatedier/frp/releases/download/v0.52.3/frp_0.52.3_li
 RUN tar zxvf /frp_*
 
 EXPOSE 8080
-EXPOSE 8081-8141
+EXPOSE 8081-8181

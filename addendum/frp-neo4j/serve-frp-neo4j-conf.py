@@ -6,7 +6,7 @@ hostName = "0.0.0.0"
 serverPort = 4040
 
 # modulo configurations
-mod_cn = 30
+mod_cn = 40
 
 # Base port
 base_port = 8082
