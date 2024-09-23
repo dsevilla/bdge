@@ -35,10 +35,8 @@ jobs:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         run: echo "$MATRIX_CONTEXT"
 
-  build-teoria:
+  build-notebooks:
     runs-on: ubuntu-latest
-    outputs:
-      changed-presentacion: ${{ steps.changed-files-presentacion-asignatura.outputs.any_changed }}
     steps:
 
     - name: Checkout the repo.
