@@ -2,3 +2,4 @@ numpy
 pandas
 matplotlib
 lxml_html_clean
+ipython-sql
