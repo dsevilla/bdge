@@ -63,6 +63,9 @@ jobs:
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
 
+    - name: "Show env"
+      run: 'env | sort'
+
     # Cambiado intro/sesion0.ipynb?
     - name: intro/sesion0 ha cambiado?
       id: changed-file-sesion0
