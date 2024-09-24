@@ -52,7 +52,16 @@ jobs:
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
 
+    # Cambiado intro/sesion0.ipynb?
+    - name: intro/sesion0 ha cambiado?
+      id: changed-file-sesion0
+      uses: tj-actions/changed-files@v42
+      with:
+        files: |
+          intro/sesion0.ipynb
+
     - uses: yaananth/run-notebook@v2
+      if: steps.changed-file-sesion0.outputs.any_changed == 'true'
       env:
         RUNNER: ${{ toJson(runner) }}
         SECRETS: ${{ toJson(secrets) }}
@@ -62,11 +71,21 @@ jobs:
         isReport: False
         poll: True
 
+    # Cambiado sql/sesion1.ipynb?
+    - name: sql/sesion1 ha cambiado?
+      id: changed-file-sesion1
+      uses: tj-actions/changed-files@v42
+      with:
+        files: |
+          sql/sesion1.ipynb
+
     - uses: yaananth/run-notebook@v2
+      if: steps.changed-file-sesion1.outputs.any_changed == 'true'
       env:
         RUNNER: ${{ toJson(runner) }}
         SECRETS: ${{ toJson(secrets) }}
         GITHUB: ${{ toJson(github) }}
+        DB_HOSTNAME: "localhost"
       with:
         notebook: "sql/sesion1.ipynb"
         isReport: False
