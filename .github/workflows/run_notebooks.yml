@@ -101,6 +101,25 @@ jobs:
         isReport: False
         poll: True
 
+    # Cambiado sql/sesion2.ipynb?
+    - name: sql/sesion2 changed?
+      id: changed-file-sesion2
+      uses: tj-actions/changed-files@v42
+      with:
+        files: |
+          sql/sesion2.ipynb
+
+    - uses: yaananth/run-notebook@v2
+      if: steps.changed-file-sesion2.outputs.any_changed == 'true'
+      env:
+        RUNNER: ${{ toJson(runner) }}
+        SECRETS: ${{ toJson(secrets) }}
+        GITHUB: ${{ toJson(github) }}
+      with:
+        notebook: "sql/sesion2.ipynb"
+        isReport: False
+        poll: True
+
     - uses: actions/upload-artifact@v4
       if: always()
       with:
