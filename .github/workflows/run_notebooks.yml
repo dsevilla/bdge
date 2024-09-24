@@ -35,7 +35,7 @@ jobs:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         run: echo "$MATRIX_CONTEXT"
 
-  build-notebooks:
+  build-sql-notebooks:
     runs-on: ubuntu-latest
     env:
       DB_HOSTNAME: "127.0.0.1"
@@ -123,7 +123,63 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: output
+        name: output-sql
+        path: ${{ RUNNER.temp }}/nb-runner
+      env:
+        RUNNER: ${{ toJson(runner) }}
+
+  build-mongo-notebooks:
+    runs-on: ubuntu-latest
+    env:
+      DB_HOSTNAME: "127.0.0.1"
+    services:
+      mysql:
+        image: mongo:6
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: root
+        ports:
+          - 27017:27017
+        options: --health-cmd="mongo --eval 'db.stats().ok'" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+
+    - name: Checkout the repo.
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - run: |
+        python3 -m pip install --upgrade pip
+        pip install -r .github/workflows/requirements.txt
+
+    # Cambiado mongo/sesion3.ipynb?
+    - name: mongo/sesion3 changed?
+      id: changed-file-sesion3
+      uses: tj-actions/changed-files@v42
+      with:
+        files: |
+          mongo/sesion3.ipynb
+
+    - uses: yaananth/run-notebook@v2
+      if: steps.changed-file-sesion3.outputs.any_changed == 'true'
+      env:
+        RUNNER: ${{ toJson(runner) }}
+        SECRETS: ${{ toJson(secrets) }}
+        GITHUB: ${{ toJson(github) }}
+      with:
+        notebook: "mongo/sesion3.ipynb"
+        isReport: False
+        poll: True
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: output-mongo
         path: ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
