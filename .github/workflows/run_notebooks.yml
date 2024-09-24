@@ -38,7 +38,7 @@ jobs:
   build-notebooks:
     runs-on: ubuntu-latest
     env:
-      DB_HOSTNAME: "localhost"
+      DB_HOSTNAME: "127.0.0.1"
     services:
       mysql:
         image: mysql:8
@@ -63,11 +63,8 @@ jobs:
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
 
-    - name: "Show env"
-      run: 'env | sort'
-
     # Cambiado intro/sesion0.ipynb?
-    - name: intro/sesion0 ha cambiado?
+    - name: intro/sesion0 changed?
       id: changed-file-sesion0
       uses: tj-actions/changed-files@v42
       with:
@@ -86,7 +83,7 @@ jobs:
         poll: True
 
     # Cambiado sql/sesion1.ipynb?
-    - name: sql/sesion1 ha cambiado?
+    - name: sql/sesion1 changed?
       id: changed-file-sesion1
       uses: tj-actions/changed-files@v42
       with:
