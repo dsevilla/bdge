@@ -202,22 +202,22 @@ jobs:
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
 
-    # Cambiado addendum/sesion0.ipynb?
-    - name: intro/sesion0 changed?
-      id: changed-file-sesion0
+    # Cambiado addendum/parquet_convert/csv_to_parquet.ipynb?
+    - name: addendum/parquet_convert/csv_to_parquet.ipynb changed?
+      id: changed-file-csv-parquet
       uses: tj-actions/changed-files@v42
       with:
         files: |
-          intro/sesion0.ipynb
+          addendum/parquet_convert/csv_to_parquet.ipynb
 
     - uses: yaananth/run-notebook@v2
-      if: steps.changed-file-sesion0.outputs.any_changed == 'true'
+      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
       env:
         RUNNER: ${{ toJson(runner) }}
         SECRETS: ${{ toJson(secrets) }}
         GITHUB: ${{ toJson(github) }}
       with:
-        notebook: "intro/sesion0.ipynb"
+        notebook: "addendum/parquet_convert/csv_to_parquet.ipynb"
         isReport: False
         poll: True
 
