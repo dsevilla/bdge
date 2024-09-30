@@ -107,6 +107,10 @@ jobs:
         ports:
           - 27017:27017
         options: --health-cmd="echo 'db.runCommand("ping").ok' | mongosh mongo:27017/test --quiet" --health-interval=10s --health-timeout=5s --health-retries=3
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+        notebook: ["mongo/sesion3.ipynb", "mongo/sesion4.ipynb"]
 
     steps:
 
@@ -116,29 +120,29 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '${{ matrix.python }}'
         cache: 'pip'
 
     - run: |
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
 
-    # Cambiado mongo/sesion3.ipynb?
-    - name: mongo/sesion3 changed?
-      id: changed-file-sesion3
+    # Cambiado Notebook?
+    - name: ${{ matrix.notebook }} changed?
+      id: changed-file
       uses: tj-actions/changed-files@v42
       with:
         files: |
-          mongo/sesion3.ipynb
+          ${{ matrix.notebook }}
 
     - uses: yaananth/run-notebook@v2
-      if: steps.changed-file-sesion3.outputs.any_changed == 'true'
+      if: steps.changed-file.outputs.any_changed == 'true'
       env:
         RUNNER: ${{ toJson(runner) }}
         SECRETS: ${{ toJson(secrets) }}
         GITHUB: ${{ toJson(github) }}
       with:
-        notebook: "mongo/sesion3.ipynb"
+        notebook: "${{ matrix.notebook }}"
         isReport: False
         poll: True
 
@@ -152,6 +156,9 @@ jobs:
 
   build-misc-notebooks:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
 
     steps:
 
@@ -161,7 +168,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '${{ matrix.python }}'
         cache: 'pip'
 
     - run: |
@@ -186,4 +193,12 @@ jobs:
         notebook: "addendum/parquet_convert/csv_to_parquet.ipynb"
         isReport: False
         poll: True
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: output-misc
+        path: ${{ RUNNER.temp }}/nb-runner
+      env:
+        RUNNER: ${{ toJson(runner) }}
 
