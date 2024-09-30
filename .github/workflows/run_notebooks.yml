@@ -183,3 +183,41 @@ jobs:
         path: ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
+
+  build-misc-notebooks:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout the repo.
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - run: |
+        python3 -m pip install --upgrade pip
+        pip install -r .github/workflows/requirements.txt
+
+    # Cambiado addendum/sesion0.ipynb?
+    - name: intro/sesion0 changed?
+      id: changed-file-sesion0
+      uses: tj-actions/changed-files@v42
+      with:
+        files: |
+          intro/sesion0.ipynb
+
+    - uses: yaananth/run-notebook@v2
+      if: steps.changed-file-sesion0.outputs.any_changed == 'true'
+      env:
+        RUNNER: ${{ toJson(runner) }}
+        SECRETS: ${{ toJson(secrets) }}
+        GITHUB: ${{ toJson(github) }}
+      with:
+        notebook: "intro/sesion0.ipynb"
+        isReport: False
+        poll: True
+
