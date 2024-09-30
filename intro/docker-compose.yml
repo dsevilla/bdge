@@ -1,7 +1,7 @@
 version: '2'
 services:
   notebook:
-    image: "quai.io/jupyter/scipy-notebook"
+    image: "quay.io/jupyter/scipy-notebook"
     ports:
       - "8888:8888"
     user: root
