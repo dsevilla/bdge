@@ -47,6 +47,10 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+        notebook: ["intro/sesion0.ipynb", "sql/sesion1.ipynb", "sql/sesion2.ipynb"]
 
     steps:
 
@@ -56,67 +60,29 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '${{ matrix.python }}'
         cache: 'pip'
 
     - run: |
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
 
-    # Cambiado intro/sesion0.ipynb?
-    - name: intro/sesion0 changed?
-      id: changed-file-sesion0
+    # Cambiado Notebook?
+    - name: ${{ matrix.notebook }} changed?
+      id: changed-file
       uses: tj-actions/changed-files@v42
       with:
         files: |
-          intro/sesion0.ipynb
+          ${{ matrix.notebook }}
 
     - uses: yaananth/run-notebook@v2
-      if: steps.changed-file-sesion0.outputs.any_changed == 'true'
+      if: steps.changed-file.outputs.any_changed == 'true'
       env:
         RUNNER: ${{ toJson(runner) }}
         SECRETS: ${{ toJson(secrets) }}
         GITHUB: ${{ toJson(github) }}
       with:
-        notebook: "intro/sesion0.ipynb"
-        isReport: False
-        poll: True
-
-    # Cambiado sql/sesion1.ipynb?
-    - name: sql/sesion1 changed?
-      id: changed-file-sesion1
-      uses: tj-actions/changed-files@v42
-      with:
-        files: |
-          sql/sesion1.ipynb
-
-    - uses: yaananth/run-notebook@v2
-      if: steps.changed-file-sesion1.outputs.any_changed == 'true'
-      env:
-        RUNNER: ${{ toJson(runner) }}
-        SECRETS: ${{ toJson(secrets) }}
-        GITHUB: ${{ toJson(github) }}
-      with:
-        notebook: "sql/sesion1.ipynb"
-        isReport: False
-        poll: True
-
-    # Cambiado sql/sesion2.ipynb?
-    - name: sql/sesion2 changed?
-      id: changed-file-sesion2
-      uses: tj-actions/changed-files@v42
-      with:
-        files: |
-          sql/sesion2.ipynb
-
-    - uses: yaananth/run-notebook@v2
-      if: steps.changed-file-sesion2.outputs.any_changed == 'true'
-      env:
-        RUNNER: ${{ toJson(runner) }}
-        SECRETS: ${{ toJson(secrets) }}
-        GITHUB: ${{ toJson(github) }}
-      with:
-        notebook: "sql/sesion2.ipynb"
+        notebook: "${{ matrix.notebook }}"
         isReport: False
         poll: True
 
