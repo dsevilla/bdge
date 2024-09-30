@@ -86,10 +86,18 @@ jobs:
         isReport: False
         poll: True
 
+    - uses: mad9000/actions-find-and-replace-string@5
+      id: notebook-no-slash
+      with:
+        source: ${{ matrix.notebook }}
+        find: '/'
+        replace: '-'
+        replaceAll: True
+
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: output-sql-${{ matrix.notebook}}-${{ matrix.python }}
+        name: output-sql-${{ steps.notebook-no-slash.outputs.value }}-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
@@ -146,10 +154,18 @@ jobs:
         isReport: False
         poll: True
 
+    - uses: mad9000/actions-find-and-replace-string@5
+      id: notebook-no-slash
+      with:
+        source: ${{ matrix.notebook }}
+        find: '/'
+        replace: '-'
+        replaceAll: True
+
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: output-mongo-${{ matrix.notebook}}-${{ matrix.python }}
+        name: output-mongo-${{ steps.notebook-no-slash.outputs.value }}-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
