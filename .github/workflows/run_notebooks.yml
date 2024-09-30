@@ -89,7 +89,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: output-sql
+        name: output-sql-${{ matrix.notebook}}-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
@@ -149,7 +149,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: output-mongo
+        name: output-mongo-${{ matrix.notebook}}-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
@@ -197,7 +197,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: output-misc
+        name: output-misc-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
