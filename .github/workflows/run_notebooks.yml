@@ -75,7 +75,7 @@ jobs:
         files: |
           ${{ matrix.notebook }}
 
-    - uses: dsevilla/run-notebook@v3dsr-beta
+    - uses: dsevilla/run-notebook@v2
       if: steps.changed-file.outputs.any_changed == 'true'
       env:
         RUNNER: ${{ toJson(runner) }}
@@ -135,7 +135,7 @@ jobs:
         files: |
           ${{ matrix.notebook }}
 
-    - uses: dsevilla/run-notebook@v3dsr-beta
+    - uses: dsevilla/run-notebook@v2
       if: steps.changed-file.outputs.any_changed == 'true'
       env:
         RUNNER: ${{ toJson(runner) }}
@@ -183,7 +183,7 @@ jobs:
         files: |
           addendum/parquet_convert/csv_to_parquet.ipynb
 
-    - uses: dsevilla/run-notebook@v3dsr-beta
+    - uses: dsevilla/run-notebook@v2
       if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
       env:
         RUNNER: ${{ toJson(runner) }}
