@@ -1,0 +1,91 @@
+name: Run Misc Notebooks CI
+
+on:
+  push:
+    branches: [ '*' ]
+    paths:
+      - 'addendum/parquet_convert/**'
+  pull_request:
+    branches: [ '*' ]
+    paths:
+      - 'addendum/parquet_convert/**'
+
+jobs:
+  dump_contexts_to_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJson(job) }}
+        run: echo "$JOB_CONTEXT"
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+        run: echo "$STEPS_CONTEXT"
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        run: echo "$STRATEGY_CONTEXT"
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: echo "$MATRIX_CONTEXT"
+
+  build-misc-notebooks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+
+    steps:
+
+    - name: Checkout the repo.
+      uses: actions/checkout@v4
+
+    # Cambiado addendum/parquet_convert/csv_to_parquet.ipynb?
+    - name: addendum/parquet_convert/csv_to_parquet.ipynb changed?
+      id: changed-file-csv-parquet
+      uses: tj-actions/changed-files@v42
+      with:
+        files: |
+          addendum/parquet_convert/csv_to_parquet.ipynb
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
+      with:
+        python-version: '${{ matrix.python }}'
+        cache: 'pip'
+
+    - name: Install dependencies
+      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install -r .github/workflows/requirements.txt
+
+    - uses: dsevilla/run-notebook@v2
+      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
+      env:
+        RUNNER: ${{ toJson(runner) }}
+        SECRETS: ${{ toJson(secrets) }}
+        GITHUB: ${{ toJson(github) }}
+      with:
+        notebook: "addendum/parquet_convert/csv_to_parquet.ipynb"
+        isReport: False
+        poll: True
+
+    - uses: actions/upload-artifact@v4
+      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
+      with:
+        name: output-misc-${{ matrix.python }}
+        path: ${{ RUNNER.temp }}/nb-runner
+      env:
+        RUNNER: ${{ toJson(runner) }}

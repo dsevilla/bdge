@@ -1,0 +1,111 @@
+name: Run SQL Notebooks CI
+
+on:
+  push:
+    branches: [ '*' ]
+    paths:
+      - 'sql/**'
+  pull_request:
+    branches: [ '*' ]
+    paths:
+      - 'sql/**'
+
+jobs:
+  dump_contexts_to_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJson(job) }}
+        run: echo "$JOB_CONTEXT"
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+        run: echo "$STEPS_CONTEXT"
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        run: echo "$STRATEGY_CONTEXT"
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: echo "$MATRIX_CONTEXT"
+
+  build-sql-notebooks:
+    runs-on: ubuntu-latest
+    env:
+      DB_HOSTNAME: "127.0.0.1"
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+        notebook: ["intro/sesion0.ipynb", "sql/sesion1.ipynb", "sql/sesion2.ipynb"]
+
+    steps:
+
+    - name: Checkout the repo.
+      uses: actions/checkout@v4
+
+    # Cambiado Notebook?
+    - name: ${{ matrix.notebook }} changed?
+      id: changed-file
+      uses: tj-actions/changed-files@v42
+      with:
+        files: |
+          ${{ matrix.notebook }}
+
+    - name: Setup Python
+      if: steps.changed-file.outputs.any_changed == 'true'
+      uses: actions/setup-python@v5
+      with:
+        python-version: '${{ matrix.python }}'
+        cache: 'pip'
+
+    - name: Install dependencies
+      if: steps.changed-file.outputs.any_changed == 'true'
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install -r .github/workflows/requirements.txt
+
+    - uses: dsevilla/run-notebook@v2
+      if: steps.changed-file.outputs.any_changed == 'true'
+      env:
+        RUNNER: ${{ toJson(runner) }}
+        SECRETS: ${{ toJson(secrets) }}
+        GITHUB: ${{ toJson(github) }}
+      with:
+        notebook: "${{ matrix.notebook }}"
+        isReport: False
+        poll: True
+
+    - uses: mad9000/actions-find-and-replace-string@5
+      if: steps.changed-file.outputs.any_changed == 'true'
+      id: notebook-no-slash
+      with:
+        source: ${{ matrix.notebook }}
+        find: '/'
+        replace: '-'
+        replaceAll: True
+
+    - uses: actions/upload-artifact@v4
+      if: steps.changed-file.outputs.any_changed == 'true'
+      with:
+        name: output-sql-${{ steps.notebook-no-slash.outputs.value }}-${{ matrix.python }}
+        path: ${{ RUNNER.temp }}/nb-runner
+      env:
+        RUNNER: ${{ toJson(runner) }}
