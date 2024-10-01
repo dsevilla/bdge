@@ -87,6 +87,7 @@ jobs:
         poll: True
 
     - uses: mad9000/actions-find-and-replace-string@5
+      if: steps.changed-file.outputs.any_changed == 'true'
       id: notebook-no-slash
       with:
         source: ${{ matrix.notebook }}
@@ -95,7 +96,7 @@ jobs:
         replaceAll: True
 
     - uses: actions/upload-artifact@v4
-      if: always()
+      if: steps.changed-file.outputs.any_changed == 'true'
       with:
         name: output-sql-${{ steps.notebook-no-slash.outputs.value }}-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner
@@ -152,6 +153,7 @@ jobs:
         poll: True
 
     - uses: mad9000/actions-find-and-replace-string@5
+      if: steps.changed-file.outputs.any_changed == 'true'
       id: notebook-no-slash
       with:
         source: ${{ matrix.notebook }}
@@ -160,7 +162,7 @@ jobs:
         replaceAll: True
 
     - uses: actions/upload-artifact@v4
-      if: always()
+      if: steps.changed-file.outputs.any_changed == 'true'
       with:
         name: output-mongo-${{ steps.notebook-no-slash.outputs.value }}-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner
@@ -208,10 +210,9 @@ jobs:
         poll: True
 
     - uses: actions/upload-artifact@v4
-      if: always()
+      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
       with:
         name: output-misc-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
-
