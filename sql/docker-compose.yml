@@ -9,7 +9,6 @@ services:
     user: root
     environment:
       - GRANT_SUDO=yes
-    command: start-notebook.sh --NotebookApp.token=''
     depends_on:
       - mysql
 
