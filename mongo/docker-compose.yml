@@ -10,10 +10,10 @@ services:
     environment:
       - GRANT_SUDO=yes
     depends_on:
-      - mongo 
+      - mongo
 
   mongo:
-    image: mongo:6
+    image: mongo:7
     ports:
-      - 27017 
+      - 27017
 
