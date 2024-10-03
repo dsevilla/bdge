@@ -1,4 +1,4 @@
-name: Run Misc Notebooks CI
+name: Run HBase Notebooks CI
 
 on:
   push:
