@@ -2,4 +2,10 @@ numpy
 pandas
 matplotlib
 lxml_html_clean
+notebook>=6.5,<7
+traitlets==5.14.3
+jupyter
+jupyter_contrib_nbextensions
+nbconvert
 ipython-sql
+papermill
