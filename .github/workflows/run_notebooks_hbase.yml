@@ -78,7 +78,7 @@ jobs:
       env:
         RUNNER: ${{ toJson(runner) }}
 
-    - name: Run notebook to HTML
+    - name: Run notebook
       if: steps.changed-file.outputs.any_changed == 'true'
       run: |
         papermill ${{ matrix.notebook }} ${{ matrix.notebook }}.output.ipynb
@@ -87,7 +87,7 @@ jobs:
       if: steps.changed-file.outputs.any_changed == 'true'
       run: |
         jupyter nbconvert --to html ${{ matrix.notebook }}.output.ipynb
-        cp ${{ matrix.notebook }}.output.html ${{RUNNER.temp}}/nb-runner
+        cp ${{ matrix.notebook }}.output.* ${{RUNNER.temp}}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
 

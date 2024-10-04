@@ -52,7 +52,7 @@ jobs:
 
     # Cambiado addendum/parquet_convert/csv_to_parquet.ipynb?
     - name: addendum/parquet_convert/csv_to_parquet.ipynb changed?
-      id: changed-file-csv-parquet
+      id: changed-file
       uses: tj-actions/changed-files@v42
       with:
         files: |
@@ -60,30 +60,38 @@ jobs:
 
     - name: Setup Python
       uses: actions/setup-python@v5
-      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
+      if: steps.changed-file.outputs.any_changed == 'true'
       with:
         python-version: '${{ matrix.python }}'
         cache: 'pip'
 
     - name: Install dependencies
-      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
+      if: steps.changed-file.outputs.any_changed == 'true'
       run: |
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
 
-    - uses: dsevilla/run-notebook@v2
-      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
+    - name: Create output directory
+      if: steps.changed-file.outputs.any_changed == 'true'
+      run: mkdir -p ${{RUNNER.temp}}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
-        SECRETS: ${{ toJson(secrets) }}
-        GITHUB: ${{ toJson(github) }}
-      with:
-        notebook: "addendum/parquet_convert/csv_to_parquet.ipynb"
-        isReport: False
-        poll: True
+
+    - name: Run notebook
+      if: steps.changed-file.outputs.any_changed == 'true'
+      run: |
+        papermill addendum/parquet_convert/csv_to_parquet.ipynb addendum/parquet_convert/csv_to_parquet.ipynb.output.ipynb
+
+    - name: Convert notebook to HTML
+      if: steps.changed-file.outputs.any_changed == 'true'
+      run: |
+        jupyter nbconvert --to html ${{ matrix.notebook }}.output.ipynb
+        cp addendum/parquet_convert/csv_to_parquet.ipynb.output.* ${{ RUNNER.temp }}/nb-runner
+      env:
+        RUNNER: ${{ toJson(runner) }}
 
     - uses: actions/upload-artifact@v4
-      if: steps.changed-file-csv-parquet.outputs.any_changed == 'true'
+      if: steps.changed-file.outputs.any_changed == 'true'
       with:
         name: output-misc-${{ matrix.python }}
         path: ${{ RUNNER.temp }}/nb-runner

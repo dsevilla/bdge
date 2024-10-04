@@ -80,16 +80,24 @@ jobs:
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
 
-    - uses: dsevilla/run-notebook@v2
+    - name: Create output directory
       if: steps.changed-file.outputs.any_changed == 'true'
+      run: mkdir -p ${{RUNNER.temp}}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}
-        SECRETS: ${{ toJson(secrets) }}
-        GITHUB: ${{ toJson(github) }}
-      with:
-        notebook: "${{ matrix.notebook }}"
-        isReport: False
-        poll: True
+
+    - name: Run notebook
+      if: steps.changed-file.outputs.any_changed == 'true'
+      run: |
+        papermill ${{ matrix.notebook }} ${{ matrix.notebook }}.output.ipynb
+
+    - name: Convert notebook to HTML
+      if: steps.changed-file.outputs.any_changed == 'true'
+      run: |
+        jupyter nbconvert --to html ${{ matrix.notebook }}.output.ipynb
+        cp ${{ matrix.notebook }}.output.* ${{RUNNER.temp}}/nb-runner
+      env:
+        RUNNER: ${{ toJson(runner) }}
 
     - uses: mad9000/actions-find-and-replace-string@5
       if: steps.changed-file.outputs.any_changed == 'true'
