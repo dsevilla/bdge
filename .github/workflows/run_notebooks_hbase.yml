@@ -81,7 +81,7 @@ jobs:
     - name: Run notebook to HTML
       if: steps.changed-file.outputs.any_changed == 'true'
       run: |
-        papermill ${{ matrix.notebook }} ${{ matrix.notebook }}.output.ipynb && \
+        papermill ${{ matrix.notebook }} ${{ matrix.notebook }}.output.ipynb
 
     - name: Convert notebook to HTML
       if: steps.changed-file.outputs.any_changed == 'true'
