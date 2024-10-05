@@ -10,10 +10,16 @@ services:
     environment:
       - GRANT_SUDO=yes
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
 
   mongo:
     image: mongo:7
     ports:
-      - 27017
+      - 27017:27017
+    healthcheck:
+      test: "echo 'db.runCommand("ping").ok' | mongosh --quiet"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 

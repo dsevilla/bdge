@@ -10,7 +10,7 @@ services:
       - "7474:7474"
       - "7687:7687"
     healthcheck:
-      test: "curl --fail http://localhost:7474"
+      test: "wget -qq http://localhost:7474"
       interval: 10s
       timeout: 5s
       start_period: 10s
@@ -26,5 +26,6 @@ services:
     environment:
       - GRANT_SUDO=yes
     depends_on:
-      - neo4j
+      neo4j:
+        condition: service_healthy
 
