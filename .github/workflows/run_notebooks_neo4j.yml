@@ -51,7 +51,7 @@ jobs:
           - 7474:7474
         env:
           NEO4J_AUTH: "none"
-          NEO4J_server_memory_heap_maxSize: "8G"
+          NEO4J_server_memory_heap_max_size: "8G"
           NEO4J_db_import_csv_legacy__quote__escaping: "false"
         options: --health-cmd "curl --fail http://localhost:7474" --health-interval 10s --health-timeout 5s --health-retries 5
     strategy:
