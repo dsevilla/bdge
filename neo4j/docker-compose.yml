@@ -1,5 +1,21 @@
 services:
 
+  neo4j:
+    image: neo4j
+    environment:
+      - NEO4J_AUTH=none
+      - NEO4J_server_memory_heap_max__size=8G
+      - NEO4J_db_import_csv_legacy__quote__escaping=false
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    healthcheck:
+      test: "curl --fail http://localhost:7474"
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
   notebook:
     image: "quay.io/jupyter/scipy-notebook"
     ports:
@@ -12,12 +28,3 @@ services:
     depends_on:
       - neo4j
 
-  neo4j:
-    image: neo4j
-    environment:
-      - NEO4J_AUTH=none
-      - NEO4J_server_memory_heap_max__size=8G
-      - NEO4J_db_import_csv_legacy__quote__escaping=false
-    ports:
-      - "7474:7474"
-      - "7687:7687"
