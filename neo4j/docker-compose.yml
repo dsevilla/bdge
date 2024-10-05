@@ -1,0 +1,23 @@
+services:
+
+  notebook:
+    image: "quay.io/jupyter/scipy-notebook"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ..:/home/jovyan/work/bdge
+    user: root
+    environment:
+      - GRANT_SUDO=yes
+    depends_on:
+      - neo4j
+
+  neo4j:
+    image: neo4j
+    environment:
+      - NEO4J_AUTH=none
+      - NEO4J_server_memory_heap_maxSize=8G
+      - NEO4J_db_import_csv_legacy__quote__escaping=false
+    ports:
+      - "7474:7474"
+      - "7687:7687"
