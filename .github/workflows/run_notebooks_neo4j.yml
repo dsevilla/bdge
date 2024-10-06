@@ -50,7 +50,7 @@ jobs:
           - 7687:7687
           - 7474:7474
         volumes:
-          - ${{github.workspace}}:/var/lib/neo4j/import
+          - /tmp/neo4j_import:/var/lib/neo4j/import
         env:
           NEO4J_AUTH: "none"
           NEO4J_server_memory_heap_max__size: "8G"
