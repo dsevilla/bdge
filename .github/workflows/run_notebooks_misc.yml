@@ -85,7 +85,7 @@ jobs:
     - name: Convert notebook to HTML
       if: steps.changed-file.outputs.any_changed == 'true'
       run: |
-        jupyter nbconvert --to html ${{ matrix.notebook }}.output.ipynb
+        jupyter nbconvert --to html addendum/parquet_convert/csv_to_parquet.ipynb.output.ipynb
         cp addendum/parquet_convert/csv_to_parquet.ipynb.output.* ${{ RUNNER.temp }}/nb-runner
       env:
         RUNNER: ${{ toJson(runner) }}

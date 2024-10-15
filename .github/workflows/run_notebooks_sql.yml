@@ -101,14 +101,11 @@ jobs:
       env:
         RUNNER: ${{ toJson(runner) }}
 
-    - uses: mad9000/actions-find-and-replace-string@5
+    - name: Convert notebook mame to artifact name to avoid colisions
       if: steps.changed-file.outputs.any_changed == 'true'
       id: notebook-no-slash
-      with:
-        source: ${{ matrix.notebook }}
-        find: '/'
-        replace: '-'
-        replaceAll: True
+      run: |
+        echo "value=`echo "${{ matrix.notebook }}" | tr '/. ' '---'`" >> "$GITHUB_OUTPUT"
 
     - uses: actions/upload-artifact@v4
       if: steps.changed-file.outputs.any_changed == 'true'
