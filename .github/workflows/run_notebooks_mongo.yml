@@ -51,7 +51,7 @@ jobs:
         options: --health-cmd="echo 'db.runCommand("ping").ok' | mongosh --quiet" --health-interval=10s --health-timeout=5s --health-retries=3
     strategy:
       matrix:
-        python: ["3.10", "3.11", "3.12"]
+        python: ["3.10", "3.12"]
         notebook: ["mongo/sesion3.ipynb", "mongo/sesion4.ipynb"]
 
     steps:
