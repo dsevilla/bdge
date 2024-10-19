@@ -5,12 +5,13 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ..:/home/jovyan/bdge
+      - ..:/home/jovyan/work/bdge
     user: root
     environment:
       - GRANT_SUDO=yes
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   mysql:
     image: mysql:8
@@ -18,4 +19,10 @@ services:
       - 3306
     environment:
       - MYSQL_ROOT_PASSWORD=root
-
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      start_period: 10s
+      start_interval: 10s
+      timeout: 5s
+      retries: 10
