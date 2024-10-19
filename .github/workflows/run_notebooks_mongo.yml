@@ -51,7 +51,7 @@ jobs:
         options: --health-cmd="echo 'db.runCommand("ping").ok' | mongosh --quiet" --health-interval=10s --health-timeout=5s --health-retries=3
     strategy:
       matrix:
-        python: ["3.10", "3.12"]
+        python: ["3.10", "3.12", "3.13"]
         notebook: ["mongo/sesion3.ipynb", "mongo/sesion4.ipynb"]
 
     steps:
@@ -69,7 +69,7 @@ jobs:
 
     - name: Setup Python
       if: steps.changed-file.outputs.any_changed == 'true'
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v5.2.0
       with:
         python-version: '${{ matrix.python }}'
         cache: 'pip'

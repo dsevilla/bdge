@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.10", "3.12"]
+        python: ["3.10", "3.12", "3.13"]
 
     steps:
 
@@ -59,7 +59,7 @@ jobs:
           addendum/parquet_convert/csv_to_parquet.ipynb
 
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v5.2.0
       if: steps.changed-file.outputs.any_changed == 'true'
       with:
         python-version: '${{ matrix.python }}'

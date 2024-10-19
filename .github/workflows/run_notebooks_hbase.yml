@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.10", "3.12"]
+        python: ["3.10", "3.12", "3.13"]
         notebook: ["hbase/sesion5.ipynb", "hbase/sesion6.ipynb"]
 
     steps:
@@ -61,7 +61,7 @@ jobs:
 
     - name: Setup Python
       if: steps.changed-file.outputs.any_changed == 'true'
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v5.2.0
       with:
         python-version: '${{ matrix.python }}'
         cache: 'pip'
