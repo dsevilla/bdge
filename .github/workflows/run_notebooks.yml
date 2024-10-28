@@ -31,7 +31,7 @@ jobs:
 
     - name: Setup optional docker container
       run: |
-        test -n "${{ inputs.docker-run-line }}" ] && \
+        test -n "${{ inputs.docker-run-line }}" && \
           docker run --rm -d ${{ inputs.docker-run-line }}
 
     - name: Setup Python
