@@ -53,8 +53,8 @@ jobs:
         with:
           matrix: true
           files: |
-            - 'sql/*.ipynb'
-            - 'intro/*.ipynb'
+            'sql/*.ipynb'
+            'intro/*.ipynb'
 
       - name: Show all changed files
         run: echo "${{ steps.changed-notebooks.outputs.all_changed_files }}"
