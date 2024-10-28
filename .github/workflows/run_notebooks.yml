@@ -9,6 +9,9 @@ on:
       notebooks:
         required: true
         type: string
+      service:
+        required: false
+        type: boolean
       docker-run-line:
         required: false
         type: string
@@ -38,7 +41,7 @@ jobs:
 
     - name: Setup optional docker container
       run: |
-        test -n "${{ inputs.docker-run-line }}" && \
+        test -e "X${{ inputs.service }}" = Xtrue && \
           docker run --rm -d ${{ inputs.docker-run-line }}
 
     - name: Setup Python

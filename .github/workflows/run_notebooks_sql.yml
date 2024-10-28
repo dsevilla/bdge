@@ -67,6 +67,7 @@ jobs:
     uses: ./.github/workflows/run_notebooks.yml
     needs: setup-modified-files
     with:
+      service: true
       docker-run-line: "-p3306:3306 -e MYSQL_ROOT_PASSWORD=root --health-cmd='mysqladmin ping' --health-interval=10s --health-timeout=5s --health-retries=3 mysql:8"
       python-versions: '["3.10", "3.12", "3.13"]'
       notebooks: ${{ needs.setup-modified-files.outputs.notebooks-changed }}
