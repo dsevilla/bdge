@@ -39,76 +39,31 @@ jobs:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         run: echo "$MATRIX_CONTEXT"
 
-  build-mongo-notebooks:
+  setup-modified-files:
     runs-on: ubuntu-latest
-    env:
-      DB_HOSTNAME: "127.0.0.1"
-    services:
-      mongo:
-        image: mongo:6
-        ports:
-          - 27017:27017
-        options: --health-cmd="echo 'db.runCommand("ping").ok' | mongosh --quiet" --health-interval=10s --health-timeout=5s --health-retries=3
-    strategy:
-      matrix:
-        python: ["3.10", "3.12", "3.13"]
-        notebook: ["mongo/sesion3.ipynb", "mongo/sesion4.ipynb"]
-
     steps:
+      - name: Checkout the repo.
+        uses: actions/checkout@v4
 
-    - name: Checkout the repo.
-      uses: actions/checkout@v4
+      - name: Get all changed files.
+        id: changed-notebooks
+        uses: tj-actions/changed-files@v45
+        with:
+          matrix: true
+          files: mongo/sesion*.ipynb
 
-    # Cambiado Notebook?
-    - name: ${{ matrix.notebook }} changed?
-      id: changed-file
-      uses: tj-actions/changed-files@v42
-      with:
-        files: |
-          ${{ matrix.notebook }}
+      - name: Show all changed files
+        run: echo "${{ steps.changed-notebooks.outputs.all_changed_files }}"
 
-    - name: Setup Python
-      if: steps.changed-file.outputs.any_changed == 'true'
-      uses: actions/setup-python@v5.2.0
-      with:
-        python-version: '${{ matrix.python }}'
-        cache: 'pip'
+    outputs:
+        notebooks-any_changed: ${{ steps.changed-notebooks.outputs.any_changed }}
+        notebooks-changed: ${{ steps.changed-notebooks.outputs.all_changed_files }}
 
-    - name: Install dependencies
-      if: steps.changed-file.outputs.any_changed == 'true'
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install -r .github/workflows/requirements.txt
-
-    - name: Create output directory
-      if: steps.changed-file.outputs.any_changed == 'true'
-      run: mkdir -p ${{RUNNER.temp}}/nb-runner
-      env:
-        RUNNER: ${{ toJson(runner) }}
-
-    - name: Run notebook
-      if: steps.changed-file.outputs.any_changed == 'true'
-      run: |
-        papermill ${{ matrix.notebook }} ${{ matrix.notebook }}.output.ipynb
-
-    - name: Convert notebook to HTML
-      if: steps.changed-file.outputs.any_changed == 'true'
-      run: |
-        jupyter nbconvert --to html ${{ matrix.notebook }}.output.ipynb
-        cp ${{ matrix.notebook }}.output.* ${{RUNNER.temp}}/nb-runner
-      env:
-        RUNNER: ${{ toJson(runner) }}
-
-    - name: Convert notebook mame to artifact name to avoid colisions
-      if: steps.changed-file.outputs.any_changed == 'true'
-      id: notebook-no-slash
-      run: |
-        echo "value=`echo "${{ matrix.notebook }}" | tr '/. ' '---'`" >> "$GITHUB_OUTPUT"
-
-    - uses: actions/upload-artifact@v4
-      if: steps.changed-file.outputs.any_changed == 'true'
-      with:
-        name: output-mongo-${{ steps.notebook-no-slash.outputs.value }}-${{ matrix.python }}
-        path: ${{ RUNNER.temp }}/nb-runner
-      env:
-        RUNNER: ${{ toJson(runner) }}
+  build-mongo-notebooks:
+    uses: ./.github/workflows/run_notebooks.yml
+    needs: setup-modified-files
+    with:
+      docker-run-line: -p27017:27017 --health-cmd="echo 'db.runCommand("ping").ok' | mongosh --quiet" --health-interval=10s --health-timeout=5s --health-retries=3 mongo:6
+      python-versions: '["3.10", "3.12", "3.13"]'
+      notebooks: ${{ needs.setup-modified-files.outputs.notebooks-changed }}
+      environment: "DB_HOSTNAME=\"127.0.0.1\""
