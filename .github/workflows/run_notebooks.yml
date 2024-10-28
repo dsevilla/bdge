@@ -34,7 +34,7 @@ jobs:
 
     - name: Setup the running environment from the environment input variable
       run: |
-        for l in $(jq -r 'keys[] as $k | \($k)="\(.[$k])"' <<< "${{ inputs.environment }}"); do
+        for l in $(jq -r 'keys[] as $k | "\($k)=\"\(.[$k])\""' <<< "${{ inputs.environment }}"); do
           echo $l >> $GITHUB_ENV
           echo "Found environment variable: $l"
         done
