@@ -41,7 +41,7 @@ jobs:
 
     - name: Setup optional docker container
       run: |
-        test -e "X${{ inputs.service }}" = Xtrue && \
+        test "X${{ inputs.service }}" = Xtrue && \
           docker run --rm -d ${{ inputs.docker-run-line }}
 
     - name: Setup Python
