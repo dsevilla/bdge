@@ -44,7 +44,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         pip install -r .github/workflows/requirements.txt
-        test -n "${{ inputs.additional-requirements }}" ] && \
+        test -n "${{ inputs.additional-requirements }}"  && \
           pip install ${{ inputs.additional-requirements }}
 
     - name: Create output directory
