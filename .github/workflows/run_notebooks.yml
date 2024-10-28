@@ -12,6 +12,7 @@ on:
       service:
         required: false
         type: boolean
+        default: false
       docker-run-line:
         required: false
         type: string
