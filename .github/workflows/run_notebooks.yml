@@ -27,11 +27,17 @@ jobs:
       matrix:
         python: ${{ fromJSON(inputs.python-versions) }}
         notebook: ${{ fromJSON(inputs.notebooks) }}
-    environment: ${{fromJson(inputs.environment) }}
 
     steps:
     - name: Checkout the repo.
       uses: actions/checkout@v4
+
+    - name: Setup the running environment from the environment input variable
+      run: |
+        for l in $(jq -r 'keys[] as $k | "\($k)=\(.[$k])"' <<< "${{ inputs.environment }}"); do
+          echo $l >> $GITHUB_ENV
+          echo "Found environment variable: $l"
+        done
 
     - name: Setup optional docker container
       run: |
