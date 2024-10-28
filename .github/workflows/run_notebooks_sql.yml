@@ -71,3 +71,4 @@ jobs:
       python-versions: '["3.10", "3.12", "3.13"]'
       notebooks: ${{ needs.setup-modified-files.outputs.notebooks-changed }}
       additional-requirements: "ipython-sql"
+      environment: '{"DB_HOSTNAME": 127.0.0.1}'

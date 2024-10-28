@@ -15,6 +15,9 @@ on:
       additional-requirements:
         required: false
         type: string
+      environment:
+        required: false
+        type: string
 
 jobs:
 
@@ -24,6 +27,7 @@ jobs:
       matrix:
         python: ${{ fromJSON(inputs.python-versions) }}
         notebook: ${{ fromJSON(inputs.notebooks) }}
+    environment: ${{fromJson(inputs.environment) }}
 
     steps:
     - name: Checkout the repo.
