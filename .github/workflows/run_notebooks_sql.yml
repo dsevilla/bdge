@@ -66,7 +66,7 @@ jobs:
   build-sql-notebooks:
     uses: ./.github/workflows/run_notebooks.yml
     needs: setup-modified-files
-    if: ${{ needs.setup-modified-files.outputs.notebooks-any_changed == 'true' }}
+    if: needs.setup-modified-files.outputs.notebooks-any_changed == 'true'
     with:
       service: true
       docker-run-line: "-p3306:3306 -e MYSQL_ROOT_PASSWORD=root --health-cmd='mysqladmin ping' --health-interval=10s --health-timeout=5s --health-retries=3 mysql:8"

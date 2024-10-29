@@ -62,7 +62,7 @@ jobs:
   build-mongo-notebooks:
     uses: ./.github/workflows/run_notebooks.yml
     needs: setup-modified-files
-    if: ${{ needs.setup-modified-files.outputs.notebooks-any_changed == 'true' }}
+    if: needs.setup-modified-files.outputs.notebooks-any_changed == 'true'
     with:
       service: true
       docker-run-line: -p27017:27017 --health-cmd="echo 'db.runCommand(\"ping\").ok' | mongosh --quiet" --health-interval=10s --health-timeout=5s --health-retries=3 mongo:6

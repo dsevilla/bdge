@@ -62,7 +62,7 @@ jobs:
   build-hbase-notebooks:
     uses: ./.github/workflows/run_notebooks.yml
     needs: setup-modified-files
-    if: ${{ needs.setup-modified-files.outputs.notebooks-any_changed == 'true' }}
+    if: needs.setup-modified-files.outputs.notebooks-any_changed == 'true'
     with:
       python-versions: '["3.10", "3.12", "3.13"]'
       notebooks: ${{ needs.setup-modified-files.outputs.notebooks-changed }}
