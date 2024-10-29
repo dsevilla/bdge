@@ -1,6 +1,7 @@
 numpy
 pandas
 matplotlib
+tqdm
 lxml_html_clean
 notebook>=6.5,<7
 traitlets==5.14.3
