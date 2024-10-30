@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-from typing import Any
+from collections.abc import Callable
 from pymongo.collection import Collection
 import sys
 
@@ -10,7 +10,7 @@ def csv_to_mongo(file: str, coll: Collection) -> None:
     dentro de la base de datos.
     """
     # Convertir todos los elementos que se puedan a números
-    def to_numeric(d: str) -> int | float | Any:
+    def to_numeric(d: str) -> int | float | str:
         if len(d) == 0:
             return ''
         if not ((d[0] >= '0' and d[0] <= '9') or d[0] == '-' or d[0] == '+' or d[0]=='.'):
@@ -41,10 +41,9 @@ def csv_to_mongo(file: str, coll: Collection) -> None:
         columns: list[str] = next(reader)
 
         # Las columnas que contienen 'Date' se interpretan como fechas
-        func_to_cols = list(map(lambda c: to_date if 'date' in c.lower() else to_numeric, columns))
+        func_to_cols: list[Callable[[str], str|int|float|datetime|None]] = \
+            list(map(lambda c: to_date if 'date' in c.lower() else to_numeric, columns))
 
-        docs=[]
-        for row in reader:
-            row = [func(e) for (func,e) in zip(func_to_cols, row)]
-            docs.append(dict(zip(columns, row)))
-        coll.insert_many(docs)
+        coll.insert_many(
+            map(lambda row: dict(zip(columns, [func(e) for (func,e) in zip(func_to_cols, row)])),
+            reader))
