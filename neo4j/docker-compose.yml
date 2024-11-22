@@ -24,6 +24,7 @@ services:
       - "8888:8888"
     volumes:
       - ..:/home/jovyan/work/bdge
+      - /tmp/neo4j_import:/tmp/neo4j_import
     user: root
     environment:
       - GRANT_SUDO=yes
