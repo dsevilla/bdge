@@ -65,7 +65,7 @@ jobs:
     if: needs.setup-modified-files.outputs.notebooks-any_changed == 'true'
     with:
       service: true
-      docker-run-line: -p7687:7687 -p7474:7474 -v/tmp/neo4j_import:/var/lib/neo4j/import -e NEO4J_AUTH=none -e NEO4J_server_memory_heap_max__size=8G -e NEO4J_db_import_csv_legacy__quote__escaping=false --health-cmd "wget -qq http://localhost:7474" --health-interval 20s --health-timeout 5s --health-retries 5 neo4j
+      docker-run-line: -p7687:7687 -p7474:7474 -v/tmp/neo4j_import:/var/lib/neo4j/import -e NEO4J_AUTH=none -e NEO4J_server_memory_heap_max__size=6G -e NEO4J_db_import_csv_legacy__quote__escaping=false --health-cmd "wget -qq http://localhost:7474" --health-interval 20s --health-timeout 5s --health-retries 5 neo4j
       python-versions: '["3.10", "3.12", "3.13"]'
       notebooks: ${{ needs.setup-modified-files.outputs.notebooks-changed }}
       environment: "DB_HOSTNAME=\"127.0.0.1\""
