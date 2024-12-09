@@ -44,7 +44,7 @@ jobs:
     - name: Setup optional docker container
       run: |
         if test "X${{ inputs.service }}" = Xtrue ; then
-          docker run --rm -d ${{ inputs.docker-run-line }}
+          docker run --rm -d --name dbcontainer ${{ inputs.docker-run-line }}
         fi
 
     - name: Setup Python
