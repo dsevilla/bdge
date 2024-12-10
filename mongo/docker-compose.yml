@@ -9,6 +9,7 @@ services:
     user: root
     environment:
       - GRANT_SUDO=yes
+      - DB_HOSTNAME=mongo
     depends_on:
       mongo:
         condition: service_healthy
