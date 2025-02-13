@@ -1,4 +1,6 @@
-wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/mongo-server-7.gpg
+#! /bin/sh
+
+wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/mongo-server-8.gpg
 
 sudo adduser --system --no-create-home mongodb
 sudo addgroup --system mongodb
@@ -16,7 +18,7 @@ if [ ! -d /var/log/mongodb ]; then
   sudo chown mongodb:mongodb /var/log/mongodb
 fi
 
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
 
 sudo apt-get update -qq
 
