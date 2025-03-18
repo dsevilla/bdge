@@ -47,7 +47,7 @@ jobs:
 
       - name: Get all changed files.
         id: changed-notebooks
-        uses: tj-actions/changed-files@v45
+        uses: tj-actions/changed-files@v46
         with:
           matrix: true
           files: hbase/*.ipynb
