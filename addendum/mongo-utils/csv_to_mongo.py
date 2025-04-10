@@ -44,6 +44,6 @@ def csv_to_mongo(file: str, coll: Collection) -> None:
         func_to_cols: list[Callable[[str], str|int|float|datetime|None]] = \
             list(map(lambda c: to_date if 'date' in c.lower() else to_numeric, columns))
 
-        coll.insert_many(
-            map(lambda row: {k: v for k in columns for v in [func(e) for (func,e) in zip(func_to_cols, row)]},
-            reader))
+        coll.insert_many([dict(zip(columns,
+                                   [func(e) for (func,e) in zip(func_to_cols, row)]))
+                          for row in reader])
