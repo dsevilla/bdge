@@ -64,7 +64,7 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - .:/home/jovyan/work/bd2
+      - .:/home/jovyan/work/bdge
       - /tmp/cassandra:/tmp/cassandra
     user: root
     environment:
