@@ -1,6 +1,5 @@
 # Python 3 server example
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import time
 
 hostName = "0.0.0.0"
 serverPort = 4040
@@ -30,11 +29,11 @@ remote_port = {1}
 '''
 
 # conn number, modulo mod_cn.
-# Ports numbers are: base_port + (cn * 2), base_port + (cn*2) + 1 
+# Ports numbers are: base_port + (cn * 2), base_port + (cn*2) + 1
 cn = 0
 
 class MyServer(BaseHTTPRequestHandler):
-  
+
     def do_GET(self):
         global frpc_conf, cn, mod_cn, base_port
         self.send_response(200)
@@ -49,7 +48,7 @@ class MyServer(BaseHTTPRequestHandler):
         cn = cn + 1
         cn = cn % mod_cn
 
-if __name__ == "__main__":        
+if __name__ == "__main__":
     webServer = HTTPServer((hostName, serverPort), MyServer)
     print("Server started http://%s:%s" % (hostName, serverPort))
 
