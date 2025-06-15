@@ -1,6 +1,6 @@
 #! /bin/sh
 
-wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/mongo-server-8.gpg
+curl -fsL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/mongo-server-8.gpg
 
 sudo adduser --system --no-create-home mongodb
 sudo addgroup --system mongodb
