@@ -12,6 +12,7 @@ import logging
 import signal
 import threading
 import time
+import argparse
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import ParseResult, urlparse
 from typing import Any
@@ -407,4 +408,19 @@ def main():
                 logging.error(f"Error closing server: {e}")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Hardened FRP Configuration Server')
+    parser.add_argument('--host', default=None, help='Server host (overrides SERVER_HOST env var)')
+    parser.add_argument('--port', type=int, default=None, help='Server port (overrides SERVER_PORT env var)')
+    parser.add_argument('--log-level', default=None, help='Log level (overrides LOG_LEVEL env var)')
+
+    args: argparse.Namespace = parser.parse_args()
+
+    # Apply command line overrides
+    if args.host:
+        os.environ['SERVER_HOST'] = args.host
+    if args.port:
+        os.environ['SERVER_PORT'] = str(args.port)
+    if args.log_level:
+        os.environ['LOG_LEVEL'] = args.log_level.upper()
+
     main()
