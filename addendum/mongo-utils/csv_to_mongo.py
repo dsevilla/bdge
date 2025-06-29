@@ -1,17 +1,30 @@
 import csv
 from datetime import datetime
 from collections.abc import Callable
-from pymongo.collection import Collection
+from typing import Protocol, Any
 import sys
 
-def csv_to_mongo(file: str, coll: Collection, batch_size: int = 5000) -> None:
+
+class CollectionProtocol(Protocol):
+    """Protocol defining the minimal interface needed for a MongoDB-like collection."""
+    
+    def drop(self) -> None:
+        """Drop/clear the collection."""
+        ...
+    
+    def insert_many(self, documents: list[dict[str, Any]]) -> Any:
+        """Insert multiple documents into the collection."""
+        ...
+
+
+def csv_to_mongo(file: str, coll: CollectionProtocol, batch_size: int = 5000) -> None:
     """
     Carga un fichero CSV en Mongo. file especifica el fichero y coll la colección
     dentro de la base de datos.
 
     Args:
         file: Ruta al archivo CSV
-        coll: Colección de MongoDB donde insertar los datos
+        coll: Objeto que implementa CollectionProtocol (métodos drop() e insert_many())
         batch_size: Número de documentos a insertar en cada lote (default: 5000)
     """
     # Convertir todos los elementos que se puedan a números
@@ -99,3 +112,35 @@ def csv_to_mongo(file: str, coll: Collection, batch_size: int = 5000) -> None:
         # Insert remaining documents in the last batch
         if batch:
             coll.insert_many(batch)
+
+
+# Example usage and testing implementation
+class MockCollection:
+    """Example implementation of CollectionProtocol for testing."""
+    
+    def __init__(self):
+        self.documents: list[dict[str, Any]] = []
+        self.dropped = False
+    
+    def drop(self) -> None:
+        """Clear all documents and mark as dropped."""
+        self.documents.clear()
+        self.dropped = True
+    
+    def insert_many(self, documents: list[dict[str, Any]]) -> Any:
+        """Add documents to the internal storage."""
+        self.documents.extend(documents)
+        return type('InsertResult', (), {'inserted_ids': [f"mock_id_{i}" for i in range(len(documents))]})()
+
+
+# Example usage:
+# from pymongo import MongoClient
+# client = MongoClient('mongodb://localhost:27017/')
+# db = client.mydatabase
+# collection = db.mycollection
+# csv_to_mongo('data.csv', collection)
+#
+# Or with mock for testing:
+# mock_coll = MockCollection()
+# csv_to_mongo('test_data.csv', mock_coll)
+# print(f"Inserted {len(mock_coll.documents)} documents")
