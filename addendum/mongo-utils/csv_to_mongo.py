@@ -1,29 +1,29 @@
 import csv
 from datetime import datetime
 from collections.abc import Callable
-from typing import Protocol, Any
+from typing import Protocol, Any, TextIO
 import sys
 
 
 class CollectionProtocol(Protocol):
     """Protocol defining the minimal interface needed for a MongoDB-like collection."""
-    
+
     def drop(self) -> None:
         """Drop/clear the collection."""
         ...
-    
+
     def insert_many(self, documents: list[dict[str, Any]]) -> Any:
         """Insert multiple documents into the collection."""
         ...
 
 
-def csv_to_mongo(file: str, coll: CollectionProtocol, batch_size: int = 5000) -> None:
+def csv_to_mongo(file_obj: TextIO, coll: CollectionProtocol, batch_size: int = 5000) -> None:
     """
-    Carga un fichero CSV en Mongo. file especifica el fichero y coll la colección
+    Carga un fichero CSV en Mongo. file_obj especifica el objeto de archivo y coll la colección
     dentro de la base de datos.
 
     Args:
-        file: Ruta al archivo CSV
+        file_obj: Objeto de archivo abierto (puede ser un archivo real o StringIO/BytesIO)
         coll: Objeto que implementa CollectionProtocol (métodos drop() e insert_many())
         batch_size: Número de documentos a insertar en cada lote (default: 5000)
     """
@@ -33,14 +33,15 @@ def csv_to_mongo(file: str, coll: CollectionProtocol, batch_size: int = 5000) ->
             return ''
 
         # Quick check for numeric start
-        d_stripped = d.strip()
+        d_stripped: str = d.strip()
         if not d_stripped:
             return ''
 
         # Check if it starts with a digit, sign, or decimal point
-        first_char = d_stripped[0]
+        first_char: str = d_stripped[0]
         if not (first_char.isdigit() or first_char in '+-.' or
-                (len(d_stripped) > 1 and first_char in '+-' and d_stripped[1].isdigit())):
+                (len(d_stripped) > 1 and first_char in '+-' and d_stripped[1].isdigit()) or
+                (len(d_stripped) > 2 and first_char in '+-' and d_stripped[1] == '.' and d_stripped[2].isdigit())):
             return d_stripped
 
         # Try integer first (more common), then float
@@ -64,7 +65,7 @@ def csv_to_mongo(file: str, coll: CollectionProtocol, batch_size: int = 5000) ->
             return None
 
         # Common date formats to try
-        date_formats = [
+        date_formats: list[str] = [
             "%Y-%m-%dT%H:%M:%S.%f",  # Original format
             "%Y-%m-%dT%H:%M:%S",     # Without microseconds
             "%Y-%m-%d %H:%M:%S",     # Space separated
@@ -82,51 +83,50 @@ def csv_to_mongo(file: str, coll: CollectionProtocol, batch_size: int = 5000) ->
 
     coll.drop()
 
-    with open(file, encoding='utf-8') as f:
-        # La llamada csv.reader() crea un iterador sobre un fichero CSV
-        reader = csv.reader(f, dialect='excel')
+    # La llamada csv.reader() crea un iterador sobre un fichero CSV
+    reader = csv.reader(file_obj, dialect='excel')
 
-        # Se leen las columnas. Sus nombres se usarán para crear las diferentes columnas en la familia
-        columns: list[str] = next(reader)
+    # Se leen las columnas. Sus nombres se usarán para crear las diferentes columnas en la familia
+    columns: list[str] = next(reader)
 
-        # Las columnas que contienen 'Date' se interpretan como fechas
-        func_to_cols: list[Callable[[str], str|int|float|datetime|None]] = \
-            [to_date if 'date' in c.lower() else to_numeric for c in columns]
+    # Las columnas que contienen 'Date' se interpretan como fechas
+    func_to_cols: list[Callable[[str], str|int|float|datetime|None]] = \
+        [to_date if 'date' in c.lower() else to_numeric for c in columns]
 
-        # Process in batches to handle large files efficiently
-        batch: list[dict[str, str | int | float | datetime | None]] = []
-        for row in reader:
-            # Process each row and convert values according to column types
-            processed_row: dict[str, str | int | float | datetime | None] = {
-                col: func(value)
-                for col, func, value in zip(columns, func_to_cols, row)
-            }
-            batch.append(processed_row)
+    # Process in batches to handle large files efficiently
+    batch: list[dict[str, str | int | float | datetime | None]] = []
+    for row in reader:
+        # Process each row and convert values according to column types
+        processed_row: dict[str, str | int | float | datetime | None] = {
+            col: func(value)
+            for col, func, value in zip(columns, func_to_cols, row)
+        }
+        batch.append(processed_row)
 
-            # Insert batch when it reaches the specified size
-            if len(batch) >= batch_size:
-                if batch:  # Only insert if batch is not empty
-                    coll.insert_many(batch)
-                batch = []
+        # Insert batch when it reaches the specified size
+        if len(batch) >= batch_size:
+            if batch:  # Only insert if batch is not empty
+                coll.insert_many(batch)
+            batch = []
 
-        # Insert remaining documents in the last batch
-        if batch:
-            coll.insert_many(batch)
+    # Insert remaining documents in the last batch
+    if batch:
+        coll.insert_many(batch)
 
 
 # Example usage and testing implementation
 class MockCollection:
     """Example implementation of CollectionProtocol for testing."""
-    
+
     def __init__(self):
         self.documents: list[dict[str, Any]] = []
         self.dropped = False
-    
+
     def drop(self) -> None:
         """Clear all documents and mark as dropped."""
         self.documents.clear()
         self.dropped = True
-    
+
     def insert_many(self, documents: list[dict[str, Any]]) -> Any:
         """Add documents to the internal storage."""
         self.documents.extend(documents)
@@ -138,9 +138,12 @@ class MockCollection:
 # client = MongoClient('mongodb://localhost:27017/')
 # db = client.mydatabase
 # collection = db.mycollection
-# csv_to_mongo('data.csv', collection)
+# with open('data.csv', 'r', encoding='utf-8') as f:
+#     csv_to_mongo(f, collection)
 #
 # Or with mock for testing:
+# from io import StringIO
+# csv_data = "name,age,date\nJohn,25,2023-01-01\nJane,30,2023-02-01"
 # mock_coll = MockCollection()
-# csv_to_mongo('test_data.csv', mock_coll)
+# csv_to_mongo(StringIO(csv_data), mock_coll)
 # print(f"Inserted {len(mock_coll.documents)} documents")

@@ -123,13 +123,13 @@ WantedBy=multi-user.target
 server {
     listen 80;
     server_name frp-config.example.com;
-    
+
     location / {
         proxy_pass http://127.0.0.1:4040;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        
+
         # Additional security headers
         add_header X-Content-Type-Options nosniff;
         add_header X-Frame-Options DENY;
