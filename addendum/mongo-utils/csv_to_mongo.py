@@ -1,7 +1,7 @@
 import csv
 from datetime import datetime
 from typing import Protocol, Any, TextIO
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 import sys
 
 # Type aliases
@@ -10,7 +10,7 @@ DB_Types = str | int | float | datetime | None
 class CollectionProtocol(Protocol):
     """Protocol defining the minimal interface needed for a MongoDB-like collection."""
 
-    def insert_many(self, documents: list[dict[str, Any]]) -> Any:
+    def insert_many(self, documents: Iterable[dict[str, Any]], ordered: bool = True) -> Any | None:
         """Insert multiple documents into the collection."""
         ...
 
@@ -80,7 +80,7 @@ def csv_to_mongo(file_obj: TextIO, coll: CollectionProtocol, batch_size: int = 5
                 continue
         return None
 
-    written: int = 0
+    result: Any | None = None
 
     try:
         # La llamada csv.reader() crea un iterador sobre un fichero CSV
@@ -94,36 +94,24 @@ def csv_to_mongo(file_obj: TextIO, coll: CollectionProtocol, batch_size: int = 5
             [to_date if 'date' in c.lower() else to_numeric for c in columns]
 
         # Process in batches to handle large files efficiently
-        batch: list[dict[str, DB_Types]] = []
-        for row in reader:
-            # Process each row and convert values according to column types
-            processed_row: dict[str, DB_Types] = {
-                col: func(value)
-                for col, func, value in zip(columns, func_to_cols, row)
-            }
-            batch.append(processed_row)
+        # As the insert_many() method accepts an iterable, we can process the CSV in line,
+        # read, convert the values, and insert them into te insert_many() method.
 
-            # Insert batch when it reaches the specified size
-            if len(batch) >= batch_size:
-                coll.insert_many(batch)
-                written += len(batch)
-                batch = []
-
-        # Insert remaining documents in the last batch
-        if batch:
-            coll.insert_many(batch)
-            written += len(batch)
+        result = coll.insert_many(map(lambda row: {col: func(value)
+                                                                for col, func, value in zip(columns, func_to_cols, row)},
+                                       reader),
+                                  ordered=False)
 
     except Exception as e:
         return {
             "result": "error",
             "error": str(e),
-            "inserted_count": written
+            "result_insert_many": result
         }
 
     return {
         "result"    : "success",
-        "inserted_count": written
+        "result_insert_many": result
         }
 
 # Example usage:

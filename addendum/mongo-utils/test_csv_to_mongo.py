@@ -25,6 +25,7 @@ Usage:
   python test_csv_to_mongo.py --demo         # Standalone demo
 """
 
+from collections.abc import Iterable
 import io
 import time
 from dataclasses import dataclass, field
@@ -44,17 +45,13 @@ class MockCollection:
 
     def __init__(self):
         self.documents: list[dict[str, Any]] = []
-        self.dropped = False
 
-    def drop(self) -> None:
-        """Clear all documents and mark as dropped."""
-        self.documents.clear()
-        self.dropped = True
-
-    def insert_many(self, documents: list[dict[str, Any]]) -> Any:
+    def insert_many(self, documents: Iterable[dict[str, Any]], ordered: bool = True) -> Any | None:
         """Add documents to the internal storage."""
-        self.documents.extend(documents)
-        return type('InsertResult', (), {'inserted_ids': [f"mock_id_{i}" for i in range(len(documents))]})()
+        # Simulate insertion by appending to the list
+        docs: list[dict[str, Any]] = list(documents)
+        self.documents.extend(docs)
+        return type('InsertResult', (), {'inserted_ids': [f"mock_id_{i}" for i in range(len(docs))]})()
 
 
 @dataclass
@@ -70,7 +67,6 @@ class TestInput:
 class ExpectedOutput:
     """Dataclass representing expected test output."""
     document_count: int
-    collection_dropped: bool
     sample_documents: list[dict[str, Any]] = field(default_factory=list)
     expected_field_types: dict[str, str] = field(default_factory=dict)
     should_succeed: bool = True
@@ -96,7 +92,6 @@ class TestResult:
     passed: bool
     execution_time: float
     actual_document_count: int
-    actual_collection_dropped: bool
     actual_documents: list[dict[str, Any]] = field(default_factory=list)
     error_message: str | None = None
     validation_details: dict[str, Any] = field(default_factory=dict)
@@ -109,7 +104,6 @@ class TestResult:
             'passed': self.passed,
             'execution_time': self.execution_time,
             'actual_document_count': self.actual_document_count,
-            'actual_collection_dropped': self.actual_collection_dropped,
             'error_message': self.error_message,
             'validation_details': self.validation_details,
             'sample_documents': self.actual_documents[:3]  # Only first 3 for brevity
@@ -162,7 +156,6 @@ Bob Johnson,35,60000.75,2023-03-10"""
                 ),
                 expected_output=ExpectedOutput(
                     document_count=3,
-                    collection_dropped=True,
                     sample_documents=[
                         {"name": "John Doe", "age": 30, "salary": 50000.50, "hire_date": datetime(2023, 1, 15)},
                         {"name": "Jane Smith", "age": 25, "salary": 45000, "hire_date": datetime(2023, 2, 20)},
@@ -193,7 +186,6 @@ Bob Johnson,35,60000.75,2023-03-10"""
                 ),
                 expected_output=ExpectedOutput(
                     document_count=3,
-                    collection_dropped=True,
                     expected_field_types={
                         "id": "int",
                         "integer": "int",
@@ -222,7 +214,6 @@ Workshop,2024-06-01,06/01/2024,01/06/2024,2024-06-01T09:15:30,2024-13-45"""
                 ),
                 expected_output=ExpectedOutput(
                     document_count=3,
-                    collection_dropped=True,
                     expected_field_types={
                         "event": "str",
                         "iso_date": "datetime",
@@ -252,7 +243,6 @@ Diana,NULL,#N/A,Null-like values
                 ),
                 expected_output=ExpectedOutput(
                     document_count=5,
-                    collection_dropped=True,
                     expected_field_types={
                         "name": "str",
                         "value": "mixed",  # Will be mixed due to empty values
@@ -279,7 +269,6 @@ Diana,NULL,#N/A,Null-like values
                 ),
                 expected_output=ExpectedOutput(
                     document_count=4,
-                    collection_dropped=True,
                     expected_field_types={
                         "name": "str",
                         "description": "str",
@@ -308,7 +297,6 @@ Diana,NULL,#N/A,Null-like values
                 ),
                 expected_output=ExpectedOutput(
                     document_count=25,
-                    collection_dropped=True,
                     expected_field_types={
                         "id": "int",
                         "name": "str",
@@ -331,7 +319,6 @@ Diana,NULL,#N/A,Null-like values
                 ),
                 expected_output=ExpectedOutput(
                     document_count=0,
-                    collection_dropped=True,
                     expected_field_types={}
                 ),
                 tags=["empty_dataset", "edge_cases"]
@@ -350,7 +337,6 @@ Diana,NULL,#N/A,Null-like values
                 ),
                 expected_output=ExpectedOutput(
                     document_count=1,
-                    collection_dropped=True,
                     sample_documents=[
                         {"user_id": 1001, "username": "admin", "balance": 999.99, "last_login_date": datetime(2023, 12, 31, 23, 59, 59)}
                     ],
@@ -381,7 +367,6 @@ Patch,not a date at all,low"""
                 ),
                 expected_output=ExpectedOutput(
                     document_count=5,
-                    collection_dropped=True,
                     expected_field_types={
                         "event": "str",
                         "event_date": "mixed",  # Some datetime, some str
@@ -406,7 +391,6 @@ C,-9223372036854775808,-999999999999999999999,-0.000000001,-7.77e+18,-3.33e-12""
                 ),
                 expected_output=ExpectedOutput(
                     document_count=3,
-                    collection_dropped=True,
                     expected_field_types={
                         "item": "str",
                         "large_int": "int",       # Max 64-bit signed integer
@@ -436,7 +420,6 @@ way_too_big,999999999999999999999999999999,Way too large (should be string)"""
                 ),
                 expected_output=ExpectedOutput(
                     document_count=5,
-                    collection_dropped=True,
                     expected_field_types={
                         "type": "str",
                         "value": "mixed",  # Some int, some str due to overflow
@@ -485,7 +468,6 @@ class CSVToMongoTester:
                 passed=passed,
                 execution_time=execution_time,
                 actual_document_count=len(collection.documents),
-                actual_collection_dropped=collection.dropped,
                 actual_documents=collection.documents,
                 validation_details=validation_details
             )
@@ -498,7 +480,6 @@ class CSVToMongoTester:
                 passed=False,
                 execution_time=execution_time,
                 actual_document_count=0,
-                actual_collection_dropped=False,
                 error_message=str(e),
                 validation_details={"error": "Exception occurred during test execution"}
             )
@@ -507,7 +488,6 @@ class CSVToMongoTester:
         """Validate test results against expected outcomes."""
         validation = {
             "document_count_match": len(collection.documents) == test_case.expected_output.document_count,
-            "collection_dropped_match": collection.dropped == test_case.expected_output.collection_dropped,
             "type_analysis": {},
             "sample_validation": {},
             "type_validation": {}
@@ -618,9 +598,6 @@ class CSVToMongoTester:
         if not validation["document_count_match"]:
             return False
 
-        if not validation["collection_dropped_match"]:
-            return False
-
         # For tests with expected sample documents, check if they match
         if test_case.expected_output.sample_documents:
             sample_validation = validation.get("sample_validation", {})
@@ -700,7 +677,6 @@ class CSVToMongoTester:
             print(f"\n{status_icon} {result.test_id}: {result.test_name}")
             print(f"   Documents: {result.actual_document_count}")
             print(f"   Execution Time: {result.execution_time:.4f}s")
-            print(f"   Collection Dropped: {result.actual_collection_dropped}")
 
             if result.validation_details.get("type_analysis"):
                 print("   Field Types:")
@@ -744,7 +720,6 @@ def demo_test_structure():
 
     print("\n📤 Expected Output:")
     print(f"Document Count: {test_case.expected_output.document_count}")
-    print(f"Collection Dropped: {test_case.expected_output.collection_dropped}")
     print(f"Should Succeed: {test_case.expected_output.should_succeed}")
     print(f"Expected Field Types: {test_case.expected_output.expected_field_types}")
 
@@ -758,7 +733,6 @@ def demo_test_structure():
     print(f"Passed: {result.passed}")
     print(f"Execution Time: {result.execution_time:.4f}s")
     print(f"Actual Document Count: {result.actual_document_count}")
-    print(f"Collection Dropped: {result.actual_collection_dropped}")
 
     if result.actual_documents:
         print("\nSample Document:")
@@ -984,7 +958,6 @@ def run_parametrized_test(test_case: TestCase, collection: MockCollection) -> di
     return {
         'collection': collection,
         'expected_doc_count': test_case.expected_output.document_count,
-        'expected_dropped': test_case.expected_output.collection_dropped,
         'expected_samples': test_case.expected_output.sample_documents,
         'test_case': test_case
     }
@@ -1003,7 +976,6 @@ Jane Smith,25,45000"""
     return {
         'collection': collection,
         'expected_docs': 2,
-        'expected_dropped': True,
         'expected_first_name': "John Doe",
         'expected_first_age': 30,
         'expected_first_salary': 50000.50
@@ -1021,7 +993,6 @@ def run_empty_csv_test() -> dict[str, Any]:
     return {
         'collection': collection,
         'expected_docs': 0,
-        'expected_dropped': True
     }
 
 
@@ -1036,7 +1007,6 @@ def run_batch_processing_test() -> dict[str, Any]:
     return {
         'collection': collection,
         'expected_docs': 25,
-        'expected_dropped': True
     }
 
 
@@ -1115,15 +1085,11 @@ def test_csv_to_mongo_parametrized(test_case, mock_collection):
 
     collection = result['collection']
     expected_doc_count = result['expected_doc_count']
-    expected_dropped = result['expected_dropped']
     expected_samples = result['expected_samples']
 
     # Validate basic results
     assert len(collection.documents) == expected_doc_count, \
         f"Expected {expected_doc_count} documents, got {len(collection.documents)}"
-
-    assert collection.dropped == expected_dropped, \
-        f"Expected collection dropped={expected_dropped}, got {collection.dropped}"
 
     # Validate sample documents if provided
     if expected_samples:
@@ -1137,7 +1103,6 @@ def test_basic_csv_processing():
 
     collection = result['collection']
     assert len(collection.documents) == result['expected_docs']
-    assert collection.dropped is result['expected_dropped']
     assert collection.documents[0]["name"] == result['expected_first_name']
     assert collection.documents[0]["age"] == result['expected_first_age']
     assert collection.documents[0]["salary"] == result['expected_first_salary']
@@ -1149,7 +1114,6 @@ def test_empty_csv_processing():
 
     collection = result['collection']
     assert len(collection.documents) == result['expected_docs']
-    assert collection.dropped is result['expected_dropped']
 
 
 def test_batch_processing():
@@ -1158,7 +1122,6 @@ def test_batch_processing():
 
     collection = result['collection']
     assert len(collection.documents) == result['expected_docs']
-    assert collection.dropped is result['expected_dropped']
 
 
 def test_special_characters():
