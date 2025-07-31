@@ -14,7 +14,7 @@ class CollectionProtocol(Protocol):
         """Insert multiple documents into the collection."""
         ...
 
-def csv_to_mongo(file_obj: TextIO, coll: CollectionProtocol, batch_size: int = 5000) -> dict[str,Any]:
+def csv_to_mongo(file_obj: TextIO, coll: CollectionProtocol) -> dict[str,Any]:
     """
     Carga un fichero CSV en Mongo. file_obj especifica el objeto de archivo y coll la colección
     dentro de la base de datos.
@@ -24,7 +24,6 @@ def csv_to_mongo(file_obj: TextIO, coll: CollectionProtocol, batch_size: int = 5
         coll: Objeto que implementa CollectionProtocol (métodos drop() e insert_many()).
               Se supone que la colección está vacía. Sólo se insertarán nuevos datos.
               Si no existe se crea.
-        batch_size: Número de documentos a insertar en cada lote (default: 5000)
     """
     # Convertir todos los elementos que se puedan a números
     def to_numeric(d: str) -> int | float | str:
@@ -97,10 +96,11 @@ def csv_to_mongo(file_obj: TextIO, coll: CollectionProtocol, batch_size: int = 5
         # As the insert_many() method accepts an iterable, we can process the CSV in line,
         # read, convert the values, and insert them into te insert_many() method.
 
-        result = coll.insert_many(map(lambda row: {col: func(value)
-                                                                for col, func, value in zip(columns, func_to_cols, row)},
-                                       reader),
-                                  ordered=False)
+        def process_row(row: list[str]) -> dict[str, DB_Types]:
+            """Convert a single row to a dictionary with appropriate types."""
+            return {col: func(value) for col, func, value in zip(columns, func_to_cols, row)}
+
+        result = coll.insert_many(map(process_row, reader), ordered=False)
 
     except Exception as e:
         return {

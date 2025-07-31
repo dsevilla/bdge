@@ -60,7 +60,6 @@ class TestInput:
     name: str
     description: str
     csv_content: str
-    batch_size: int = 5000
 
 
 @dataclass
@@ -293,7 +292,6 @@ Diana,NULL,#N/A,Null-like values
                         f"{i},Item_{i},{i * 10.5},2023-{(i % 12) + 1:02d}-{(i % 28) + 1:02d}"
                         for i in range(1, 26)  # 25 rows
                     ]),
-                    batch_size=10
                 ),
                 expected_output=ExpectedOutput(
                     document_count=25,
@@ -452,7 +450,7 @@ class CSVToMongoTester:
             csv_file = io.StringIO(test_case.input_data.csv_content)
 
             # Execute the function under test
-            csv_to_mongo(csv_file, collection, test_case.input_data.batch_size)
+            csv_to_mongo(csv_file, collection)
 
             execution_time = time.time() - start_time
 
@@ -715,7 +713,6 @@ def demo_test_structure():
     print("\n📥 Input Data:")
     print(f"Name: {test_case.input_data.name}")
     print(f"Description: {test_case.input_data.description}")
-    print(f"Batch Size: {test_case.input_data.batch_size}")
     print(f"CSV Content:\n{test_case.input_data.csv_content}")
 
     print("\n📤 Expected Output:")
@@ -953,7 +950,7 @@ def run_parametrized_test(test_case: TestCase, collection: MockCollection) -> di
     csv_file = io.StringIO(test_case.input_data.csv_content)
 
     # Execute the function under test
-    csv_to_mongo(csv_file, collection, test_case.input_data.batch_size)
+    csv_to_mongo(csv_file, collection)
 
     return {
         'collection': collection,
@@ -1002,7 +999,7 @@ def run_batch_processing_test() -> dict[str, Any]:
     csv_content = "id,value\n" + "\n".join([f"{i},{i*10}" for i in range(1, 26)])  # 25 rows
 
     csv_file = io.StringIO(csv_content)
-    csv_to_mongo(csv_file, collection, batch_size=10)
+    csv_to_mongo(csv_file, collection)
 
     return {
         'collection': collection,
