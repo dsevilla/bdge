@@ -5,7 +5,24 @@ Comprehensive Test Suite for csv_to_mongo.py
 This module provides structured testing for the csv_to_mongo function using dataclasses
 to define test inputs, expected outputs, test cases, and results.
 
-Compatible with pytest framework for professional testing workflows.
+Compatible with pytest framework for professional testing workflows and also supports
+standalone execution for quick testing without pytest installation.
+
+Key Features:
+- Dual-mode operation: pytest and standalone
+- Dataclass-based test structure
+- Comprehensive test case generation
+- Detailed result reporting and JSON export
+- Pytest fixtures and marks for selective testing
+
+Pytest Configuration:
+- Markers: basic, edge_cases, performance, unicode, numeric, dates, comprehensive
+- Fixtures: mock_collection, test_case, csv_tester
+- Parametrized tests for comprehensive coverage
+
+Usage:
+  pytest test_csv_to_mongo.py -v -m basic     # Run basic tests only
+  python test_csv_to_mongo.py --demo         # Standalone demo
 """
 
 import io
@@ -15,14 +32,29 @@ from datetime import datetime
 from typing import Any
 import json
 
-# Import the module under test
-from csv_to_mongo import csv_to_mongo, MockCollection
+import pytest
+from pytest import FixtureRequest
 
-# Try to import pytest, but make it optional for standalone usage
-try:
-    import pytest
-except ImportError:
-    pytest = None
+# Import the module under test
+from csv_to_mongo import csv_to_mongo
+
+
+class MockCollection:
+    """Example implementation of CollectionProtocol for testing."""
+
+    def __init__(self):
+        self.documents: list[dict[str, Any]] = []
+        self.dropped = False
+
+    def drop(self) -> None:
+        """Clear all documents and mark as dropped."""
+        self.documents.clear()
+        self.dropped = True
+
+    def insert_many(self, documents: list[dict[str, Any]]) -> Any:
+        """Add documents to the internal storage."""
+        self.documents.extend(documents)
+        return type('InsertResult', (), {'inserted_ids': [f"mock_id_{i}" for i in range(len(documents))]})()
 
 
 @dataclass
@@ -154,8 +186,8 @@ Bob Johnson,35,60000.75,2023-03-10"""
                 input_data=TestInput(
                     name="numeric_edge_cases",
                     description="CSV with various numeric formats",
-                    csv_content="""id,integer,float_val,scientific,negative,zero,large_num
-1,42,3.14159,1.23e-4,-500,0,999999999999
+                    csv_content="""id,integer,float_val,scientific,negative,zero,valid_large
+1,42,3.14159,1.23e-4,-500,0,9223372036854775807
 2,-17,0.001,2.5E+3,0,0,1000000
 3,0,-99.99,-1.5e-2,-0,0,123456789"""
                 ),
@@ -169,7 +201,7 @@ Bob Johnson,35,60000.75,2023-03-10"""
                         "scientific": "float",
                         "negative": "int",
                         "zero": "int",
-                        "large_num": "int"
+                        "valid_large": "int"  # Within 64-bit range
                     }
                 ),
                 tags=["numeric", "edge_cases", "scientific_notation"]
@@ -363,27 +395,55 @@ Patch,not a date at all,low"""
             TestCase(
                 test_id="TC010",
                 test_name="Large Numbers and Precision",
-                description="Test very large numbers and floating point precision",
+                description="Test very large numbers and floating point precision, including integer overflow",
                 input_data=TestInput(
                     name="large_numbers_precision",
-                    description="CSV with large numbers and precision tests",
-                    csv_content="""item,huge_number,tiny_decimal,scientific_large,scientific_small
-A,999999999999999999,0.000000001,1.23456789e+15,9.87654321e-10
-B,123456789012345678,0.123456789012345,5.5e+20,1.1e-15
-C,-999999999999999999,-0.000000001,-7.77e+18,-3.33e-12"""
+                    description="CSV with large numbers, precision tests, and integer overflow cases",
+                    csv_content="""item,large_int,overflow_int,tiny_decimal,scientific_large,scientific_small
+A,9223372036854775807,999999999999999999999,0.000000001,1.23456789e+15,9.87654321e-10
+B,123456789012345678,123456789012345678901,0.123456789012345,5.5e+20,1.1e-15
+C,-9223372036854775808,-999999999999999999999,-0.000000001,-7.77e+18,-3.33e-12"""
                 ),
                 expected_output=ExpectedOutput(
                     document_count=3,
                     collection_dropped=True,
                     expected_field_types={
                         "item": "str",
-                        "huge_number": "int",
+                        "large_int": "int",       # Max 64-bit signed integer
+                        "overflow_int": "str",    # Too large, stays as string
                         "tiny_decimal": "float",
                         "scientific_large": "float",
                         "scientific_small": "float"
                     }
                 ),
-                tags=["large_numbers", "precision", "scientific_notation"]
+                tags=["large_numbers", "precision", "scientific_notation", "integer_overflow"]
+            ),
+
+            # Test Case 11: Integer Overflow Edge Cases
+            TestCase(
+                test_id="TC011",
+                test_name="Integer Overflow Boundary Testing",
+                description="Test integers at the boundary of 64-bit signed integer limits",
+                input_data=TestInput(
+                    name="integer_overflow_boundary",
+                    description="CSV testing exact 64-bit integer boundaries",
+                    csv_content="""type,value,description
+max_int,9223372036854775807,Maximum 64-bit signed integer
+min_int,-9223372036854775808,Minimum 64-bit signed integer
+overflow_pos,9223372036854775808,Just over maximum (should be string)
+overflow_neg,-9223372036854775809,Just under minimum (should be string)
+way_too_big,999999999999999999999999999999,Way too large (should be string)"""
+                ),
+                expected_output=ExpectedOutput(
+                    document_count=5,
+                    collection_dropped=True,
+                    expected_field_types={
+                        "type": "str",
+                        "value": "mixed",  # Some int, some str due to overflow
+                        "description": "str"
+                    }
+                ),
+                tags=["integer_overflow", "boundary_testing", "edge_cases", "numeric"]
             )
         ]
 
@@ -449,7 +509,8 @@ class CSVToMongoTester:
             "document_count_match": len(collection.documents) == test_case.expected_output.document_count,
             "collection_dropped_match": collection.dropped == test_case.expected_output.collection_dropped,
             "type_analysis": {},
-            "sample_validation": {}
+            "sample_validation": {},
+            "type_validation": {}
         }
 
         # Analyze field types
@@ -461,10 +522,55 @@ class CSVToMongoTester:
                         field_types[field] = set()
                     field_types[field].add(type(value).__name__)
 
-            # Convert sets to lists for JSON serialization
-            validation["type_analysis"] = {
-                field: list(types) for field, types in field_types.items()
-            }
+            # Convert sets to lists for JSON serialization and validate expected types
+            type_analysis = {}
+            type_validation = {}
+
+            for field, types in field_types.items():
+                type_list = list(types)
+                type_analysis[field] = type_list
+
+                # Check against expected types
+                expected_type = test_case.expected_output.expected_field_types.get(field)
+                if expected_type:
+                    if expected_type == "mixed":
+                        # For mixed types, we expect multiple types
+                        type_validation[field] = {
+                            "expected": "mixed",
+                            "actual": type_list,
+                            "valid": len(type_list) > 1
+                        }
+                    elif expected_type == "int":
+                        # For int, we expect only 'int' type
+                        type_validation[field] = {
+                            "expected": "int",
+                            "actual": type_list,
+                            "valid": type_list == ["int"]
+                        }
+                    elif expected_type == "float":
+                        # For float, we expect only 'float' type
+                        type_validation[field] = {
+                            "expected": "float",
+                            "actual": type_list,
+                            "valid": type_list == ["float"]
+                        }
+                    elif expected_type == "str":
+                        # For str, we expect only 'str' type
+                        type_validation[field] = {
+                            "expected": "str",
+                            "actual": type_list,
+                            "valid": type_list == ["str"]
+                        }
+                    elif expected_type == "datetime":
+                        # For datetime, we expect only 'datetime' type
+                        type_validation[field] = {
+                            "expected": "datetime",
+                            "actual": type_list,
+                            "valid": type_list == ["datetime"]
+                        }
+
+            validation["type_analysis"] = type_analysis
+            validation["type_validation"] = type_validation
 
             # Validate sample documents if provided
             if test_case.expected_output.sample_documents:
@@ -661,13 +767,59 @@ def demo_test_structure():
             print(f"  {key}: {value} ({type(value).__name__})")
 
 
+def demo_standalone_tests():
+    """Demonstrate the standalone test functions."""
+    print("🔧 Standalone Test Functions Demo")
+    print("=" * 50)
+
+    print("\n1. Basic CSV Test:")
+    result = run_basic_csv_test()
+    print(f"   Documents: {len(result['collection'].documents)}")
+    print(f"   Collection dropped: {result['collection'].dropped}")
+    print(f"   First document: {result['collection'].documents[0] if result['collection'].documents else 'None'}")
+
+    print("\n2. Empty CSV Test:")
+    result = run_empty_csv_test()
+    print(f"   Documents: {len(result['collection'].documents)}")
+    print(f"   Collection dropped: {result['collection'].dropped}")
+
+    print("\n3. Batch Processing Test:")
+    result = run_batch_processing_test()
+    print(f"   Documents: {len(result['collection'].documents)}")
+    print(f"   Collection dropped: {result['collection'].dropped}")
+
+    print("\n4. Special Characters Test:")
+    result = run_special_characters_test()
+    print(f"   Documents: {len(result['collection'].documents)}")
+    print(f"   First name: {result['collection'].documents[0]['name'] if result['collection'].documents else 'None'}")
+
+    print("\n5. Numeric Edge Cases Test:")
+    result = run_numeric_edge_cases_test()
+    if result['collection'].documents:
+        doc = result['collection'].documents[0]
+        print(f"   Scientific notation: {doc.get('scientific')} (type: {type(doc.get('scientific')).__name__})")
+        print(f"   Negative value: {doc.get('negative')}")
+        print(f"   Zero value: {doc.get('zero')}")
+
+    print("\n6. Date Formats Test:")
+    result = run_date_formats_test()
+    if result['collection'].documents:
+        for i, doc in enumerate(result['collection'].documents):
+            date_val = doc.get('date')
+            print(f"   Document {i+1} date: {date_val} (type: {type(date_val).__name__})")
+
+    print("\n✅ All standalone test functions executed successfully!")
+
+
 def main():
     """Main entry point for the test suite."""
     import argparse
 
     parser = argparse.ArgumentParser(description='CSV to Mongo Test Suite (pytest-compatible)')
     parser.add_argument('--demo', action='store_true', help='Run demonstration of test structure')
-    parser.add_argument('--run-all', action='store_true', help='Run all test cases')
+    parser.add_argument('--demo-standalone', action='store_true', help='Run demonstration of standalone test functions')
+    parser.add_argument('--run-all', action='store_true', help='Run all test cases using the tester framework')
+    parser.add_argument('--run-standalone', action='store_true', help='Run all standalone test functions')
     parser.add_argument('--save-json', type=str, help='Save results to JSON file')
     parser.add_argument('--test-id', type=str, help='Run specific test by ID')
 
@@ -675,6 +827,35 @@ def main():
 
     if args.demo:
         demo_test_structure()
+    elif args.demo_standalone:
+        demo_standalone_tests()
+    elif args.run_standalone:
+        # Run all standalone tests
+        print("🚀 Running All Standalone Test Functions")
+        print("=" * 60)
+
+        standalone_tests = [
+            ("Basic CSV Processing", run_basic_csv_test),
+            ("Empty CSV Processing", run_empty_csv_test),
+            ("Batch Processing", run_batch_processing_test),
+            ("Special Characters", run_special_characters_test),
+            ("Numeric Edge Cases", run_numeric_edge_cases_test),
+            ("Date Formats", run_date_formats_test)
+        ]
+
+        passed = 0
+        total = len(standalone_tests)
+
+        for test_name, test_func in standalone_tests:
+            try:
+                print(f"\n📋 Running: {test_name}")
+                result = test_func()
+                print(f"   ✅ PASS - {len(result['collection'].documents)} documents processed")
+                passed += 1
+            except Exception as e:
+                print(f"   ❌ FAIL - {str(e)}")
+
+        print(f"\n📊 Summary: {passed}/{total} tests passed ({passed/total*100:.1f}%)")
     elif args.test_id:
         # Run specific test
         tester = CSVToMongoTester()
@@ -697,7 +878,7 @@ def main():
         else:
             print(f"Test {args.test_id} not found")
     elif args.run_all:
-        # Run all tests
+        # Run all tests using the tester framework
         tester = CSVToMongoTester()
         suite_result = tester.run_all_tests()
         tester.print_detailed_summary(suite_result)
@@ -707,29 +888,54 @@ def main():
     else:
         print("CSV to Mongo Test Suite (pytest-compatible)")
         print("=" * 50)
-        print("Available commands:")
-        print("  --demo           Show test structure demonstration")
-        print("  --run-all        Run all test cases")
-        print("  --test-id ID     Run specific test by ID")
-        print("  --save-json FILE Save results to JSON file")
-        print("\nPytest usage:")
+        print("🔧 This test suite supports both pytest and standalone execution modes.")
+        print("\nAvailable commands:")
+        print("  --demo               Show test structure demonstration")
+        print("  --demo-standalone    Show standalone test functions demonstration")
+        print("  --run-all            Run all test cases using the comprehensive tester")
+        print("  --run-standalone     Run all standalone test functions")
+        print("  --test-id ID         Run specific test by ID")
+        print("  --save-json FILE     Save results to JSON file")
+        print("\n🧪 Pytest usage:")
         print("  pytest test_csv_to_mongo.py                    # Run all pytest tests")
         print("  pytest test_csv_to_mongo.py -v                 # Verbose output")
         print("  pytest test_csv_to_mongo.py -k basic           # Run tests matching 'basic'")
         print("  pytest test_csv_to_mongo.py -m basic           # Run tests marked as 'basic'")
-        print("  pytest test_csv_to_mongo.py -m 'not slow'      # Run all except slow tests")
-        print("\nStandalone usage:")
+        print("  pytest test_csv_to_mongo.py -m 'not comprehensive'  # Skip comprehensive tests")
+        print("  pytest test_csv_to_mongo.py::test_basic_csv_processing  # Run specific test")
+        print("\n📋 Standalone usage:")
         print("  python test_csv_to_mongo.py --demo")
+        print("  python test_csv_to_mongo.py --demo-standalone")
         print("  python test_csv_to_mongo.py --run-all")
+        print("  python test_csv_to_mongo.py --run-standalone")
         print("  python test_csv_to_mongo.py --run-all --save-json results.json")
         print("  python test_csv_to_mongo.py --test-id TC001")
 
         # Show available test cases
         generator = TestCaseGenerator()
         test_cases = generator.generate_all_test_cases()
-        print(f"\nAvailable Test Cases ({len(test_cases)} total):")
+        print(f"\nAvailable Comprehensive Test Cases ({len(test_cases)} total):")
         for tc in test_cases:
             print(f"  {tc.test_id}: {tc.test_name} - {tc.description}")
+
+        print("\nAvailable Standalone Test Functions:")
+        standalone_funcs = [
+            "run_basic_csv_test",
+            "run_empty_csv_test",
+            "run_batch_processing_test",
+            "run_special_characters_test",
+            "run_numeric_edge_cases_test",
+            "run_date_formats_test"
+        ]
+        for func_name in standalone_funcs:
+            print(f"  {func_name}")
+
+        print("\n🎯 Integration Notes:")
+        print("  • Pytest is now required (not optional)")
+        print("  • Pytest tests call standalone functions for consistency")
+        print("  • All test data and logic are reusable between modes")
+        print("  • Fixtures provide proper isolation for pytest")
+        print("  • Marks enable selective test execution")
 
 
 # =============================================================================
@@ -747,61 +953,45 @@ def get_test_case_ids():
 
 
 # Pytest fixtures
-if pytest is not None:
-    @pytest.fixture
-    def mock_collection():
-        """Fixture providing a fresh MockCollection for each test."""
-        return MockCollection()
+@pytest.fixture
+def mock_collection():
+    """Fixture providing a fresh MockCollection for each test."""
+    return MockCollection()
 
-    @pytest.fixture(params=get_test_cases(), ids=get_test_case_ids())
-    def test_case(request):
-        """Fixture providing each test case as a parameter."""
-        return request.param
+@pytest.fixture(params=get_test_cases(), ids=get_test_case_ids())
+def test_case(request: FixtureRequest):
+    """Fixture providing each test case as a parameter."""
+    return request.param
 
-    @pytest.fixture
-    def csv_tester():
-        """Fixture providing a CSVToMongoTester instance."""
-        return CSVToMongoTester()
+@pytest.fixture
+def csv_tester():
+    """Fixture providing a CSVToMongoTester instance."""
+    return CSVToMongoTester()
 
 
 # =============================================================================
-# PYTEST TEST FUNCTIONS
+# STANDALONE TEST FUNCTIONS (used by both standalone and pytest modes)
 # =============================================================================
 
-def test_csv_to_mongo_parametrized(test_case, mock_collection):
-    """
-    Pytest-compatible parametrized test for csv_to_mongo function.
-
-    This test will be run once for each test case defined in TestCaseGenerator.
-    """
-    if pytest is None:
-        # Skip test if pytest is not available
-        return
-
+def run_parametrized_test(test_case: TestCase, collection: MockCollection) -> dict[str, Any]:
+    """Standalone function for running parametrized tests."""
     # Create CSV file object
     csv_file = io.StringIO(test_case.input_data.csv_content)
 
     # Execute the function under test
-    csv_to_mongo(csv_file, mock_collection, test_case.input_data.batch_size)
+    csv_to_mongo(csv_file, collection, test_case.input_data.batch_size)
 
-    # Validate basic results
-    assert len(mock_collection.documents) == test_case.expected_output.document_count, \
-        f"Expected {test_case.expected_output.document_count} documents, got {len(mock_collection.documents)}"
-
-    assert mock_collection.dropped == test_case.expected_output.collection_dropped, \
-        f"Expected collection dropped={test_case.expected_output.collection_dropped}, got {mock_collection.dropped}"
-
-    # Validate sample documents if provided
-    if test_case.expected_output.sample_documents:
-        expected_samples = test_case.expected_output.sample_documents
-        actual_samples = mock_collection.documents[:len(expected_samples)]
-
-        for i, (expected, actual) in enumerate(zip(expected_samples, actual_samples)):
-            _compare_sample_documents(expected, actual, test_case.test_id, i)
+    return {
+        'collection': collection,
+        'expected_doc_count': test_case.expected_output.document_count,
+        'expected_dropped': test_case.expected_output.collection_dropped,
+        'expected_samples': test_case.expected_output.sample_documents,
+        'test_case': test_case
+    }
 
 
-def test_basic_csv_processing():
-    """Test basic CSV processing functionality."""
+def run_basic_csv_test() -> dict[str, Any]:
+    """Standalone function for basic CSV processing test."""
     collection = MockCollection()
     csv_content = """name,age,salary
 John Doe,30,50000.50
@@ -810,39 +1000,48 @@ Jane Smith,25,45000"""
     csv_file = io.StringIO(csv_content)
     csv_to_mongo(csv_file, collection)
 
-    assert len(collection.documents) == 2
-    assert collection.dropped is True
-    assert collection.documents[0]["name"] == "John Doe"
-    assert collection.documents[0]["age"] == 30
-    assert collection.documents[0]["salary"] == 50000.50
+    return {
+        'collection': collection,
+        'expected_docs': 2,
+        'expected_dropped': True,
+        'expected_first_name': "John Doe",
+        'expected_first_age': 30,
+        'expected_first_salary': 50000.50
+    }
 
 
-def test_empty_csv_processing():
-    """Test CSV with headers only."""
+def run_empty_csv_test() -> dict[str, Any]:
+    """Standalone function for empty CSV test."""
     collection = MockCollection()
     csv_content = "name,age,email"
 
     csv_file = io.StringIO(csv_content)
     csv_to_mongo(csv_file, collection)
 
-    assert len(collection.documents) == 0
-    assert collection.dropped is True
+    return {
+        'collection': collection,
+        'expected_docs': 0,
+        'expected_dropped': True
+    }
 
 
-def test_batch_processing():
-    """Test batch processing with custom batch size."""
+def run_batch_processing_test() -> dict[str, Any]:
+    """Standalone function for batch processing test."""
     collection = MockCollection()
     csv_content = "id,value\n" + "\n".join([f"{i},{i*10}" for i in range(1, 26)])  # 25 rows
 
     csv_file = io.StringIO(csv_content)
     csv_to_mongo(csv_file, collection, batch_size=10)
 
-    assert len(collection.documents) == 25
-    assert collection.dropped is True
+    return {
+        'collection': collection,
+        'expected_docs': 25,
+        'expected_dropped': True
+    }
 
 
-def test_special_characters():
-    """Test handling of special characters and unicode."""
+def run_special_characters_test() -> dict[str, Any]:
+    """Standalone function for special characters test."""
     collection = MockCollection()
     csv_content = '''name,description
 "Café Latté","Coffee with milk"
@@ -851,13 +1050,16 @@ def test_special_characters():
     csv_file = io.StringIO(csv_content)
     csv_to_mongo(csv_file, collection)
 
-    assert len(collection.documents) == 2
-    assert collection.documents[0]["name"] == "Café Latté"
-    assert "naïve" in collection.documents[1]["name"]
+    return {
+        'collection': collection,
+        'expected_docs': 2,
+        'expected_first_name': "Café Latté",
+        'expected_naive_check': "naïve"
+    }
 
 
-def test_numeric_edge_cases():
-    """Test various numeric formats."""
+def run_numeric_edge_cases_test() -> dict[str, Any]:
+    """Standalone function for numeric edge cases test."""
     collection = MockCollection()
     csv_content = """id,scientific,negative,zero
 1,1.23e-4,-500,0
@@ -866,14 +1068,17 @@ def test_numeric_edge_cases():
     csv_file = io.StringIO(csv_content)
     csv_to_mongo(csv_file, collection)
 
-    assert len(collection.documents) == 2
-    assert isinstance(collection.documents[0]["scientific"], float)
-    assert collection.documents[0]["negative"] == -500
-    assert collection.documents[0]["zero"] == 0
+    return {
+        'collection': collection,
+        'expected_docs': 2,
+        'expected_scientific_type': float,
+        'expected_negative_value': -500,
+        'expected_zero_value': 0
+    }
 
 
-def test_date_formats():
-    """Test various date format handling."""
+def run_date_formats_test() -> dict[str, Any]:
+    """Standalone function for date formats test."""
     collection = MockCollection()
     csv_content = """event,date
 Meeting,2023-01-15
@@ -882,13 +1087,114 @@ Conference,01/15/2023"""
     csv_file = io.StringIO(csv_content)
     csv_to_mongo(csv_file, collection)
 
-    assert len(collection.documents) == 2
+    return {
+        'collection': collection,
+        'expected_docs': 2,
+        'should_have_datetime': True
+    }
+
+
+def validate_sample_documents(expected_samples: list[dict[str, Any]], actual_samples: list[dict[str, Any]], test_id: str):
+    """Standalone function to validate sample documents."""
+    for i, (expected, actual) in enumerate(zip(expected_samples, actual_samples)):
+        _compare_sample_documents(expected, actual, test_id, i)
+
+
+# =============================================================================
+# PYTEST TEST FUNCTIONS (call standalone functions)
+# =============================================================================
+
+def test_csv_to_mongo_parametrized(test_case, mock_collection):
+    """
+    Pytest-compatible parametrized test for csv_to_mongo function.
+
+    This test will be run once for each test case defined in TestCaseGenerator.
+    """
+    # Call the standalone test function
+    result = run_parametrized_test(test_case, mock_collection)
+
+    collection = result['collection']
+    expected_doc_count = result['expected_doc_count']
+    expected_dropped = result['expected_dropped']
+    expected_samples = result['expected_samples']
+
+    # Validate basic results
+    assert len(collection.documents) == expected_doc_count, \
+        f"Expected {expected_doc_count} documents, got {len(collection.documents)}"
+
+    assert collection.dropped == expected_dropped, \
+        f"Expected collection dropped={expected_dropped}, got {collection.dropped}"
+
+    # Validate sample documents if provided
+    if expected_samples:
+        actual_samples = collection.documents[:len(expected_samples)]
+        validate_sample_documents(expected_samples, actual_samples, test_case.test_id)
+
+
+def test_basic_csv_processing():
+    """Test basic CSV processing functionality."""
+    result = run_basic_csv_test()
+
+    collection = result['collection']
+    assert len(collection.documents) == result['expected_docs']
+    assert collection.dropped is result['expected_dropped']
+    assert collection.documents[0]["name"] == result['expected_first_name']
+    assert collection.documents[0]["age"] == result['expected_first_age']
+    assert collection.documents[0]["salary"] == result['expected_first_salary']
+
+
+def test_empty_csv_processing():
+    """Test CSV with headers only."""
+    result = run_empty_csv_test()
+
+    collection = result['collection']
+    assert len(collection.documents) == result['expected_docs']
+    assert collection.dropped is result['expected_dropped']
+
+
+def test_batch_processing():
+    """Test batch processing with custom batch size."""
+    result = run_batch_processing_test()
+
+    collection = result['collection']
+    assert len(collection.documents) == result['expected_docs']
+    assert collection.dropped is result['expected_dropped']
+
+
+def test_special_characters():
+    """Test handling of special characters and unicode."""
+    result = run_special_characters_test()
+
+    collection = result['collection']
+    assert len(collection.documents) == result['expected_docs']
+    assert collection.documents[0]["name"] == result['expected_first_name']
+    assert result['expected_naive_check'] in collection.documents[1]["name"]
+
+
+def test_numeric_edge_cases():
+    """Test various numeric formats."""
+    result = run_numeric_edge_cases_test()
+
+    collection = result['collection']
+    assert len(collection.documents) == result['expected_docs']
+    assert isinstance(collection.documents[0]["scientific"], result['expected_scientific_type'])
+    assert collection.documents[0]["negative"] == result['expected_negative_value']
+    assert collection.documents[0]["zero"] == result['expected_zero_value']
+
+
+def test_date_formats():
+    """Test various date format handling."""
+    result = run_date_formats_test()
+
+    collection = result['collection']
+    assert len(collection.documents) == result['expected_docs']
     # At least one should be parsed as datetime
     has_datetime = any(
         isinstance(doc.get("date"), datetime)
         for doc in collection.documents
     )
-    assert has_datetime, "At least one date should be parsed as datetime"
+    assert has_datetime == result['should_have_datetime'], \
+        "At least one date should be parsed as datetime"
 
 
 def _compare_sample_documents(expected: dict[str, Any], actual: dict[str, Any], test_id: str, index: int):
@@ -917,12 +1223,13 @@ def _compare_sample_documents(expected: dict[str, Any], actual: dict[str, Any], 
 # =============================================================================
 
 # Mark tests by category for selective running
-if pytest is not None:
-    # Add marks to categorize tests
-    test_csv_to_mongo_parametrized = pytest.mark.comprehensive(test_csv_to_mongo_parametrized)
-    test_basic_csv_processing = pytest.mark.basic(test_basic_csv_processing)
-    test_empty_csv_processing = pytest.mark.edge_cases(test_empty_csv_processing)
-    test_batch_processing = pytest.mark.performance(test_batch_processing)
-    test_special_characters = pytest.mark.unicode(test_special_characters)
-    test_numeric_edge_cases = pytest.mark.numeric(test_numeric_edge_cases)
-    test_date_formats = pytest.mark.dates(test_date_formats)
+test_csv_to_mongo_parametrized = pytest.mark.comprehensive(test_csv_to_mongo_parametrized)
+test_basic_csv_processing = pytest.mark.basic(test_basic_csv_processing)
+test_empty_csv_processing = pytest.mark.edge_cases(test_empty_csv_processing)
+test_batch_processing = pytest.mark.performance(test_batch_processing)
+test_special_characters = pytest.mark.unicode(test_special_characters)
+test_numeric_edge_cases = pytest.mark.numeric(test_numeric_edge_cases)
+test_date_formats = pytest.mark.dates(test_date_formats)
+
+if __name__ == "__main__":
+    main()

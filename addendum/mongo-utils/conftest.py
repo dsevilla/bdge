@@ -5,8 +5,7 @@ This module provides shared fixtures and configuration for the pytest test suite
 """
 
 import pytest
-from csv_to_mongo import MockCollection
-from test_csv_to_mongo import TestCaseGenerator
+from test_csv_to_mongo import MockCollection, TestCaseGenerator
 
 
 @pytest.fixture(scope="function")
