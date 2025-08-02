@@ -1,11 +1,11 @@
 from collections.abc import Callable
 import csv
 from dataclasses import MISSING, Field, make_dataclass, fields, field, dataclass
+from typing import Annotated
 from datetime import datetime
 import sys
 from collections import OrderedDict
-from typing import Any, TextIO, get_origin, get_args, Union, Optional
-import inspect
+from typing import Any, TextIO, get_origin, get_args, Union
 
 # Type aliases
 CSVToPythonConverterFunction = Callable[[str], Any | None]
@@ -394,7 +394,7 @@ def update_schema_fields(original_schema: type, changes: list[tuple[str, Any]]) 
     )
 
 
-def dataclass_to_python_code(cls: type) -> str:
+def schema_to_python_code(cls: type) -> str:
     """
     Convert a dataclass to its Python code representation.
 
@@ -426,7 +426,7 @@ def dataclass_to_python_code(cls: type) -> str:
         lines.append('    pass')
     else:
         for f in class_fields:
-            field_line = f'    {f.name}: {_get_type_string(f.type)}'
+            field_line: str = f'    {f.name}: {_get_type_string(f.type)}'
 
             # Handle default values and field() configurations
             if f.default is not MISSING:
@@ -437,6 +437,9 @@ def dataclass_to_python_code(cls: type) -> str:
             elif f.default_factory is not MISSING:
                 # Handle different types of default factories
                 factory_name = getattr(f.default_factory, '__name__', repr(f.default_factory))
+                # Treat special case for datetime.now() to avoid import issues
+                if factory_name == 'now':
+                    factory_name = 'datetime.now'
                 field_line += f' = field(default_factory={factory_name})'
             elif any(getattr(f, attr, None) is not None
                     for attr in ['init', 'repr', 'compare', 'hash', 'metadata']
@@ -473,7 +476,7 @@ def _get_type_string(type_annotation: Any) -> str:
     elif hasattr(type_annotation, '__origin__'):
         # Handle generic types like list[str], dict[str, int], Optional[str]
         origin = get_origin(type_annotation)
-        args = get_args(type_annotation)
+        args: tuple[Any, ...] = get_args(type_annotation)
 
         if origin is list:
             if args:
@@ -497,7 +500,7 @@ def _get_type_string(type_annotation: Any) -> str:
     return str(type_annotation).replace('typing.', '')
 
 
-def save_dataclass_to_file(cls: type, filepath: str) -> None:
+def save_schema_to_file(cls: type, filepath: str) -> None:
     """
     Save a dataclass definition to a Python file.
 
@@ -505,80 +508,27 @@ def save_dataclass_to_file(cls: type, filepath: str) -> None:
         cls: The dataclass to save
         filepath: Path where to save the file (should end with .py)
     """
-    code = dataclass_to_python_code(cls)
+    code: str = schema_to_python_code(cls)
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(code)
 
 
-def load_dataclass_from_file(filepath: str, class_name: str) -> type:
+def _execute_code_in_namespace(code: str, class_name: str) -> type:
     """
-    Load a dataclass from a Python file.
-
-    Args:
-        filepath: Path to the Python file containing the dataclass
-        class_name: Name of the dataclass to load
-
-    Returns:
-        The loaded dataclass type
-
-    Example:
-        # Save a dataclass
-        save_dataclass_to_file(MyDataClass, 'schema.py')
-
-        # Load it back
-        LoadedClass = load_dataclass_from_file('schema.py', 'MyDataClass')
-        instance = LoadedClass(field1='value1')
-    """
-    import importlib.util
-    import os
-
-    if not os.path.exists(filepath):
-        raise FileNotFoundError(f"File {filepath} not found")
-
-    # Create module spec and load module
-    spec = importlib.util.spec_from_file_location("dynamic_schema", filepath)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Could not load module from {filepath}")
-
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    # Get the class from the module
-    if not hasattr(module, class_name):
-        raise AttributeError(f"Class {class_name} not found in {filepath}")
-
-    return getattr(module, class_name)
-
-
-def load_dataclass_from_string(code: str, class_name: str, namespace_name: str = "dynamic_dataclass") -> type:
-    """
-    Load a dataclass from a Python code string using a new namespace populated with current symbols.
+    Helper function to execute code in a new namespace populated with caller's symbols.
 
     Args:
         code: Python code string containing the dataclass definition
         class_name: Name of the dataclass to extract
-        namespace_name: Name for the new namespace (default: "dynamic_dataclass")
 
     Returns:
         The loaded dataclass type
-
-    Example:
-        code = '''
-        @dataclass
-        class Person:
-            name: str
-            age: int = 0
-        '''
-        PersonClass = load_dataclass_from_string(code, 'Person')
-        person = PersonClass(name='Alice', age=25)
-
-    Note: Creates a new namespace populated with all symbols from the caller's namespace,
-    ensuring all imports (like @dataclass, field, datetime, etc.) are available.
     """
+    import inspect
+
     # Get the current frame's globals and locals
     frame = inspect.currentframe()
     try:
-        # Get the caller's frame (the frame that called this function)
         if frame is None:
             raise RuntimeError("Could not get current frame")
 
@@ -595,34 +545,6 @@ def load_dataclass_from_string(code: str, class_name: str, namespace_name: str =
         # Then, add all locals from the caller (locals take precedence)
         new_namespace.update(caller_frame.f_locals)
 
-        # Ensure essential symbols are available (fallback for common imports)
-        essential_symbols = {
-            'dataclass': dataclass,
-            'field': field,
-            'fields': fields,
-            'datetime': datetime,
-            'Optional': Optional,
-            'Union': Union,
-            'Any': Any,
-            'list': list,
-            'dict': dict,
-            'str': str,
-            'int': int,
-            'float': float,
-            'bool': bool,
-            'tuple': tuple,
-            'set': set,
-            'type': type,
-        }
-
-        # Only add essential symbols if they're not already in the namespace
-        for name, symbol in essential_symbols.items():
-            if name not in new_namespace:
-                new_namespace[name] = symbol
-
-        # Set the namespace name
-        new_namespace['__name__'] = namespace_name
-
         # Execute the code in the new namespace
         exec(code, new_namespace)
 
@@ -632,5 +554,41 @@ def load_dataclass_from_string(code: str, class_name: str, namespace_name: str =
         else:
             raise AttributeError(f"Class {class_name} not found in provided code")
     finally:
-        # Clean up the frame reference
         del frame
+
+
+def load_schema_from_file(filepath: str, class_name: str) -> type:
+    """
+    Load a dataclass from a Python file.
+
+    Args:
+        filepath: Path to the Python file containing the dataclass
+        class_name: Name of the dataclass to load
+
+    Returns:
+        The loaded dataclass type
+    """
+    import os
+
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"File {filepath} not found")
+
+    # Read the file's contents
+    with open(filepath, 'r', encoding='utf-8') as file:
+        code = file.read()
+
+    return _execute_code_in_namespace(code, class_name)
+
+
+def load_schema_from_string(code: str, class_name: str) -> type:
+    """
+    Load a dataclass from a Python code string using a new namespace populated with current symbols.
+
+    Args:
+        code: Python code string containing the dataclass definition
+        class_name: Name of the dataclass to extract
+
+    Returns:
+        The loaded dataclass type
+    """
+    return _execute_code_in_namespace(code, class_name)

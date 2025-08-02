@@ -218,8 +218,8 @@ class TestUpdateSchemaFields:
             username: str
             email: str
 
-        changes = [("email", Optional[str])]
-        updated_schema = update_schema_fields(CustomUserSchema, changes)
+        changes: list[tuple[str, UnionType]] = [("email", Optional[str])]
+        updated_schema: type = update_schema_fields(CustomUserSchema, changes)
 
         assert updated_schema.__name__ == "CustomUserSchema"
 
@@ -241,6 +241,24 @@ class TestUpdateSchemaFields:
         field_names = list(updated_schema.__dataclass_fields__.keys())
         expected_order = ["first_field", "second_field", "third_field"]
         assert field_names == expected_order
+
+    def test_optional_and_annotated_field(self):
+        """Test a dataclass with an optional type and Annotated field."""
+        from typing import Annotated
+
+        @dataclass
+        class SchemaWithOptionalAndAnnotated:
+            id: Annotated[int, "Primary Key"]
+            value: int | None
+
+        # Check field types
+        fields_dict = {f.name: f.type for f in SchemaWithOptionalAndAnnotated.__dataclass_fields__.values()}
+        assert fields_dict["id"] is int
+        assert fields_dict["value"] is int | type(None)  # Check int | None properly
+
+        # Check metadata for Annotated field
+        metadata = SchemaWithOptionalAndAnnotated.__dataclass_fields__["id"].metadata
+        assert "Primary Key" in metadata.values()
 
 
 # Future test classes can be added here for other functions
