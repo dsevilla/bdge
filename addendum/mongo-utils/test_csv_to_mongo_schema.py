@@ -55,7 +55,6 @@ except ImportError:
     )
 
 import pytest
-from pytest import FixtureRequest
 
 # Import the modules under test
 from csv_to_mongo_schema import (
@@ -128,6 +127,7 @@ class SchemaTestResult:
     passed: bool
     execution_time: float
     actual_schema: dict[str, type]
+    actual_dataclass: type | None = None
     error_message: str | None = None
     validation_details: dict[str, Any] = field(default_factory=dict)
     def to_dict(self) -> dict[str, Any]:
@@ -414,6 +414,16 @@ class CSVTester:
         self.schema_results: list[SchemaTestResult] = []
         self.converter_results: list[ConverterTestResult] = []
 
+    def _extract_schema_from_dataclass(self, dataclass_type: type) -> dict[str, type]:
+        """Extract schema mapping from a dataclass type."""
+        if not hasattr(dataclass_type, '__dataclass_fields__'):
+            raise ValueError("Expected a dataclass type")
+
+        schema = {}
+        for field_name, field_info in dataclass_type.__dataclass_fields__.items():
+            schema[field_name] = field_info.type
+        return schema
+
     def run_schema_test(self, test_case: SchemaTestCase) -> SchemaTestResult:
         """Execute a single schema inference test case."""
         start_time = time.time()
@@ -422,18 +432,22 @@ class CSVTester:
             # Create CSV file object
             csv_file = io.StringIO(test_case.input_data.csv_content)
 
-            # Run schema inference
-            actual_schema = infer_csv_schema(csv_file, test_case.input_data.sample_rows)
+            # Run schema inference - now returns a dataclass type
+            dataclass_type: type = infer_csv_schema(csv_file, "CSVRecord", test_case.input_data.sample_rows)
+
+            # Extract schema dict from dataclass for validation
+            actual_schema = self._extract_schema_from_dataclass(dataclass_type)
 
             # Validate results
-            passed = self._validate_schema_result(actual_schema, test_case.expected_output)
+            passed: bool = self._validate_schema_result(actual_schema, test_case.expected_output)
 
             result = SchemaTestResult(
                 test_id=test_case.test_id,
                 test_name=test_case.test_name,
                 passed=passed,
                 execution_time=time.time() - start_time,
-                actual_schema=actual_schema
+                actual_schema=actual_schema,
+                actual_dataclass=dataclass_type
             )
 
         except Exception as e:
@@ -443,6 +457,7 @@ class CSVTester:
                 passed=False,
                 execution_time=time.time() - start_time,
                 actual_schema={},
+                actual_dataclass=None,
                 error_message=str(e)
             )
 
@@ -451,7 +466,7 @@ class CSVTester:
 
     def run_converter_test(self, test_case: ConverterTestCase) -> ConverterTestResult:
         """Execute a single converter test case."""
-        start_time = time.time()
+        start_time: float = time.time()
 
         try:
             # Create mock collection and CSV file object
@@ -497,13 +512,20 @@ class CSVTester:
 
         expected_schema = expected_output.expected_schema
 
+        # Debug information for failed tests
+        print(f"Expected fields: {set(expected_schema.keys())}")
+        print(f"Actual fields: {set(actual_schema.keys())}")
+
         # Check if all expected columns are present
         if set(actual_schema.keys()) != set(expected_schema.keys()):
+            print("Field name mismatch!")
             return False
 
         # Check if types match
         for col, expected_type in expected_schema.items():
-            if actual_schema.get(col) != expected_type:
+            actual_type: type | None = actual_schema.get(col)
+            if actual_type != expected_type:
+                print(f"Type mismatch for {col}: expected {expected_type}, got {actual_type}")
                 return False
 
         return True
@@ -521,7 +543,7 @@ class CSVTester:
         if expected_output.sample_documents:
             for i, expected_doc in enumerate(expected_output.sample_documents):
                 if i < len(mock_collection.documents):
-                    actual_doc = mock_collection.documents[i]
+                    actual_doc: dict[str, Any] = mock_collection.documents[i]
                     if actual_doc != expected_doc:
                         return False
 
@@ -534,7 +556,7 @@ class CSVTester:
         print(f"\n🧪 Running {len(test_cases)} schema inference tests...")
 
         for test_case in test_cases:
-            result = self.run_schema_test(test_case)
+            result: SchemaTestResult = self.run_schema_test(test_case)
             status = "✅ PASS" if result.passed else "❌ FAIL"
             print(f"  {status} {result.test_name} ({result.execution_time:.3f}s)")
             if not result.passed and result.error_message:
@@ -677,7 +699,7 @@ def main():
     converter_results = tester.run_all_converter_tests()
 
     # Print summary
-    print(f"\n📊 Test Summary")
+    print("\n📊 Test Summary")
     print("=" * 50)
     print(f"Schema Inference Tests: {schema_results['passed_tests']}/{schema_results['total_tests']} passed ({schema_results['success_rate']:.1f}%)")
     print(f"Converter Tests: {converter_results['passed_tests']}/{converter_results['total_tests']} passed ({converter_results['success_rate']:.1f}%)")
@@ -702,7 +724,7 @@ def main():
     try:
         with open('test_new_csv_functions_results.json', 'w') as f:
             json.dump(all_results, f, indent=2, default=str)
-        print(f"\n💾 Results exported to test_new_csv_functions_results.json")
+        print("\n💾 Results exported to test_new_csv_functions_results.json")
     except Exception as e:
         print(f"\n⚠️  Could not export results: {e}")
 

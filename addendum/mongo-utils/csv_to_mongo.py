@@ -113,9 +113,3 @@ def csv_to_mongo(file_obj: TextIO, coll: CollectionProtocol) -> dict[str,Any]:
         "result"    : "success",
         "result_insert_many": result
         }
-
-# Example usage:
-# with open('example.csv', 'r') as file:
-#     mock_collection = MockCollection()  # Replace with an actual MongoDB collection
-#     csv_to_mongo(file, mock_collection, batch_size=1000)
-# This will read the CSV file 'example.csv' and insert its contents into the mock_collection in batches of 1000.
