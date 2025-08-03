@@ -493,7 +493,7 @@ def _get_type_string(type_annotation: Any) -> str:
                 return f'{_get_type_string(non_none_type)} | None'
             else:
                 # General Union
-                type_strs = [_get_type_string(arg) for arg in args]
+                type_strs: list[str] = [_get_type_string(arg) for arg in args]
                 return f'{" | ".join(type_strs)}'
 
     # Fallback: use string representation
