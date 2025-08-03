@@ -12,5 +12,8 @@ test = ["pytest"]
 [tool.setuptools]
 packages = ["csv_schema", "mongo_utils"]
 
+[tool.setuptools.packages.find]
+where = ["."]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
