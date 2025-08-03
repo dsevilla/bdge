@@ -32,22 +32,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 import json
-import sys
-import os
 
-try:
-    # I do this because in the notebooks all files will be
-    # at the same directory level
-    from csv_schema_utils import ( # type: ignore
-        infer_csv_schema,
-        CSVConverters,
-        CSVTypeDetectorsForDB,
-        CSVToPythonConverterFunction
-    )
-except ImportError:
-    # If running as a script, adjust the path to import from the parent directory
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from csv_schema.csv_schema_utils import (
+
+from csv_schema.csv_schema_utils import (
         infer_csv_schema,
         CSVConverters,
         CSVTypeDetectorsForDB,
@@ -57,7 +44,7 @@ except ImportError:
 import pytest
 
 # Import the modules under test
-from csv_to_mongo_schema import (
+from mongo_utils.csv_to_mongo_schema import (
     csv_to_mongo_with_converters
 )
 

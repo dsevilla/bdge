@@ -1,7 +1,16 @@
 [project]
 name = "bdge-csv-utils"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2526.0"
+description = "Support scripts to use schemas with CSV files and Databases"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools]
+packages = ["csv_schema", "mongo_utils"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

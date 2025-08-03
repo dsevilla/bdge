@@ -3,10 +3,10 @@ from dataclasses import dataclass, field
 from typing import Any, Optional, get_origin, get_args, Union
 from datetime import datetime
 
-from csv_schema_utils import update_schema_fields
+from csv_schema.csv_schema_utils import update_schema_fields
 
 
-def is_list_of_type(field_type, expected_element_type):
+def is_list_of_type(field_type: type, expected_element_type: type) -> bool:
     """Check if a type annotation is list[expected_element_type]"""
     origin = get_origin(field_type)
     args = get_args(field_type)
@@ -15,7 +15,7 @@ def is_list_of_type(field_type, expected_element_type):
     return origin is list and len(args) == 1 and args[0] is expected_element_type
 
 
-def is_dict_of_types(field_type, expected_key_type, expected_value_type):
+def is_dict_of_types(field_type: type, expected_key_type: type, expected_value_type: type) -> bool:
     """Check if a type annotation is dict[expected_key_type, expected_value_type]"""
     origin = get_origin(field_type)
     args = get_args(field_type)
@@ -25,22 +25,89 @@ def is_dict_of_types(field_type, expected_key_type, expected_value_type):
             args[0] is expected_key_type and args[1] is expected_value_type)
 
 
-def is_optional_of_type(field_type, expected_type):
-    """Check if a type annotation is Optional[expected_type] (Union[expected_type, None])"""
+def is_optional_of_type(field_type: type, expected_type: type) -> bool:
+    """Check if a type annotation is Optional[expected_type], Union[expected_type, None], or expected_type | None"""
     origin = get_origin(field_type)
     args = get_args(field_type)
 
-    # Optional[T] is Union[T, None]
-    if origin is not Union:
+    # Handle Union types (including Optional[T] which is Union[T, None])
+    if origin is Union:
+        # Should have exactly 2 args: the type and NoneType
+        if len(args) != 2:
+            return False
+        # One should be the expected type, the other should be NoneType
+        return (args[0] is expected_type and args[1] is type(None)) or \
+               (args[0] is type(None) and args[1] is expected_type)
+
+    # Handle new-style union syntax: X | None (Python 3.10+)
+    # This appears as types.UnionType in Python 3.10+
+    try:
+        import types
+        if hasattr(types, 'UnionType') and isinstance(field_type, types.UnionType):
+            # Get the args from the UnionType
+            union_args = field_type.__args__
+            if len(union_args) != 2:
+                return False
+            # One should be the expected type, the other should be NoneType
+            return (union_args[0] is expected_type and union_args[1] is type(None)) or \
+                   (union_args[0] is type(None) and union_args[1] is expected_type)
+    except ImportError:
+        pass
+
+    return False
+
+
+def is_annotated_of_type(field_type: type, expected_type: type, expected_metadata: Any) -> bool:
+    """Check if a type annotation is Annotated[expected_type, expected_metadata]
+
+    Args:
+        field_type: The type annotation to check
+        expected_type: The expected base type (e.g., int, str)
+        expected_metadata: The expected metadata. Can be:
+            - A string (e.g., "PrimaryKey")
+            - A type/class (e.g., PrimaryKey)
+            - A complex object (e.g., Reference[Client])
+            - Any other metadata object
+    """
+    from typing import Annotated, get_origin, get_args
+    origin = get_origin(field_type)
+    args = get_args(field_type)
+
+    # Check if it's an Annotated type
+    if origin is not Annotated:
+        return False
+    if len(args) < 2:
         return False
 
-    # Should have exactly 2 args: the type and NoneType
-    if len(args) != 2:
+    # args[0] is the type, args[1:] are metadata
+    if args[0] is not expected_type:
         return False
 
-    # One should be the expected type, the other should be NoneType
-    return (args[0] is expected_type and args[1] is type(None)) or \
-           (args[0] is type(None) and args[1] is expected_type)
+    metadata_items = args[1:]
+
+    # Handle different types of expected_metadata
+    for metadata_item in metadata_items:
+        if metadata_item == expected_metadata:
+            return True
+        # Handle string representations
+        elif isinstance(expected_metadata, str) and str(metadata_item) == expected_metadata:
+            return True
+        # Handle type matching (e.g., PrimaryKey class)
+        elif isinstance(expected_metadata, type) and metadata_item is expected_metadata:
+            return True
+        # Handle complex objects by comparing their string representations or types
+        elif hasattr(metadata_item, '__class__') and hasattr(expected_metadata, '__class__'):
+            if metadata_item.__class__ == expected_metadata.__class__:
+                # For complex objects, try to compare them directly first
+                try:
+                    if metadata_item == expected_metadata:
+                        return True
+                except Exception:
+                    # If direct comparison fails, fall back to string comparison
+                    if str(metadata_item) == str(expected_metadata):
+                        return True
+
+    return False
 
 
 class TestUpdateSchemaFields:
@@ -218,7 +285,7 @@ class TestUpdateSchemaFields:
             username: str
             email: str
 
-        changes: list[tuple[str, UnionType]] = [("email", Optional[str])]
+        changes: list[tuple[str, Any]] = [("email", Optional[str])]
         updated_schema: type = update_schema_fields(CustomUserSchema, changes)
 
         assert updated_schema.__name__ == "CustomUserSchema"
@@ -253,12 +320,8 @@ class TestUpdateSchemaFields:
 
         # Check field types
         fields_dict = {f.name: f.type for f in SchemaWithOptionalAndAnnotated.__dataclass_fields__.values()}
-        assert fields_dict["id"] is int
-        assert fields_dict["value"] is int | type(None)  # Check int | None properly
-
-        # Check metadata for Annotated field
-        metadata = SchemaWithOptionalAndAnnotated.__dataclass_fields__["id"].metadata
-        assert "Primary Key" in metadata.values()
+        assert is_annotated_of_type(fields_dict["id"], int, "Primary Key")
+        assert is_optional_of_type(fields_dict["value"], int)  # Check int | None properly
 
 
 # Future test classes can be added here for other functions

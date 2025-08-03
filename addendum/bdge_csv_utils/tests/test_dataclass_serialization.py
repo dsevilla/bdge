@@ -6,7 +6,7 @@ Test script demonstrating dataclass serialization and deserialization.
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
-from csv_schema_utils import (
+from csv_schema.csv_schema_utils import (
     schema_to_python_code,
     save_schema_to_file,
     load_schema_from_file,
