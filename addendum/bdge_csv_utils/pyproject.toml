@@ -14,8 +14,8 @@ dependencies = []
 test = ["pytest"]
 
 [tool.setuptools.packages.find]
-where = ["bdge_csv_utils"]
-include = ["csv_schema*", "mongo_utils*"]
+where = ["."]
+include = ["bdge_csv_utils*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
