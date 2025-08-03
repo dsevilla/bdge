@@ -215,7 +215,7 @@ def infer_csv_schema(file_obj: TextIO, entity_name: str = "CSVRecord", sample_ro
         Age: int
     """
     def create_dataclass_from_schema(schema: OrderedDict[str, type], class_name: str = "CSVRecord") -> type:
-        fields: list[tuple[str, type]] = []
+        fields: list[tuple[str, type, Any]] = []
         for field_name, field_type in schema.items():
             # Clean field name to be a valid Python identifier
             clean_name: str = field_name.replace(' ', '_').replace('-', '_').replace('.', '_')
@@ -225,9 +225,28 @@ def infer_csv_schema(file_obj: TextIO, entity_name: str = "CSVRecord", sample_ro
             elif clean_name[0].isdigit():
                 clean_name = f"field_{clean_name}"
 
-            # Use the field type directly without making it optional
-            # This simplifies the schema to only use basic types
-            fields.append((clean_name, field_type))
+            # Determine sensible default value based on field type
+            if field_type is int:
+                default_value = 0
+            elif field_type is float:
+                default_value = 0.0
+            elif field_type is str:
+                default_value = ""
+            elif field_type is bool:
+                default_value = False
+            elif field_type is datetime:
+                default_value = field(default_factory=datetime.now)
+            else:
+                # For other types, use None as default
+                default_value = None
+
+            # Add field with default value
+            if field_type is datetime:
+                # Special case for datetime - use field with default_factory
+                fields.append((clean_name, field_type, default_value))
+            else:
+                # Regular default value
+                fields.append((clean_name, field_type, default_value))
 
         return make_dataclass(class_name, fields)
 
