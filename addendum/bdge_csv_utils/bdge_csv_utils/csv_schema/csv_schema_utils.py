@@ -225,6 +225,8 @@ def infer_csv_schema(file_obj: TextIO, entity_name: str = "CSVRecord", sample_ro
             elif clean_name[0].isdigit():
                 clean_name = f"field_{clean_name}"
 
+            default_value: Any = None
+
             # Determine sensible default value based on field type
             if field_type is int:
                 default_value = 0
@@ -236,9 +238,6 @@ def infer_csv_schema(file_obj: TextIO, entity_name: str = "CSVRecord", sample_ro
                 default_value = False
             elif field_type is datetime:
                 default_value = field(default_factory=datetime.now)
-            else:
-                # For other types, use None as default
-                default_value = None
 
             # Add field with default value
             if field_type is datetime:
