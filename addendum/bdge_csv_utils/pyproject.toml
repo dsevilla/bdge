@@ -7,7 +7,7 @@ name = "bdge-csv-utils"
 version = "0.2526.0"
 description = "Support scripts to use schemas with CSV files and Databases"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = []
 
 [project.optional-dependencies]
