@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "bdge-csv-utils"
 version = "0.2526.0"
@@ -9,8 +13,9 @@ dependencies = []
 [project.optional-dependencies]
 test = ["pytest"]
 
-[tool.setuptools]
-packages = ["csv_schema", "mongo_utils"]
+[tool.setuptools.packages.find]
+where = ["bdge_csv_utils"]
+include = ["csv_schema*", "mongo_utils*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

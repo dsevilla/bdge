@@ -34,7 +34,7 @@ from typing import Any
 import json
 
 
-from csv_schema.csv_schema_utils import (
+from bdge_csv_utils.csv_schema.csv_schema_utils import (
         infer_csv_schema,
         CSVConverters,
         CSVTypeDetectorsForDB,
@@ -44,7 +44,7 @@ from csv_schema.csv_schema_utils import (
 import pytest
 
 # Import the modules under test
-from mongo_utils.csv_to_mongo_schema import (
+from bdge_csv_utils.mongo_utils.csv_to_mongo_schema import (
     csv_to_mongo_with_converters
 )
 
