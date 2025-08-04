@@ -3,14 +3,14 @@ Schema system for defining, manipulating, and converting data structures.
 
 This package provides a comprehensive schema system with support for:
 - Schema definition with typed fields
-- Dataclass conversion (bidirectional)  
+- Dataclass conversion (bidirectional)
 - SQL generation (CREATE, INSERT, SELECT)
 - Schema operations (add, remove, rename, merge, validate)
 - Annotations (PrimaryKey, Reference)
 - Nested schemas
 """
 
-from .types import Schema, Field, PrimaryKey, Reference
+from .types import Schema, Fld, PrimaryKey, Reference
 from .dataclass_conversion import (
     schema_to_dataclass,
     dataclass_to_schema,
@@ -33,25 +33,25 @@ from .ops import (
 __all__ = [
     # Core types
     "Schema",
-    "Field", 
+    "Fld",
     "PrimaryKey",
     "Reference",
-    
+
     # Dataclass conversion
     "schema_to_dataclass",
-    "dataclass_to_schema", 
+    "dataclass_to_schema",
     "instance_to_schema",
     "create_dataclass_with_annotations",
-    
+
     # Schema operations
     "print_schema",
     "add_field",
-    "remove_field", 
+    "remove_field",
     "rename_field",
     "get_field",
     "merge_schemas",
     "validate_schema",
-    
+
     # SQL generation
     "schema_to_sql",
     "schema_to_sql_insert",
