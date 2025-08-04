@@ -38,9 +38,9 @@ class TestSchemaCreation:
             Fld("age", int | None),
             Fld("active", bool)
         ]
-        schema = Schema(fields)
+        schema = Schema(fields=fields)
 
-        assert len(schema.fields) == 4
+        assert len(schema.get_fields()) == 4
         assert schema.field_names() == ["id", "name", "age", "active"]
         assert schema.has_field("name")
         assert not schema.has_field("email")
@@ -53,14 +53,14 @@ class TestSchemaCreation:
     def test_annotated_schema_creation(self):
         """Test creating a schema with annotated fields (primary keys, references)."""
         fields = [
-            Fld("id", Annotated[int, PrimaryKey()]),
+            Fld("id", Annotated[int, PrimaryKey]),
             Fld("name", str),
-            Fld("user_id", Annotated[int, Reference[int]()]),
+            Fld("user_id", Annotated[int, Reference[int]]),
             Fld("created_at", datetime)
         ]
-        schema = Schema(fields)
+        schema = Schema(fields=fields)
 
-        assert len(schema.fields) == 4
+        assert len(schema.get_fields()) == 4
         id_field = schema.get_field("id")
         assert id_field is not None
         # The field should preserve the annotated type
@@ -68,23 +68,23 @@ class TestSchemaCreation:
 
     def test_nested_schema_creation(self):
         """Test creating a schema with nested schemas."""
-        address_schema = Schema([
+        address_schema = Schema(name="Address", fields=[
             Fld("street", str),
             Fld("city", str),
             Fld("postal_code", str)
         ])
 
-        person_schema = Schema([
+        person_schema = Schema(name="Person", fields=[
             Fld("id", int),
             Fld("name", str),
             Fld("address", address_schema)
         ])
 
-        assert len(person_schema.fields) == 3
+        assert len(person_schema.get_fields()) == 3
         address_field = person_schema.get_field("address")
         assert address_field is not None
         assert isinstance(address_field.field_type, Schema)
-        assert len(address_field.field_type.fields) == 3
+        assert len(address_field.field_type.get_fields()) == 3
 
 
 class TestSchemaOps:
@@ -92,7 +92,7 @@ class TestSchemaOps:
 
     def setup_method(self):
         """Set up a basic schema for testing."""
-        self.schema = Schema([
+        self.schema = Schema(name="TestSchema", fields=[
             Fld("id", int),
             Fld("name", str),
             Fld("email", str | None)
@@ -102,16 +102,16 @@ class TestSchemaOps:
         """Test adding a field to a schema."""
         new_schema = add_field(self.schema, Fld("age", int))
 
-        assert len(new_schema.fields) == 4
+        assert len(new_schema.get_fields()) == 4
         assert new_schema.has_field("age")
         # Original schema should be unchanged
-        assert len(self.schema.fields) == 3
+        assert len(self.schema.get_fields()) == 3
 
     def test_remove_field(self):
         """Test removing a field from a schema."""
         new_schema = remove_field(self.schema, "email")
 
-        assert len(new_schema.fields) == 2
+        assert len(new_schema.get_fields()) == 2
         assert not new_schema.has_field("email")
         assert new_schema.has_field("id")
         assert new_schema.has_field("name")
@@ -120,7 +120,7 @@ class TestSchemaOps:
         """Test renaming a field in a schema."""
         new_schema = rename_field(self.schema, "email", "email_address")
 
-        assert len(new_schema.fields) == 3
+        assert len(new_schema.get_fields()) == 3
         assert not new_schema.has_field("email")
         assert new_schema.has_field("email_address")
 
@@ -130,19 +130,19 @@ class TestSchemaOps:
 
     def test_merge_schemas(self):
         """Test merging two schemas."""
-        schema1 = Schema([
+        schema1 = Schema(name="Schema1", fields=[
             Fld("id", int),
             Fld("name", str)
         ])
 
-        schema2 = Schema([
+        schema2 = Schema(name="Schema2", fields=[
             Fld("email", str),
             Fld("name", str | None)  # This should override schema1's name field
         ])
 
         merged = merge_schemas(schema1, schema2)
 
-        assert len(merged.fields) == 3
+        assert len(merged.get_fields()) == 3
         assert merged.has_field("id")
         assert merged.has_field("name")
         assert merged.has_field("email")
@@ -155,7 +155,7 @@ class TestSchemaOps:
     def test_validate_schema(self):
         """Test schema validation."""
         # Valid schema
-        valid_schema = Schema([
+        valid_schema = Schema(name="ValidSchema", fields=[
             Fld("id", int),
             Fld("name", str)
         ])
@@ -163,17 +163,17 @@ class TestSchemaOps:
         assert len(errors) == 0
 
         # Schema with duplicate field names
-        invalid_schema = Schema([
+        invalid_schema = Schema(name="InvalidSchema", fields=[
             Fld("id", int),
             Fld("name", str),
             Fld("id", str)  # Duplicate
         ])
         errors = validate_schema(invalid_schema)
         assert len(errors) == 1
-        assert "Duplicate field name: id" in errors[0]
+        assert "Duplicate field names detected." in errors[0]
 
         # Schema with invalid field name
-        invalid_schema2 = Schema([
+        invalid_schema2 = Schema(name="InvalidSchema2", fields=[
             Fld("123invalid", int),  # Invalid Python identifier
             Fld("valid-name", str)   # Also invalid
         ])
@@ -188,7 +188,7 @@ class TestDataclassConversion:
 
     def test_schema_to_dataclass_simple(self):
         """Test converting a simple schema to a dataclass."""
-        schema = Schema([
+        schema = Schema(name="PersonSchema", fields=[
             Fld("id", int),
             Fld("name", str),
             Fld("age", int | None)
@@ -217,7 +217,7 @@ class TestDataclassConversion:
 
         schema = dataclass_to_schema(Person)
 
-        assert len(schema.fields) == 4
+        assert len(schema.get_fields()) == 4
         assert schema.has_field("id")
         assert schema.has_field("name")
         assert schema.has_field("age")
@@ -248,11 +248,11 @@ class TestDataclassConversion:
         # Convert dataclass to schema
         schema = dataclass_to_schema(Person)
 
-        assert len(schema.fields) == 3
+        assert len(schema.get_fields()) == 3
         address_field = schema.get_field("address")
         assert address_field is not None
         assert isinstance(address_field.field_type, Schema)
-        assert len(address_field.field_type.fields) == 3
+        assert len(address_field.field_type.get_fields()) == 3
 
         # Convert schema back to dataclass
         PersonClass = schema_to_dataclass(schema, "GeneratedPerson")
@@ -284,7 +284,7 @@ class TestDataclassConversion:
         product = Product(id=1, name="Widget", price=19.99, available=True)
         schema = instance_to_schema(product)
 
-        assert len(schema.fields) == 4
+        assert len(schema.get_fields()) == 4
         assert schema.has_field("id")
         assert schema.has_field("name")
         assert schema.has_field("price")
@@ -301,7 +301,7 @@ class TestDataclassConversion:
 
     def test_round_trip_conversion(self):
         """Test that schema -> dataclass -> schema preserves information."""
-        original_schema = Schema([
+        original_schema = Schema(name="OriginalSchema", fields=[
             Fld("id", int),
             Fld("title", str),
             Fld("score", float),
@@ -319,7 +319,7 @@ class TestDataclassConversion:
         assert converted_schema.field_names() == original_schema.field_names()
 
         # Check that basic types are preserved
-        for original_field, converted_field in zip(original_schema.fields, converted_schema.fields):
+        for original_field, converted_field in zip(original_schema.get_fields(), converted_schema.get_fields()):
             assert original_field.name == converted_field.name
             # Note: Some type information might be lost in the conversion,
             # but basic types should be preserved
@@ -330,7 +330,7 @@ class TestSQLGeneration:
 
     def test_simple_sql_generation(self):
         """Test generating SQL CREATE TABLE from a simple schema."""
-        schema = Schema([
+        schema = Schema(fields=[
             Fld("id", int),
             Fld("name", str),
             Fld("age", int | None),
@@ -347,8 +347,8 @@ class TestSQLGeneration:
 
     def test_annotated_sql_generation(self):
         """Test SQL generation with annotated fields."""
-        schema = Schema([
-            Fld("id", Annotated[int, PrimaryKey()]),
+        schema = Schema(fields=[
+            Fld("id", Annotated[int, PrimaryKey]),
             Fld("name", str),
             Fld("email", str | None)
         ])
@@ -362,7 +362,7 @@ class TestSQLGeneration:
 
     def test_sql_insert_generation(self):
         """Test generating SQL INSERT statements."""
-        schema = Schema([
+        schema = Schema(fields=[
             Fld("id", int),
             Fld("name", str),
             Fld("email", str)
@@ -374,7 +374,7 @@ class TestSQLGeneration:
 
     def test_sql_select_generation(self):
         """Test generating SQL SELECT statements."""
-        schema = Schema([
+        schema = Schema(fields=[
             Fld("id", int),
             Fld("name", str),
             Fld("email", str)
@@ -386,7 +386,7 @@ class TestSQLGeneration:
 
     def test_complex_types_sql_generation(self):
         """Test SQL generation with complex types."""
-        schema = Schema([
+        schema = Schema(fields=[
             Fld("id", int),
             Fld("created_at", datetime),
             Fld("birth_date", date),
@@ -408,8 +408,8 @@ def test_comprehensive_example():
     print("\n=== Comprehensive Schema Example ===")
 
     # 1. Create a schema programmatically
-    user_schema = Schema([
-        Fld("id", Annotated[int, PrimaryKey()]),
+    user_schema = Schema(name="UserSchema", fields=[
+        Fld("id", Annotated[int, PrimaryKey]),
         Fld("username", str),
         Fld("email", str | None),
         Fld("created_at", datetime),
@@ -439,7 +439,7 @@ def test_comprehensive_example():
 
     # 5. Add a field to the schema
     extended_schema = add_field(user_schema, Fld("last_login", datetime | None))
-    print(f"\n5. Extended schema with {len(extended_schema.fields)} fields")
+    print(f"\n5. Extended schema with {len(extended_schema.get_fields())} fields")
 
     # 6. Validate the schema
     errors = validate_schema(extended_schema)

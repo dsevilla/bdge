@@ -37,7 +37,7 @@ def demo_basic_schema_creation():
     print("=" * 50)
 
     # Create a user schema with various field types
-    user_schema = Schema([
+    user_schema = Schema(name="User", fields=[
         Fld("id", Annotated[int, PrimaryKey()]),
         Fld("username", str),
         Fld("email", str | None),
@@ -51,7 +51,7 @@ def demo_basic_schema_creation():
     print("Created user schema:")
     print_schema(user_schema)
 
-    print(f"\nSchema has {len(user_schema.fields)} fields")
+    print(f"\nSchema has {len(user_schema.get_fields())} fields")
     print(f"Field names: {user_schema.field_names()}")
     print(f"Has 'email' field: {user_schema.has_field('email')}")
     print(f"Has 'password' field: {user_schema.has_field('password')}")
@@ -84,11 +84,11 @@ def demo_dataclass_conversion(schema: Schema):
 
     # Convert dataclass back to schema
     converted_schema = dataclass_to_schema(UserClass)
-    print(f"\nConverted back to schema with {len(converted_schema.fields)} fields")
+    print(f"\nConverted back to schema with {len(converted_schema.get_fields())} fields")
 
     # Create schema from instance (type inference)
     inferred_schema = instance_to_schema(user)
-    print(f"Inferred schema from instance has {len(inferred_schema.fields)} fields")
+    print(f"Inferred schema from instance has {len(inferred_schema.get_fields())} fields")
 
     return UserClass, user
 
@@ -128,7 +128,7 @@ def demo_existing_dataclass_to_schema():
     )
 
     instance_schema = instance_to_schema(product)
-    print(f"\nSchema from instance has {len(instance_schema.fields)} fields")
+    print(f"\nSchema from instance has {len(instance_schema.get_fields())} fields")
 
     return product_schema
 
@@ -188,14 +188,14 @@ def demo_schema_merging():
     print("=" * 50)
 
     # Create base user schema
-    base_schema = Schema([
+    base_schema = Schema(name="BaseUser", fields=[
         Fld("id", Annotated[int, PrimaryKey()]),
         Fld("username", str),
         Fld("email", str)
     ])
 
     # Create profile extension
-    profile_schema = Schema([
+    profile_schema = Schema(name="UserProfile", fields=[
         Fld("email", str | None),  # Override to make optional
         Fld("first_name", str),
         Fld("last_name", str),
@@ -203,7 +203,7 @@ def demo_schema_merging():
     ])
 
     # Create preferences schema
-    preferences_schema = Schema([
+    preferences_schema = Schema(name="UserPreferences", fields=[
         Fld("theme", str),
         Fld("language", str),
         Fld("notifications", bool)
@@ -218,7 +218,7 @@ def demo_schema_merging():
     full_schema = merge_schemas(extended, preferences_schema)
 
     print("Merged schema:", full_schema.field_names())
-    print(f"Total fields: {len(full_schema.fields)}")
+    print(f"Total fields: {len(full_schema.get_fields())}")
 
     # Check that email was overridden to be optional
     email_field = full_schema.get_field("email")
@@ -236,7 +236,7 @@ def demo_nested_schemas():
     print("=" * 50)
 
     # Create address schema
-    address_schema = Schema([
+    address_schema = Schema(name="Address", fields=[
         Fld("street", str),
         Fld("city", str),
         Fld("state", str),
@@ -245,7 +245,7 @@ def demo_nested_schemas():
     ])
 
     # Create person schema with nested address
-    person_schema = Schema([
+    person_schema = Schema(name="Person", fields=[
         Fld("id", Annotated[int, PrimaryKey()]),
         Fld("name", str),
         Fld("address", address_schema)
@@ -288,7 +288,7 @@ def demo_real_world_example():
     print("=" * 50)
 
     # Category schema
-    category_schema = Schema([
+    category_schema = Schema(name="Category", fields=[
         Fld("id", Annotated[int, PrimaryKey()]),
         Fld("name", str),
         Fld("slug", str),
@@ -299,7 +299,7 @@ def demo_real_world_example():
     ])
 
     # Product schema
-    product_schema = Schema([
+    product_schema = Schema(name="Product", fields=[
         Fld("id", Annotated[int, PrimaryKey()]),
         Fld("name", str),
         Fld("slug", str),
@@ -314,7 +314,7 @@ def demo_real_world_example():
     ])
 
     # Order schema
-    order_schema = Schema([
+    order_schema = Schema(name="Order", fields=[
         Fld("id", Annotated[int, PrimaryKey()]),
         Fld("customer_email", str),
         Fld("total_amount", float),
@@ -324,9 +324,9 @@ def demo_real_world_example():
     ])
 
     print("E-commerce schemas created:")
-    print(f"📁 Categories: {len(category_schema.fields)} fields")
-    print(f"📦 Products: {len(product_schema.fields)} fields")
-    print(f"🛒 Orders: {len(order_schema.fields)} fields")
+    print(f"📁 Categories: {len(category_schema.get_fields())} fields")
+    print(f"📦 Products: {len(product_schema.get_fields())} fields")
+    print(f"🛒 Orders: {len(order_schema.get_fields())} fields")
 
     # Generate SQL for all tables
     print("\nGenerated SQL tables:")
