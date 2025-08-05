@@ -5,7 +5,7 @@ from .types import Schema, Fld, PrimaryKey, Reference
 
 def print_schema(schema: Schema) -> None:
     """Print a human-readable representation of the schema."""
-    print(f"Schema:")
+    print("Schema:")
     for field in schema.get_fields():
         annotations = []
         if hasattr(field.field_type, '__metadata__'):
