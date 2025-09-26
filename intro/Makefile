@@ -4,16 +4,16 @@
 
 up:
 	@echo "Starting environment..."
-	DUID=$$(id -u) DGID=$$(id -g) docker-compose up
+	DUID=$$(id -u) DGID=$$(id -g) docker compose up
 
 down:
 	@echo "Stopping environment..."
-	DUID=$$(id -u) DGID=$$(id -g) docker-compose down
+	DUID=$$(id -u) DGID=$$(id -g) docker compose down
 
 logs:
 	@echo "Showing logs..."
-	docker-compose logs -f
+	docker compose logs -f
 
 shell:
 	@echo "Opening shell in notebook container..."
-	docker-compose exec notebook /bin/bash
+	docker compose exec notebook /bin/bash
