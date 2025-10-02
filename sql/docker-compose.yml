@@ -33,7 +33,7 @@ services:
       test: ["CMD", "test", "-e", "/workspace/data/done"]
       interval: 10s
       timeout: 3s
-      retries: 5
+      retries: 15
       start_period: 20s
 
   mysql:
