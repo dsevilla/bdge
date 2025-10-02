@@ -4,6 +4,7 @@
 
 up:
 	@echo "Starting environment..."
+	chmod -R a+w data # Hack para el laboratorio
 	DUID=$$(id -u) DGID=$$(id -g) docker compose up
 
 down:
