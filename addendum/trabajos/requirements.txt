@@ -1,5 +1,0 @@
-ipython
-ipython-sql
-pymysql
-jinja2
-nbformat
