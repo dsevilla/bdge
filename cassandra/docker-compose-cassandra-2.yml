@@ -1,0 +1,90 @@
+networks:
+  cassandra-net:
+    driver: bridge
+
+services:
+
+  cassandra1:
+    image: "cassandra:latest"
+    container_name: "cassandra1"
+    hostname: "cassandra1"
+    ports:
+      - 7070:7000
+      - 9042:9042
+    networks:
+      - cassandra-net
+    volumes:
+      - /tmp/cassandra:/tmp/cassandra
+    environment:
+      - CASSANDRA_START_RPC=true       # default
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0  # default
+      - CASSANDRA_LISTEN_ADDRESS=auto  # default, use IP addr of container # = CASSANDRA_BROADCAST_ADDRESS
+      - CASSANDRA_CLUSTER_NAME=my-cluster
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_DC=my-datacenter-1
+      - CASSANDRA_SEEDS=cassandra1:7070
+    restart:
+      on-failure
+    command: bash -c 'sed -i -e "s/\(storage_port:\).*/\\1 7070/;s/\(tombstone_failure_threshold:\).*/\\1 100000/;s/\(batch_size_warn_threshold:\).*/\\1 128KiB/;s/\(batch_size_fail_threshold:\).*/\\1 1024KiB/" /etc/cassandra/cassandra.yaml && /usr/local/bin/docker-entrypoint.sh cassandra -f'
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status"]
+      interval: 30s
+      start_period: 120s
+      timeout: 15s
+      retries: 5
+    labels:
+      - "project=bdge"
+      - "service=cassandra"
+      - "environment=development"
+
+  cassandra2:
+    image: "cassandra:latest"
+    container_name: "cassandra2"
+    hostname: "cassandra2"
+    ports:
+      - 7020:7010
+      - 9043:9042
+    networks:
+      - cassandra-net
+    environment:
+      - CASSANDRA_START_RPC=true       # default
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0  # default
+      - CASSANDRA_LISTEN_ADDRESS=auto  # default, use IP addr of container # = CASSANDRA_BROADCAST_ADDRESS
+      - CASSANDRA_CLUSTER_NAME=my-cluster
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_DC=my-datacenter-1
+      - CASSANDRA_SEEDS=cassandra1:7070
+    depends_on:
+      cassandra1:
+        condition: service_healthy
+    restart:
+      on-failure
+    command: bash -c 'sed -i -e "s/\(storage_port:\).*/\\1 7070/;s/\(tombstone_failure_threshold:\).*/\\1 1000000/;s/\(batch_size_warn_threshold:\).*/\\1 128KiB/;s/\(batch_size_fail_threshold:\).*/\\1 1024KiB/" /etc/cassandra/cassandra.yaml && /usr/local/bin/docker-entrypoint.sh cassandra -f'
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status"]
+      interval: 30s
+      start_period: 150s
+      timeout: 15s
+      retries: 5
+    labels:
+      - "project=bdge"
+      - "service=cassandra"
+      - "environment=development"
+
+  notebook:
+    image: "quay.io/jupyter/scipy-notebook:latest"
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan/work/bdge
+      - /tmp/cassandra:/tmp/cassandra
+    environment:
+      - GRANT_SUDO=yes
+      - JUPYTER_TOKEN=bdge
+      - DB_HOSTNAME=cassandra1
+      - RUNNING_IN_CONTAINER=true
+    networks:
+      - cassandra-net
+    depends_on:
+      cassandra1:
+        condition: service_healthy
