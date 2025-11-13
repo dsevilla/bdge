@@ -29,7 +29,7 @@ class SecureConfigServer:
         self.mod_cn: int = self._get_validated_mod_cn()
         self.base_port: int = self._get_validated_base_port()
         self.max_connections: int = int(os.getenv('MAX_CONNECTIONS', '100'))
-        self.allowed_paths: set[str] = {'/config', '/health', '/'}  # Whitelist allowed paths
+        self.allowed_paths: set[str] = {'/frp-neo4j', '/health', '/'}  # Whitelist allowed paths
 
         # Security settings
         self.enable_rate_limiting: bool = os.getenv('ENABLE_RATE_LIMIT', 'true').lower() == 'true'
@@ -259,7 +259,7 @@ class HardenedRequestHandler(BaseHTTPRequestHandler):
 
             if parsed_path.path == '/health':
                 self._handle_health_check()
-            elif parsed_path.path in ['/config', '/']:
+            elif parsed_path.path in ['/frp-neo4j', '/']:
                 self._handle_config_request()
             else:
                 self._send_error_response(404, "Not found")
@@ -382,7 +382,7 @@ def main():
 
         logging.info(f"Hardened FRP Config Server started on http://{config_server.host_name}:{config_server.server_port}")
         logging.info(f"Health check available at: http://{config_server.host_name}:{config_server.server_port}/health")
-        logging.info(f"Configuration endpoint: http://{config_server.host_name}:{config_server.server_port}/config")
+        logging.info(f"Configuration endpoint: http://{config_server.host_name}:{config_server.server_port}/frp-neo4j")
 
         # Additional security warnings
         if config_server.host_name == '0.0.0.0':

@@ -297,7 +297,7 @@ class ServerMockTester:
         # Handle specific paths
         if parsed_path.path == '/health':
             self._simulate_health_check(mock_handler)
-        elif parsed_path.path in ['/config', '/']:
+        elif parsed_path.path in ['/frp-neo4j', '/']:
             self._simulate_config_request(mock_handler)
         else:
             mock_handler.send_response(404)
@@ -477,8 +477,8 @@ def create_test_scenarios() -> list[tuple[str, list[MockRequest]]]:
     # Scenario 1: Basic functionality test
     basic_requests = [
         MockRequest('GET', '/health'),
-        MockRequest('GET', '/config'),
-        MockRequest('GET', '/config'),
+        MockRequest('GET', '/frp-neo4j'),
+        MockRequest('GET', '/frp-neo4j'),
         MockRequest('GET', '/'),
         MockRequest('GET', '/health'),
     ]
@@ -486,36 +486,36 @@ def create_test_scenarios() -> list[tuple[str, list[MockRequest]]]:
 
     # Scenario 2: Rate limiting test
     rate_limit_requests = [
-        MockRequest('GET', '/config', client_ip='192.168.1.100') for _ in range(10)
+        MockRequest('GET', '/frp-neo4j', client_ip='192.168.1.100') for _ in range(10)
     ]
     scenarios.append(('Rate Limiting', rate_limit_requests))
 
     # Scenario 3: Security test (unauthorized paths)
     security_requests = [
         MockRequest('GET', '/admin'),
-        MockRequest('GET', '/config'),
+        MockRequest('GET', '/frp-neo4j'),
         MockRequest('GET', '/../../etc/passwd'),
-        MockRequest('GET', '/config'),
-        MockRequest('POST', '/config'),
-        MockRequest('PUT', '/config'),
-        MockRequest('DELETE', '/config'),
+        MockRequest('GET', '/frp-neo4j'),
+        MockRequest('POST', '/frp-neo4j'),
+        MockRequest('PUT', '/frp-neo4j'),
+        MockRequest('DELETE', '/frp-neo4j'),
     ]
     scenarios.append(('Security Tests', security_requests))
 
     # Scenario 4: Mixed client test
     mixed_requests = [
-        MockRequest('GET', '/config', client_ip='192.168.1.1'),
-        MockRequest('GET', '/config', client_ip='192.168.1.2'),
-        MockRequest('GET', '/config', client_ip='192.168.1.1'),
+        MockRequest('GET', '/frp-neo4j', client_ip='192.168.1.1'),
+        MockRequest('GET', '/frp-neo4j', client_ip='192.168.1.2'),
+        MockRequest('GET', '/frp-neo4j', client_ip='192.168.1.1'),
         MockRequest('GET', '/health', client_ip='192.168.1.3'),
-        MockRequest('GET', '/config', client_ip='192.168.1.2'),
+        MockRequest('GET', '/frp-neo4j', client_ip='192.168.1.2'),
     ]
     scenarios.append(('Mixed Clients', mixed_requests))
 
     # Scenario 5: Large request test
     large_request = MockRequest(
         'GET',
-        '/config',
+        '/frp-neo4j',
         headers={'Content-Length': '2048'},
         body='x' * 2048
     )
@@ -569,8 +569,8 @@ def demo_mock_testing():
         # Test basic endpoints
         requests = [
             MockRequest('GET', '/health'),
-            MockRequest('GET', '/config'),
-            MockRequest('GET', '/config'),
+            MockRequest('GET', '/frp-neo4j'),
+            MockRequest('GET', '/frp-neo4j'),
         ]
 
         responses = tester.simulate_request_sequence(requests)
@@ -590,7 +590,7 @@ def demo_mock_testing():
 
         # Make requests until rate limited
         for i in range(5):
-            request = MockRequest('GET', '/config', client_ip=client_ip)
+            request = MockRequest('GET', '/frp-neo4j', client_ip=client_ip)
             response = tester.simulate_request(request)
 
             rate_status = tester.get_rate_limit_status(client_ip)
@@ -604,8 +604,8 @@ def demo_mock_testing():
     with ServerMockTester() as tester:
         security_requests = [
             MockRequest('GET', '/admin'),  # Should be blocked
-            MockRequest('POST', '/config'),  # Should be blocked
-            MockRequest('GET', '/config'),  # Should work
+            MockRequest('POST', '/frp-neo4j'),  # Should be blocked
+            MockRequest('GET', '/frp-neo4j'),  # Should work
             MockRequest('GET', '/../../etc/passwd'),  # Should be blocked
         ]
 
@@ -626,7 +626,7 @@ def run_custom_scenario():
 
         responses = []
         for i in range(5):  # More than MOD_CN to test wraparound
-            request = MockRequest('GET', '/config', client_ip=f'192.168.1.{i+1}')
+            request = MockRequest('GET', '/frp-neo4j', client_ip=f'192.168.1.{i+1}')
             response = tester.simulate_request(request)
             responses.append(response)
 
