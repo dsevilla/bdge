@@ -1,0 +1,32 @@
+services:
+
+  neo4j:
+    image: neo4j:latest
+    environment:
+      - NEO4J_AUTH=none
+      - NEO4J_server_memory_heap_max__size=6G
+      - NEO4J_db_import_csv_legacy__quote__escaping=false
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    healthcheck:
+      test: "wget -qq http://localhost:7474"
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  notebook:
+    image: "quay.io/jupyter/scipy-notebook:latest"
+    ports:
+      - "8888:8888"
+    user: root
+    volumes:
+      - ..:/home/jovyan/work/bdge
+    environment:
+      - GRANT_SUDO=yes
+      - JUPYTER_TOKEN=bdge
+      - DB_HOSTNAME=neo4j
+    depends_on:
+      neo4j:
+        condition: service_healthy
