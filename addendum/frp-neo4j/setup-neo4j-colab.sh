@@ -13,3 +13,4 @@ curl -fsL http://dsevilla-proxy.inf.um.es/frp-neo4j -o frpc.ini
 curl -fsL "https://github.com/fatedier/frp/releases/download/v0.65.0/frp_0.65.0_linux_amd64.tar.gz" | tar zxf -
 ./frp_*/frpc -c frpc.ini >/dev/null 2>&1 &
 grep ^remote_port frpc.ini | sed -e '1s/remote_port = /http:\/\/dsevilla-proxy.inf.um.es:/;2s/remote_port = /bolt:\/\/dsevilla-proxy.inf.um.es:/'
+
