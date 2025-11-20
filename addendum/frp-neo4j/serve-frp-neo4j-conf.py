@@ -93,7 +93,7 @@ class SecureConfigServer:
             logging.error(f"Invalid BASE_PORT: {e}")
             sys.exit(1)
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Setup secure logging configuration."""
         log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
         log_file = os.getenv('LOG_FILE', 'frp-config-server.log')
