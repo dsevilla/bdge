@@ -1,7 +1,7 @@
 #! /bin/sh
 
 sudo apt update -qq
-DEBIAN_FRONTEND=noninteractive sudo apt install -qq -y apt-transport-https ca-certificates software-properties-common
+DEBIAN_FRONTEND=noninteractive sudo apt install -qq -y apt-transport-https ca-certificates software-properties-common apt-utils default-jre-headless
 curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
 sudo add-apt-repository -y "deb https://debian.neo4j.com stable latest"
 DEBIAN_FRONTEND=noninteractive sudo apt install --reinstall -y -qq neo4j
