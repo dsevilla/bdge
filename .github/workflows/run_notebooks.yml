@@ -68,7 +68,7 @@ jobs:
 
     - name: Run notebook
       run: |
-        papermill ${{ matrix.notebook }} ${{matrix.notebook}}.output.ipynb
+        papermill ${{ matrix.notebook }} ${{matrix.notebook}}.output.ipynb --log-output --log-level DEBUG --progress-bar
 
     - name: Convert notebook to HTML
       run: |
