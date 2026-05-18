@@ -20,11 +20,11 @@ fi
 
 echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
 
-sudo apt-get update -qq
+sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
 
 sudo ln -sf /bin/true /bin/systemctl
 
-sudo apt-get install -y -qq dialog mongodb-org
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq dialog mongodb-org
 
 sudo /usr/bin/mongod --config /etc/mongod.conf --fork
 
