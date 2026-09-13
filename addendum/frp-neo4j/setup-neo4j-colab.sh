@@ -14,7 +14,7 @@ sudo neo4j start || echo "[AVISO] 'neo4j start' devolvió un código de error; s
 echo "Esperando a que Neo4j acepte conexiones Bolt en localhost:7687..."
 ready=0
 for i in $(seq 1 60); do
-  if cypher-shell -a bolt://localhost:7687 -u neo4j -p "" "RETURN 1;" >/dev/null 2>&1; then
+  if timeout 5 cypher-shell -a bolt://localhost:7687 -u neo4j -p "" "RETURN 1;" </dev/null >/dev/null 2>&1; then
     ready=1
     break
   fi
@@ -22,7 +22,7 @@ for i in $(seq 1 60); do
 done
 
 if [ "$ready" -ne 1 ]; then
-  echo "[ERROR] Neo4j no respondió por Bolt tras esperar 120s. Diagnóstico:" >&2
+  echo "[ERROR] Neo4j no respondió por Bolt tras varios minutos de espera. Diagnóstico:" >&2
   sudo neo4j status || true
   sudo tail -n 100 /var/log/neo4j/neo4j.log 2>/dev/null || true
   sudo tail -n 100 /var/log/neo4j/debug.log 2>/dev/null || true
