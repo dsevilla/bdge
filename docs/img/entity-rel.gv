@@ -1,0 +1,15 @@
+graph "ER-x" {
+node [shape=box,peripheries=1]; "Empleado";
+node [shape=box,peripheries=1]; "Departamento";
+node [shape=ellipse,peripheries=1]; {node [label=<<u>dni</u>>]; "Empleado_dni";} {node [label="nombre"]; "Empleado_nombre";} {node [label=<<u>Id</u>>]; "Departamento_Id";} {node [label="nombre"]; "Departamento_nombre";}
+node [shape=ellipse]; {node [label="desde"]; "pertenece-a_desde";}
+node [shape=diamond,style=filled,color=lightgrey]; "pertenece-a";
+
+"Empleado" -- "Empleado_dni";
+"Empleado" -- "Empleado_nombre";
+"Departamento" -- "Departamento_Id";
+"Departamento" -- "Departamento_nombre";
+"pertenece-a" -- "pertenece-a_desde" [color=black];
+"Empleado" -- "pertenece-a" [label="[*] empleado",color="black:white:black",len=1.5];
+"Departamento" -- "pertenece-a" [label="[1] dept",color="black",len=1.5];
+}

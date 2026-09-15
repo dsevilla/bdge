@@ -1,0 +1,13 @@
+graph "ER-x" {
+node [shape=box,peripheries=1]; "Ruta";
+node [shape=box,peripheries=2]; "Parada";
+node [shape=ellipse,peripheries=1]; {node [label=<<u>id</u>>]; "Ruta_id";} {node [label="nombre"]; "Ruta_nombre";} {node [label="nombre"]; "Parada_nombre";}
+node [shape=ellipse];
+node [shape=diamond,style=filled,color=lightgrey,peripheries=2]; "contiene";
+
+"Ruta" -- "Ruta_id";
+"Ruta" -- "Ruta_nombre";
+"Parada" -- "Parada_nombre";
+"Ruta" -- "contiene" [label="[1] ruta",color="black:white:black",len=1.5];
+"Parada" -- "contiene" [label="[*] parada",color="black:white:black",len=1.5];
+}

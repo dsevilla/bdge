@@ -1,0 +1,8 @@
+graph "ER-null" {
+node [shape=box]; "Empleado";
+node [shape=ellipse]; {node [label=<<u>dni</u>>]; "Empleado_dni";} {node [label="nombre"]; "Empleado_nombre";}
+node [shape=ellipse];
+
+"Empleado" -- "Empleado_dni";
+"Empleado" -- "Empleado_nombre";
+}

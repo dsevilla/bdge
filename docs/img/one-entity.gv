@@ -1,0 +1,6 @@
+graph "ER-null" {
+node [shape=box]; "Empleado";
+node [shape=ellipse];
+node [shape=ellipse];
+
+}

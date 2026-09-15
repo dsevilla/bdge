@@ -1,0 +1,186 @@
+/* @theme bdge */
+
+@import "default";
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+:root {
+  --bdge-gold: #f2b705;
+  --bdge-gold-dark: #c98b00;
+  --bdge-gold-soft: #fff5cc;
+  --bdge-red: #a9251a;
+  --bdge-ink: #18232d;
+  --bdge-ink-soft: #314554;
+  --bdge-muted: #5e6b74;
+  --bdge-line: #d8d6cb;
+  --bdge-code-string: #ffd166;
+  --bdge-data-work: #f5c9d8;
+  --bdge-data-science: #c9e4f6;
+}
+
+section {
+  background: #fffefa;
+  color: var(--bdge-ink);
+  display: flex;
+  flex-direction: column;
+  font-family: "Atkinson Hyperlegible", Inter, "Aptos", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 35px;
+  justify-content: center;
+  line-height: 1.28;
+  padding: 112px 72px 58px;
+}
+
+section::before {
+  background: linear-gradient(90deg, var(--bdge-gold-dark), var(--bdge-gold), var(--bdge-red));
+  content: "";
+  height: 10px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+section::after { color: var(--bdge-muted); font-size: 18px; right: 30px; }
+header, footer { color: var(--bdge-muted); font-size: 17px; }
+footer { bottom: 18px; left: 72px; }
+
+h1, h2, h3 { color: var(--bdge-ink-soft); font-weight: 700; letter-spacing: -0.02em; }
+h1 { border-bottom: 3px solid var(--bdge-gold); font-size: 47px; line-height: 1.05; margin: 0 0 16px; padding-bottom: 8px; }
+
+/* Los títulos normales se mantienen en la franja superior. */
+section:not(.lead):not(.section-divider) h1 {
+  box-sizing: border-box;
+  left: 72px;
+  overflow-wrap: anywhere;
+  position: absolute;
+  right: 72px;
+  text-wrap: balance;
+  top: 44px;
+}
+
+h2 { font-size: 39px; margin: 20px 0 10px; }
+p, li { color: var(--bdge-ink); }
+li::marker { color: var(--bdge-red); font-weight: 700; }
+strong { color: var(--bdge-ink-soft); }
+a { color: var(--bdge-red); }
+
+table { border-collapse: collapse; font-size: 30px; margin: 18px auto; width: 100%; }
+thead, section table thead tr { background: var(--bdge-ink-soft); color: #fff; }
+th { color: #fff; font-weight: 700; }
+th, td { border: 1px solid var(--bdge-line); padding: 10px 14px; text-align: left; vertical-align: middle; }
+tbody tr:nth-child(even) { background: var(--bdge-gold-soft); }
+
+blockquote { background: var(--bdge-gold-soft); border-left: 8px solid var(--bdge-gold-dark); margin: 30px 0 0; padding: 14px 22px; }
+blockquote p { margin: 0; }
+
+/* Gráfico 80/20 construido sólo con Markdown y CSS. Evita HTML embebido,
+   que Marp puede omitir al generar el PDF si no se habilita expresamente. */
+section.data-science-share blockquote {
+  background: linear-gradient(
+    90deg,
+    var(--bdge-data-work) 0 80%,
+    var(--bdge-data-science) 80% 100%
+  );
+  border: 0;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 2px rgba(24, 35, 45, 0.12);
+  margin: 58px 0 34px;
+  padding: 0;
+}
+section.data-science-share blockquote p {
+  display: grid;
+  grid-template-columns: 4fr 1fr;
+  min-height: 168px;
+}
+section.data-science-share blockquote strong {
+  align-items: center;
+  color: var(--bdge-ink);
+  display: flex;
+  font-size: 21px;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+section.data-science-share blockquote strong:last-child {
+  border-left: 2px solid rgba(24, 35, 45, 0.18);
+  padding: 12px;
+  white-space: nowrap;
+}
+section.data-science-share > p:last-child {
+  font-size: 30px;
+  margin: 0;
+  text-align: center;
+}
+pre { background: var(--bdge-ink); border-radius: 8px; color: #f8fafc; font-size: 27px; padding: 18px 22px; }
+code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; }
+/* highlight.js picks its light-mode GitHub color for `.hljs-subst` (e.g. the
+   `{var}` interpolation inside an f-string), which is near-black and
+   invisible against the dark `pre` background above: force it back to the
+   same light color as the rest of the block. */
+pre .hljs-subst { color: #f8fafc; }
+/* El tema de Highlight.js importado por Marp asigna a las cadenas un azul
+   pensado para fondos claros. Sobre el fondo de tinta del tema BDGE se usa un
+   dorado luminoso, también para expresiones regulares y cadenas en metadatos. */
+pre .hljs-string,
+pre .hljs-regexp,
+pre .hljs-meta .hljs-string { color: var(--bdge-code-string); }
+
+section.lead {
+  background: radial-gradient(circle at 84% 18%, rgba(255, 255, 255, 0.14), transparent 23%), linear-gradient(135deg, var(--bdge-ink), var(--bdge-ink-soft) 62%, var(--bdge-gold-dark));
+  color: #fff;
+  justify-content: center;
+  padding: 86px 90px;
+}
+section.lead::before { display: none; }
+section.lead h1 { border: 0; color: #fff; font-size: 73px; line-height: 1.08; margin-bottom: 18px; max-width: 1050px; padding: 0; }
+section.lead h2 { color: #ffe89a; font-size: 44px; margin: 0 0 42px; }
+section.lead p, section.lead strong, section.lead a { color: #fff; }
+
+section.compact { font-size: 27px; line-height: 1.2; }
+section.compact h1, section.schedule h1, section.bibliography h1 { margin-bottom: 15px; }
+section.long-title h1 { font-size: 39px; line-height: 1.08; top: 40px; }
+section.long-title { padding-top: 126px; }
+section.compact li, section.dense li { margin: 2px 0; }
+
+section.schedule { font-size: 26px; }
+section.schedule table { font-size: 23px; margin-top: 8px; }
+section.schedule th, section.schedule td, section.dense th, section.dense td { padding: 7px 10px; }
+section.calendar-view { padding-top: 104px; }
+section.calendar-view pre {
+  font-size: 16px;
+  line-height: 1.12;
+  margin: 0;
+  padding: 14px 20px;
+  width: 100%;
+}
+section.bibliography { font-size: 26px; }
+section.bibliography h2 { font-size: 33px; margin: 12px 0 6px; }
+section.bibliography li { margin: 3px 0; }
+
+section.figure-only { padding: 100px 52px 54px; }
+section.figure-only p { margin: 0 auto; text-align: center; }
+/* .figure-only's `padding` shorthand would otherwise override .long-title's
+   padding-top (same specificity, figure-only comes later): restore it. */
+section.figure-only.long-title { padding-top: 126px; }
+section.figure-only img { display: block; margin: 0 auto; max-height: 510px; max-width: 100%; }
+
+section.section-divider {
+  align-items: center;
+  background: linear-gradient(135deg, var(--bdge-ink), var(--bdge-ink-soft) 65%, var(--bdge-gold-dark));
+  color: #fff;
+  justify-content: center;
+  padding: 80px;
+  text-align: center;
+}
+section.section-divider::before, section.section-divider::after { display: none; }
+section.section-divider h1 { border: 0; color: #fff; font-size: 68px; line-height: 1.1; margin: 0; padding: 0; }
+section.section-divider p { color: #ffe89a; font-size: 35px; margin-top: 22px; }
+section.section-divider footer { display: none; }
+
+.columns { align-items: center; display: flex; gap: 28px; width: 100%; }
+.column { flex: 1; }
+.column img { display: block; margin: 0 auto; max-height: 250px; max-width: 100%; }
+
+section.dense { font-size: 26px; line-height: 1.17; }
+section.dense table { font-size: 23px; }
+section.code { font-size: 30px; }
+section.code pre { font-size: 22px; line-height: 1.2; }
