@@ -1,8 +1,0 @@
-graph "ER-null" {
-node [shape=box,peripheries=1]; "Entidad1";
-node [shape=box,peripheries=1]; "Entidad2";
-node [shape=diamond,style=filled,color=lightgrey]; "Relación";
-
-"Entidad1" -- "Relación" [label="[n]",color="black",len=1.5];
-"Relación" -- "Entidad2" [label="[m]",color="black",len=1.5];
-}
