@@ -12,7 +12,11 @@
     body { background: #fffefa; color: var(--tinta); font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", sans-serif; margin: 0; }
     body::before { background: linear-gradient(90deg, var(--oro-oscuro), var(--oro), var(--rojo)); content: ""; display: block; height: .65rem; }
     header, main, footer { margin: auto; max-width: 72rem; padding-left: 1.5rem; padding-right: 1.5rem; }
-    header { padding-bottom: 2rem; padding-top: 4rem; }
+    header { align-items: center; display: flex; gap: 1.5rem; padding-bottom: 2rem; padding-top: 4rem; }
+    .marca { border: 0; color: inherit; display: block; flex: 0 0 10rem; padding: 0; }
+    .marca img { background: var(--tinta); border-radius: .5rem; display: block; height: auto; width: 10rem; }
+    .marca:hover, .marca:focus-visible { box-shadow: none; }
+    .cabecera-texto { flex: 1; }
     h1 { color: var(--tinta-suave); font-size: clamp(2.5rem, 7vw, 4.8rem); letter-spacing: -.04em; line-height: 1; margin: 0 0 1rem; }
     header p { color: var(--rojo); font-size: 1.35rem; margin: 0; }
     main { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); padding-bottom: 3rem; }
@@ -24,12 +28,21 @@
     a.principal { background: var(--rojo); color: white; }
     a:hover, a:focus-visible { box-shadow: 0 0 0 .2rem rgb(242 183 5 / 45%); outline: none; }
     footer { border-top: 1px solid var(--linea); color: #5e6b74; padding-bottom: 2rem; padding-top: 1.5rem; }
+    @media (max-width: 42rem) {
+      header { align-items: flex-start; flex-direction: column; padding-top: 2rem; }
+      .marca, .marca img { width: 8rem; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Bases de Datos a Gran Escala</h1>
-    <p>Transparencias · Curso 2026/2027</p>
+    <a class="marca" href="index.html" aria-label="Índice de transparencias BDGE">
+      <img src="img/bdge-skynet.png" alt="BDGE · Bases de Datos a Gran Escala">
+    </a>
+    <div class="cabecera-texto">
+      <h1>Bases de Datos a Gran Escala</h1>
+      <p>Transparencias · Curso 2026/2027</p>
+    </div>
   </header>
   <main>
       <article class="tema">
