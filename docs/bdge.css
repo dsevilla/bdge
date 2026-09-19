@@ -39,8 +39,8 @@ section::before {
   top: 0;
 }
 
-section::after { color: var(--bdge-muted); font-size: 18px; right: 30px; }
-header, footer { color: var(--bdge-muted); font-size: 17px; }
+section::after { color: var(--bdge-muted); font-size: 20px; right: 30px; }
+header, footer { color: var(--bdge-muted); font-size: 19px; }
 footer { bottom: 18px; left: 72px; }
 
 h1, h2, h3 { color: var(--bdge-ink-soft); font-weight: 700; letter-spacing: -0.02em; }
@@ -63,7 +63,7 @@ li::marker { color: var(--bdge-red); font-weight: 700; }
 strong { color: var(--bdge-ink-soft); }
 a { color: var(--bdge-red); }
 
-table { border-collapse: collapse; font-size: 30px; margin: 18px auto; width: 100%; }
+table { border-collapse: collapse; font-size: 32px; margin: 18px auto; width: 100%; }
 thead, section table thead tr { background: var(--bdge-ink-soft); color: #fff; }
 th { color: #fff; font-weight: 700; }
 th, td { border: 1px solid var(--bdge-line); padding: 10px 14px; text-align: left; vertical-align: middle; }
@@ -110,7 +110,7 @@ section.data-science-share > p:last-child {
   margin: 0;
   text-align: center;
 }
-pre { background: var(--bdge-ink); border-radius: 8px; color: #f8fafc; font-size: 27px; padding: 18px 22px; }
+pre { background: var(--bdge-ink); border-radius: 8px; color: #f8fafc; font-size: 28px; padding: 18px 22px; }
 code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; }
 /* highlight.js picks its light-mode GitHub color for `.hljs-subst` (e.g. the
    `{var}` interpolation inside an f-string), which is near-black and
@@ -160,14 +160,14 @@ section.skynet img {
   width: auto;
 }
 
-section.compact { font-size: 27px; line-height: 1.2; }
+section.compact { font-size: 30px; line-height: 1.2; }
 section.compact h1, section.schedule h1, section.bibliography h1 { margin-bottom: 15px; }
 section.long-title h1 { font-size: 39px; line-height: 1.08; top: 40px; }
 section.long-title { padding-top: 126px; }
 section.compact li, section.dense li { margin: 2px 0; }
 
-section.schedule { font-size: 26px; }
-section.schedule table { font-size: 23px; margin-top: 8px; }
+section.schedule { font-size: 28px; }
+section.schedule table { font-size: 26px; margin-top: 8px; }
 section.schedule th, section.schedule td, section.dense th, section.dense td { padding: 7px 10px; }
 section.calendar-view { padding-top: 104px; }
 section.calendar-view pre {
@@ -177,8 +177,8 @@ section.calendar-view pre {
   padding: 14px 20px;
   width: 100%;
 }
-section.bibliography { font-size: 26px; }
-section.bibliography h2 { font-size: 33px; margin: 12px 0 6px; }
+section.bibliography { font-size: 28px; }
+section.bibliography h2 { font-size: 34px; margin: 12px 0 6px; }
 section.bibliography li { margin: 3px 0; }
 
 section.figure-only { padding: 100px 52px 54px; }
@@ -187,6 +187,10 @@ section.figure-only p { margin: 0 auto; text-align: center; }
    padding-top (same specificity, figure-only comes later): restore it. */
 section.figure-only.long-title { padding-top: 126px; }
 section.figure-only img { display: block; margin: 0 auto; max-height: 510px; max-width: 100%; }
+/* Varias figuras en la misma diapositiva, de izquierda a derecha (p. ej.
+   «A vs B»). Cada imagen conserva el tamaño que se le fije en Markdown. */
+section.figure-only.figure-row p { align-items: center; display: flex; gap: 32px; justify-content: center; }
+section.figure-only.figure-row img { flex: none; margin: 0; }
 
 section.section-divider {
   align-items: center;
@@ -205,7 +209,13 @@ section.section-divider footer { display: none; }
 .column { flex: 1; }
 .column img { display: block; margin: 0 auto; max-height: 250px; max-width: 100%; }
 
-section.dense { font-size: 26px; line-height: 1.17; }
-section.dense table { font-size: 23px; }
+section.dense { font-size: 29px; line-height: 1.17; }
+section.dense table { font-size: 26px; }
 section.code { font-size: 30px; }
-section.code pre { font-size: 22px; line-height: 1.2; }
+section.code pre { font-size: 23px; line-height: 1.2; }
+
+/* Fórmulas (KaTeX, `math: katex` en la cabecera): algo mayores que el texto
+   para que subíndices y símbolos como ⋈ o σ se lean desde el fondo del aula. */
+.katex { font-size: 1.15em; }
+.katex-display { margin: 0.55em 0; }
+section.compact .katex-display { margin: 0.4em 0; }
