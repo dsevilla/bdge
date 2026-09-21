@@ -166,9 +166,11 @@ section.long-title h1 { font-size: 39px; line-height: 1.08; top: 40px; }
 section.long-title { padding-top: 126px; }
 section.compact li, section.dense li { margin: 2px 0; }
 
-section.schedule { font-size: 28px; }
-section.schedule table { font-size: 26px; margin-top: 8px; }
+section.schedule { font-size: 26px; }
+section.schedule table { font-size: 23px; margin: 8px auto 4px; }
 section.schedule th, section.schedule td, section.dense th, section.dense td { padding: 7px 10px; }
+section.schedule th, section.schedule td { padding: 5px 10px; }
+section.schedule > p { font-size: 22px; margin: 0; text-align: center; }
 section.calendar-view { padding-top: 104px; }
 section.calendar-view pre {
   font-size: 16px;
