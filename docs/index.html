@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Transparencias de Bases de Datos a Gran Escala">
-  <title>BDGE · Transparencias</title>
+  <meta name="description" content="Transparencias y boletines de Bases de Datos a Gran Escala">
+  <title>BDGE · Transparencias y boletines</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap");
     :root { color-scheme: light; --oro: #f2b705; --oro-oscuro: #c98b00; --rojo: #a9251a; --tinta: #18232d; --tinta-suave: #314554; --linea: #d8d6cb; }
@@ -19,11 +19,14 @@
     .cabecera-texto { flex: 1; }
     h1 { color: var(--tinta-suave); font-size: clamp(2.5rem, 5vw, 4rem); letter-spacing: -.04em; line-height: 1; margin: 0 0 1rem; }
     header p { color: var(--rojo); font-size: 1.35rem; margin: 0; }
-    main { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); padding-bottom: 3rem; }
+    main { display: flex; flex-direction: column; gap: 3rem; padding-bottom: 3rem; }
+    main > section > h2 { border-bottom: 2px solid var(--linea); color: var(--tinta-suave); font-size: 1.6rem; margin: 0 0 1.25rem; padding-bottom: .5rem; }
+    .temas { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); }
     .tema { background: white; border: 1px solid var(--linea); border-radius: .75rem; box-shadow: 0 .3rem 1rem rgb(24 35 45 / 8%); display: flex; flex-direction: column; padding: 1.5rem; }
-    h2 { color: var(--tinta-suave); font-size: 1.55rem; line-height: 1.2; margin: 0; }
-    .tema p { flex: 1; line-height: 1.45; }
-    nav { align-items: center; display: flex; gap: .75rem; }
+    .etiqueta { color: var(--oro-oscuro); font-size: .8rem; font-weight: 700; letter-spacing: .08em; margin: 0 0 .35rem; text-transform: uppercase; }
+    h3 { color: var(--tinta-suave); font-size: 1.55rem; line-height: 1.2; margin: 0; }
+    .tema p:not(.etiqueta) { flex: 1; line-height: 1.45; }
+    nav { align-items: center; display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
     a { border: 2px solid var(--rojo); border-radius: .4rem; color: var(--rojo); font-weight: 700; padding: .55rem .8rem; text-decoration: none; }
     a.principal { background: var(--rojo); color: white; }
     a:hover, a:focus-visible { box-shadow: 0 0 0 .2rem rgb(242 183 5 / 45%); outline: none; }
@@ -36,17 +39,20 @@
 </head>
 <body>
   <header>
-    <a class="marca" href="index.html" aria-label="Índice de transparencias BDGE">
+    <a class="marca" href="index.html" aria-label="Índice de transparencias y boletines BDGE">
       <img src="img/bdge-skynet.png" alt="BDGE · Bases de Datos a Gran Escala">
     </a>
     <div class="cabecera-texto">
       <h1>Bases de Datos a Gran Escala</h1>
-      <p>Transparencias · Curso 2026/2027</p>
+      <p>Transparencias y boletines · Curso 2026/2027</p>
     </div>
   </header>
   <main>
+    <section aria-labelledby="transparencias">
+      <h2 id="transparencias">Transparencias</h2>
+      <div class="temas">
       <article class="tema">
-        <h2>Sesión 0 · Introducción</h2>
+        <h3>Sesión 0 · Introducción</h3>
         <p>Introducción a la asignatura BDGE para el curso 2026/2027</p>
         <nav aria-label="Formatos de Sesión 0 · Introducción">
           <a class="principal" href="sesion0.html">Ver transparencias</a>
@@ -54,7 +60,7 @@
         </nav>
       </article>
       <article class="tema">
-        <h2>Sesión 1 · Modelado de datos, modelo relacional y consultas SQL</h2>
+        <h3>Sesión 1 · Modelado de datos, modelo relacional y consultas SQL</h3>
         <p>Modelado de datos, modelo relacional y consultas SQL</p>
         <nav aria-label="Formatos de Sesión 1 · Modelado de datos, modelo relacional y consultas SQL">
           <a class="principal" href="sesion1.html">Ver transparencias</a>
@@ -62,7 +68,7 @@
         </nav>
       </article>
       <article class="tema">
-        <h2>Sesión 2 · SQL (ii): DDL</h2>
+        <h3>Sesión 2 · SQL (ii): DDL</h3>
         <p>SQL (ii) — DDL, modificación de datos, JSON en SQL y modelado orientado a la eficiencia</p>
         <nav aria-label="Formatos de Sesión 2 · SQL (ii): DDL">
           <a class="principal" href="sesion2.html">Ver transparencias</a>
@@ -70,7 +76,7 @@
         </nav>
       </article>
       <article class="tema">
-        <h2>Sesión 3 · Introducción a los sistemas NoSQL</h2>
+        <h3>Sesión 3 · Introducción a los sistemas NoSQL</h3>
         <p>Introducción a los sistemas NoSQL — orígenes, características y tipos</p>
         <nav aria-label="Formatos de Sesión 3 · Introducción a los sistemas NoSQL">
           <a class="principal" href="sesion3.html">Ver transparencias</a>
@@ -78,7 +84,7 @@
         </nav>
       </article>
       <article class="tema">
-        <h2>Sesión 4 · Bases de datos basadas en documentos</h2>
+        <h3>Sesión 4 · Bases de datos basadas en documentos</h3>
         <p>Bases de datos documentales, modelado y una introducción a MongoDB desde pymongo</p>
         <nav aria-label="Formatos de Sesión 4 · Bases de datos basadas en documentos">
           <a class="principal" href="sesion4.html">Ver transparencias</a>
@@ -86,7 +92,7 @@
         </nav>
       </article>
       <article class="tema">
-        <h2>Sesión 5 · Bases de datos columnares: Cassandra</h2>
+        <h3>Sesión 5 · Bases de datos columnares: Cassandra</h3>
         <p>Bases de datos columnares y Apache Cassandra — modelo de datos, distribución, arquitectura y acceso desde Python</p>
         <nav aria-label="Formatos de Sesión 5 · Bases de datos columnares: Cassandra">
           <a class="principal" href="sesion5.html">Ver transparencias</a>
@@ -94,13 +100,40 @@
         </nav>
       </article>
       <article class="tema">
-        <h2>Sesión 6 · Bases de datos de grafos: Neo4j</h2>
+        <h3>Sesión 6 · Bases de datos de grafos: Neo4j</h3>
         <p>Bases de datos de grafos, Neo4j y el lenguaje Cypher — modelado, algoritmos y rendimiento</p>
         <nav aria-label="Formatos de Sesión 6 · Bases de datos de grafos: Neo4j">
           <a class="principal" href="sesion6.html">Ver transparencias</a>
           <a href="sesion6.pdf">PDF</a>
         </nav>
       </article>
+      </div>
+    </section>
+  <section aria-labelledby="boletines">
+    <h2 id="boletines">Boletines prácticos</h2>
+    <div class="temas">
+      <article class="tema tema-boletin">
+        <p class="etiqueta">Introducción</p>
+        <h3>Sesión 0: Jupyter Notebook/Colab, importación de datos de Stackoverflow, esquemas, Parquet, DuckDB y programación asíncrona</h3>
+        <p>En esta hoja introduciremos la forma de trabajar con Jupyter Notebook/Google Colab.</p>
+        <nav aria-label="Enlaces de Sesión 0: Jupyter Notebook/Colab, importación de datos de Stackoverflow, esquemas, Parquet, DuckDB y programación asíncrona">
+          <a class="principal" href="https://github.com/dsevilla/bdge/blob/26-27/intro/sesion0.ipynb">Ver cuaderno</a>
+          <a href="https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/intro/sesion0.ipynb">Abrir en Colab</a>
+          <a href="https://github.com/dsevilla/bdge/tree/26-27/intro">Directorio</a>
+        </nav>
+      </article>
+      <article class="tema tema-boletin">
+        <p class="etiqueta">SQL</p>
+        <h3>Toma de contacto con Jupyter/Colab y SQL (sesión 1)</h3>
+        <p>Esta hoja muestra cómo acceder a bases de datos SQL y también a conectar la salida con Jupyter.</p>
+        <nav aria-label="Enlaces de Toma de contacto con Jupyter/Colab y SQL (sesión 1)">
+          <a class="principal" href="https://github.com/dsevilla/bdge/blob/26-27/sql/sesion1.ipynb">Ver cuaderno</a>
+          <a href="https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/sql/sesion1.ipynb">Abrir en Colab</a>
+          <a href="https://github.com/dsevilla/bdge/tree/26-27/sql">Directorio</a>
+        </nav>
+      </article>
+    </div>
+  </section>
   </main>
   <footer>Universidad de Murcia</footer>
 </body>
