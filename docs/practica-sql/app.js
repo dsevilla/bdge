@@ -6,12 +6,17 @@ const DATA_URLS = [
 ];
 const RELEASE_DB_URL = "https://github.com/dsevilla/bd2-data/releases/download/sqlite-backup-25-26/es.stackoverflow.db.gz";
 const RESULT_PAGE_SIZE = 100;
+// Tope de filas que se leen de cada lado al comprobar. La base completa puede
+// devolver millones de filas y la comprobación no debe materializarlas.
+const CHECK_ROW_LIMIT = 1000;
+const STATE_CHANGE_NOTE = "No se puede comprobar: la consulta cambia el estado de la base.";
 const WASM_BASE = "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.14.2/";
 const statusEl = document.getElementById("db-status");
 const messageEl = document.getElementById("connection-result");
 const pageNavigationEl = document.getElementById("page-navigation");
 const pageTitleEl = document.getElementById("practice-page-title");
 const pageDescriptionEl = document.getElementById("practice-page-description");
+const editorModeNoteEl = document.getElementById("editor-mode-note");
 const exerciseListEl = document.getElementById("exercise-list");
 const loadRealButton = document.getElementById("load-real");
 const loadReleaseButton = document.getElementById("load-release");
@@ -26,6 +31,13 @@ let currentPageId = null;
 const activeResultStatements = new Map();
 const editorDrafts = new Map();
 const exercisesByEditor = new Map();
+const editorInstances = new Map();
+
+function hasSqlCodeMirror() {
+  return typeof window.CodeMirror === "function"
+    && window.CodeMirror.modes
+    && typeof window.CodeMirror.modes.sql === "function";
+}
 
 function setStatus(message, kind) {
   statusEl.textContent = message;
@@ -50,6 +62,8 @@ function renderPracticePage(pageId) {
     pageNavigationEl.append(tab);
   });
 
+  editorInstances.forEach(function (editor) { editor.toTextArea(); });
+  editorInstances.clear();
   exercisesByEditor.clear();
   exerciseListEl.replaceChildren();
   page.exercises.forEach(function (exercise, index) {
@@ -86,7 +100,7 @@ function renderPracticePage(pageId) {
     const shortcut = document.createElement("span");
     shortcut.textContent = "Atajo: ";
     const controlKey = document.createElement("kbd");
-    controlKey.textContent = "Ctrl";
+    controlKey.textContent = "Ctrl/Cmd";
     const plus = document.createTextNode(" + ");
     const enterKey = document.createElement("kbd");
     enterKey.textContent = "Intro";
@@ -98,18 +112,6 @@ function renderPracticePage(pageId) {
     editor.spellcheck = false;
     editor.setAttribute("aria-label", "Consulta SQL · " + exercise.title);
     editor.value = editorDrafts.get(editorId) || "";
-    editor.addEventListener("input", function () { editorDrafts.set(editorId, editor.value); });
-    editor.addEventListener("keydown", function (event) {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-        event.preventDefault();
-        section.querySelector(".run-query").click();
-      }
-      if (event.key === "Tab") {
-        event.preventDefault();
-        editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
-        editorDrafts.set(editorId, editor.value);
-      }
-    });
 
     const actions = document.createElement("div");
     actions.className = "editor-actions";
@@ -121,6 +123,24 @@ function renderPracticePage(pageId) {
     runButton.textContent = "Ejecutar consulta";
     actions.append(runButton);
     if (exercise.solution) {
+      const checkButton = document.createElement("button");
+      checkButton.type = "button";
+      checkButton.className = "button small check-query";
+      checkButton.dataset.editor = editorId;
+      checkButton.dataset.result = resultId;
+      checkButton.textContent = "Comprobar";
+      actions.append(checkButton);
+      if (!canCheckExercise(exercise)) {
+        // Ejecutar la solución de referencia crearía la tabla por segunda vez
+        // o repetiría la inserción: el botón queda visible pero inactivo.
+        checkButton.disabled = true;
+        checkButton.dataset.locked = "true";
+        checkButton.title = STATE_CHANGE_NOTE;
+        const note = document.createElement("span");
+        note.className = "check-note";
+        note.textContent = STATE_CHANGE_NOTE;
+        actions.append(note);
+      }
       const solutionButton = document.createElement("button");
       solutionButton.type = "button";
       solutionButton.className = "button small show-solution";
@@ -141,6 +161,44 @@ function renderPracticePage(pageId) {
     editorArea.append(label, editor, actions);
     section.append(heading, editorArea, result);
     exerciseListEl.append(section);
+    if (hasSqlCodeMirror()) {
+      const codeEditor = window.CodeMirror.fromTextArea(editor, {
+        mode: "text/x-mysql",
+        theme: "material-darker",
+        lineNumbers: true,
+        lineWrapping: true,
+        indentUnit: 2,
+        tabSize: 2,
+        indentWithTabs: false,
+        extraKeys: {
+          "Ctrl-Enter": function () { section.querySelector(".run-query").click(); },
+          "Cmd-Enter": function () { section.querySelector(".run-query").click(); }
+        }
+      });
+      codeEditor.getInputField().setAttribute("aria-label", editor.getAttribute("aria-label"));
+      label.addEventListener("click", function (event) {
+        event.preventDefault();
+        codeEditor.focus();
+      });
+      codeEditor.on("change", function (instance) {
+        editorDrafts.set(editorId, instance.getValue());
+      });
+      editorInstances.set(editorId, codeEditor);
+      codeEditor.refresh();
+    } else {
+      editor.addEventListener("input", function () { editorDrafts.set(editorId, editor.value); });
+      editor.addEventListener("keydown", function (event) {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          event.preventDefault();
+          section.querySelector(".run-query").click();
+        }
+        if (event.key === "Tab") {
+          event.preventDefault();
+          editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
+          editorDrafts.set(editorId, editor.value);
+        }
+      });
+    }
   });
 }
 
@@ -170,22 +228,40 @@ function navigateToPage(pageId) {
 }
 
 function showSolution(editorId) {
-  const editor = document.getElementById(editorId);
+  const textArea = document.getElementById(editorId);
+  const codeEditor = editorInstances.get(editorId);
   const exercise = exercisesByEditor.get(editorId);
   const startMarker = "-- SOLUCIÓN DE REFERENCIA (comentada; quita '-- ' de cada línea para ejecutarla)";
-  if (!editor || !exercise || !exercise.solution) return;
-  if (!editor.value.includes(startMarker)) {
+  if (!textArea || !exercise || !exercise.solution) return;
+  const currentValue = codeEditor ? codeEditor.getValue() : textArea.value;
+  if (!currentValue.includes(startMarker)) {
     const code = exercise.solution.split("\n").map(function (line) {
       return "-- " + line;
     }).join("\n");
     const block = startMarker + "\n" + code + "\n-- FIN DE LA SOLUCIÓN DE REFERENCIA";
-    const existingText = editor.value.replace(/\s+$/, "");
-    editor.value = (existingText ? existingText + "\n\n" : "") + block;
-    editorDrafts.set(editorId, editor.value);
+    const existingText = currentValue.replace(/\s+$/, "");
+    const nextValue = (existingText ? existingText + "\n\n" : "") + block;
+    if (codeEditor) codeEditor.setValue(nextValue);
+    else textArea.value = nextValue;
+    editorDrafts.set(editorId, nextValue);
   }
-  editor.focus();
-  editor.setSelectionRange(editor.value.length, editor.value.length);
-  editor.scrollTop = editor.scrollHeight;
+  if (codeEditor) {
+    codeEditor.focus();
+    const lastLine = codeEditor.lineCount() - 1;
+    const lastColumn = codeEditor.getLine(lastLine).length;
+    codeEditor.setCursor(lastLine, lastColumn);
+    codeEditor.scrollIntoView({ line: lastLine, ch: lastColumn }, 100);
+  } else {
+    textArea.focus();
+    textArea.setSelectionRange(textArea.value.length, textArea.value.length);
+    textArea.scrollTop = textArea.scrollHeight;
+  }
+}
+
+function getEditorValue(editorId) {
+  const codeEditor = editorInstances.get(editorId);
+  const textArea = document.getElementById(editorId);
+  return codeEditor ? codeEditor.getValue() : (textArea ? textArea.value : "");
 }
 
 function formatBytes(bytes) {
@@ -513,6 +589,58 @@ function displayValue(value) {
   return { text: text.length > maxLength ? text.slice(0, maxLength) + "… [texto truncado; " + text.length + " caracteres]" : text, isNull: false };
 }
 
+function firstStatementKeyword(sql) {
+  const trimmed = String(sql).replace(/^(?:\s|--[^\n]*(?:\n|$)|\/\*[\s\S]*?\*\/)+/, "");
+  const match = /^[A-Za-z]+/.exec(trimmed);
+  return match ? match[0].toUpperCase() : "";
+}
+
+function isReadOnlyStatement(sql) {
+  const keyword = firstStatementKeyword(sql);
+  return keyword === "SELECT" || keyword === "WITH" || keyword === "EXPLAIN" || keyword === "VALUES";
+}
+
+// Un ejercicio se puede comprobar si su solución sólo lee. Los de CREATE,
+// INSERT, UPDATE y los de transacciones cambian el estado de la base, así que
+// no se puede ejecutar la referencia junto a la consulta del alumno. El autor
+// puede además desactivarlo explícitamente con `check: false`.
+function canCheckExercise(exercise) {
+  return Boolean(exercise && exercise.solution)
+    && exercise.check !== false
+    && isReadOnlyStatement(exercise.solution);
+}
+
+function buildResultTable(columns, rows) {
+  const wrap = document.createElement("div");
+  wrap.className = "table-wrap";
+  const table = document.createElement("table");
+  const head = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  columns.forEach(function (column) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = column;
+    headerRow.append(th);
+  });
+  head.append(headerRow);
+  table.append(head);
+  const body = document.createElement("tbody");
+  rows.forEach(function (row) {
+    const tr = document.createElement("tr");
+    row.forEach(function (value) {
+      const td = document.createElement("td");
+      const display = displayValue(value);
+      td.textContent = display.text;
+      if (display.isNull) td.className = "null";
+      tr.append(td);
+    });
+    body.append(tr);
+  });
+  table.append(body);
+  wrap.append(table);
+  return wrap;
+}
+
 function renderResultTable(container, columns, rows) {
   container.replaceChildren();
   const state = activeResultStatements.get(container.id);
@@ -526,34 +654,7 @@ function renderResultTable(container, columns, rows) {
   container.append(summary);
 
   if (rows.length) {
-    const wrap = document.createElement("div");
-    wrap.className = "table-wrap";
-    const table = document.createElement("table");
-    const head = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    columns.forEach(function (column) {
-      const th = document.createElement("th");
-      th.scope = "col";
-      th.textContent = column;
-      headerRow.append(th);
-    });
-    head.append(headerRow);
-    table.append(head);
-    const body = document.createElement("tbody");
-    rows.forEach(function (row) {
-      const tr = document.createElement("tr");
-      row.forEach(function (value) {
-        const td = document.createElement("td");
-        const display = displayValue(value);
-        td.textContent = display.text;
-        if (display.isNull) td.className = "null";
-        tr.append(td);
-      });
-      body.append(tr);
-    });
-    table.append(body);
-    wrap.append(table);
-    container.append(wrap);
+    container.append(buildResultTable(columns, rows));
   }
 
   if (state && (state.pendingRow || (state.canRewind && state.pageIndex > 0))) {
@@ -682,6 +783,158 @@ function runNonRowQuery(container, statement) {
   container.replaceChildren(summary);
 }
 
+function exerciseButtons(editorId) {
+  return Array.from(document.querySelectorAll('[data-editor="' + editorId + '"]:not([data-locked])'));
+}
+
+function setButtonsDisabled(buttons, disabled) {
+  buttons.forEach(function (button) { button.disabled = disabled; });
+}
+
+// Lee como mucho CHECK_ROW_LIMIT filas y libera la sentencia; no toca la
+// paginación de la consulta que el alumno tenga abierta.
+function readLimitedRows(sqlText) {
+  const statement = database.prepare(sqlText);
+  try {
+    const columns = statement.getColumnNames();
+    const rows = [];
+    let truncated = false;
+    while (statement.step()) {
+      if (rows.length === CHECK_ROW_LIMIT) {
+        truncated = true;
+        break;
+      }
+      rows.push(statement.get());
+    }
+    return { columns: columns, rows: rows, truncated: truncated };
+  } finally {
+    statement.free();
+  }
+}
+
+// El tipo forma parte del valor: el número 1 y la cadena "1" no son la misma
+// respuesta aunque se impriman igual.
+function canonicalCell(value) {
+  if (value === null) return "NULL";
+  if (value instanceof Uint8Array) return "blob:" + Array.from(value).join(",");
+  return typeof value + ":" + String(value);
+}
+
+function canonicalRow(row) {
+  return row.map(canonicalCell).join("\u001f");
+}
+
+function compareResults(mine, theirs) {
+  const limitNote = mine.truncated || theirs.truncated
+    ? " Se han comparado las primeras " + CHECK_ROW_LIMIT.toLocaleString("es-ES") + " filas."
+    : "";
+  if (mine.columns.length !== theirs.columns.length) {
+    return {
+      kind: "bad",
+      message: "No coincide: tu consulta devuelve " + mine.columns.length
+        + " columnas y la solución " + theirs.columns.length
+        + ". Los nombres de las columnas no importan; el número sí."
+    };
+  }
+  if (mine.rows.length !== theirs.rows.length) {
+    return {
+      kind: "bad",
+      message: "No coincide: tu consulta devuelve " + mine.rows.length.toLocaleString("es-ES")
+        + " filas y la solución " + theirs.rows.length.toLocaleString("es-ES") + "." + limitNote
+    };
+  }
+  const yours = mine.rows.map(canonicalRow);
+  const reference = theirs.rows.map(canonicalRow);
+  const firstDifference = yours.findIndex(function (row, index) { return row !== reference[index]; });
+  if (firstDifference === -1) {
+    return { kind: "ok", message: "Coincide con la solución de referencia." + limitNote };
+  }
+  const sortedYours = yours.slice().sort();
+  const sortedReference = reference.slice().sort();
+  const sameRows = sortedYours.every(function (row, index) { return row === sortedReference[index]; });
+  if (sameRows) {
+    return {
+      kind: "warn",
+      message: "Mismas filas, distinto orden. Si el enunciado pide un orden concreto, añade el ORDER BY que falta."
+        + limitNote
+    };
+  }
+  return {
+    kind: "bad",
+    message: "No coincide a partir de la fila " + (firstDifference + 1).toLocaleString("es-ES")
+      + ". Compara tu resultado con el de la solución." + limitNote
+  };
+}
+
+function renderCheckResult(container, mine, verdict) {
+  container.replaceChildren();
+  const check = document.createElement("p");
+  check.className = "result-check " + verdict.kind;
+  check.textContent = verdict.message;
+  container.append(check);
+  const shown = mine.rows.slice(0, RESULT_PAGE_SIZE);
+  const summary = document.createElement("p");
+  summary.className = "result-summary";
+  summary.textContent = mine.rows.length
+    ? "Tu resultado: " + (mine.rows.length > shown.length
+        ? "primeras " + shown.length + " filas de " + mine.rows.length.toLocaleString("es-ES")
+          + (mine.truncated ? " leídas" : "")
+        : mine.rows.length.toLocaleString("es-ES") + " filas") + "."
+    : "Tu consulta devuelve 0 filas.";
+  container.append(summary);
+  if (shown.length) container.append(buildResultTable(mine.columns, shown));
+}
+
+function checkQuery(editorId, resultId) {
+  const container = document.getElementById(resultId);
+  clearOtherResultStatements(resultId);
+  clearResultStatement(resultId);
+  const exercise = exercisesByEditor.get(editorId);
+  if (!database) {
+    container.innerHTML = '<p class="result-summary error">SQLite aún no está listo.</p>';
+    return;
+  }
+  if (!canCheckExercise(exercise)) {
+    container.innerHTML = '<p class="result-summary error">' + STATE_CHANGE_NOTE + '</p>';
+    return;
+  }
+  const sqlText = getEditorValue(editorId).trim();
+  if (!sqlText) {
+    container.innerHTML = '<p class="result-summary error">Escribe una consulta antes de comprobarla.</p>';
+    return;
+  }
+  if (sqlText.split(/\r?\n/).every(function (line) { return !line.trim() || line.trim().startsWith("--"); })) {
+    container.innerHTML = '<p class="result-summary error">El editor solo contiene comentarios. Quita «-- » de las líneas de la solución para ejecutarla.</p>';
+    return;
+  }
+  if (!isReadOnlyStatement(sqlText)) {
+    container.innerHTML = '<p class="result-summary error">Solo se comprueban consultas de lectura: esta sentencia cambiaría el estado de la base.</p>';
+    return;
+  }
+  const buttons = exerciseButtons(editorId);
+  setButtonsDisabled(buttons, true);
+  container.innerHTML = '<p class="result-summary">Comprobando…</p>';
+  window.setTimeout(function () {
+    try {
+      if (!container.isConnected || !exerciseListEl.contains(container)) return;
+      if (hasMultipleStatements(sqlText)) {
+        throw new Error("Ejecuta una sola sentencia cada vez para poder compararla con la solución.");
+      }
+      const mine = readLimitedRows(sqlText);
+      const theirs = readLimitedRows(exercise.solution);
+      renderCheckResult(container, mine, compareResults(mine, theirs));
+    } catch (error) {
+      container.replaceChildren();
+      const message = document.createElement("p");
+      message.className = "result-summary error";
+      message.textContent = "Error SQL: " + error.message;
+      container.append(message);
+    } finally {
+      setButtonsDisabled(buttons, false);
+    }
+  }, 0);
+}
+
 function runQuery(editorId, resultId) {
   const container = document.getElementById(resultId);
   clearOtherResultStatements(resultId);
@@ -690,7 +943,7 @@ function runQuery(editorId, resultId) {
     container.innerHTML = '<p class="result-summary error">SQLite aún no está listo.</p>';
     return;
   }
-  const sqlText = document.getElementById(editorId).value.trim();
+  const sqlText = getEditorValue(editorId).trim();
   if (!sqlText) {
     container.innerHTML = '<p class="result-summary error">Escribe una consulta antes de ejecutarla.</p>';
     return;
@@ -699,8 +952,8 @@ function runQuery(editorId, resultId) {
     container.innerHTML = '<p class="result-summary error">El editor solo contiene comentarios. Quita «-- » de las líneas de la solución para ejecutarla.</p>';
     return;
   }
-  const button = document.querySelector('[data-editor="' + editorId + '"]');
-  button.disabled = true;
+  const buttons = exerciseButtons(editorId);
+  setButtonsDisabled(buttons, true);
   container.innerHTML = '<p class="result-summary">Ejecutando…</p>';
   window.setTimeout(function () {
     let statement = null;
@@ -739,7 +992,7 @@ function runQuery(editorId, resultId) {
       message.textContent = "Error SQL: " + error.message;
       container.append(message);
     } finally {
-      button.disabled = false;
+      setButtonsDisabled(buttons, false);
     }
   }, 0);
 }
@@ -827,12 +1080,20 @@ exerciseListEl.addEventListener("click", function (event) {
     runQuery(runButton.dataset.editor, runButton.dataset.result);
     return;
   }
+  const checkButton = event.target.closest(".check-query");
+  if (checkButton) {
+    checkQuery(checkButton.dataset.editor, checkButton.dataset.result);
+    return;
+  }
   const solutionButton = event.target.closest(".show-solution");
   if (solutionButton) showSolution(solutionButton.dataset.editor);
 });
 window.addEventListener("popstate", showPageFromLocation);
 window.addEventListener("hashchange", showPageFromLocation);
 showPageFromLocation();
+editorModeNoteEl.textContent = hasSqlCodeMirror()
+  ? "Resaltado SQL activo · modo MySQL 8. Ctrl/Cmd + Intro ejecuta la consulta."
+  : "No se pudo cargar CodeMirror; los cuadros de texto siguen disponibles sin resaltado.";
 loadRealButton.addEventListener("click", loadRemoteDatabase);
 loadReleaseButton.addEventListener("click", loadReleaseDatabase);
 loadDemoButton.addEventListener("click", function () {

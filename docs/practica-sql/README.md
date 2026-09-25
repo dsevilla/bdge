@@ -7,6 +7,9 @@ práctica del contenido:
 
 - `index.html` contiene el marco y los controles comunes de la base de datos.
 - `app.js` implementa la descarga, SQLite, ejecución, paginación y navegación.
+- CodeMirror 5 añade resaltado SQL en modo MySQL 8; si falla su CDN, los
+  cuadros de texto siguen funcionando sin resaltado. El coloreado no valida la
+  consulta: la ejecución sigue siendo SQLite.
 - `pages/index.js` registra las páginas disponibles.
 - `pages/` contiene un módulo por página de ejercicios. Ahora se incluyen las
   sesiones 1 y 2.
@@ -30,9 +33,25 @@ objeto a `exercises`:
 }
 ```
 
-El editor empieza vacío. `solution` es opcional; si se incluye, aparece el botón
-para añadirla al editor como comentarios. Cada consulta se ejecuta de una en
-una y los resultados aparecen paginados en bloques de 100 filas.
+El editor empieza vacío. `solution` es opcional; si se incluye, aparecen dos
+botones: «Comprobar», que ejecuta la solución y la compara con el resultado del
+alumno, y «Mostrar solución», que la añade al editor como comentarios. Cada
+consulta se ejecuta de una en una y los resultados aparecen paginados en
+bloques de 100 filas.
+
+La comprobación lee como mucho 1.000 filas de cada lado —la base completa puede
+devolver millones— y lo advierte cuando llega a ese tope. Compara los valores
+celda a celda, con su tipo, pero no los nombres de las columnas: un alumno
+puede usar otros alias. Distingue tres casos: coincide, «mismas filas, distinto
+orden» y no coincide. Para que sirva, **la solución debe ser determinista**:
+termina siempre con un `ORDER BY` que incluya una columna que desempate,
+normalmente `Id`, antes del `LIMIT`.
+
+En los ejercicios cuya solución cambia el estado de la base —`CREATE`,
+`INSERT`, `UPDATE` y los de transacciones— el botón aparece en gris con el
+motivo: ejecutar la referencia junto a la consulta del alumno crearía la tabla
+por segunda vez o repetiría la inserción. Se detecta por la primera palabra de
+la solución, y el autor puede desactivarlo también a mano con `check: false`.
 
 ## Añadir una página
 

@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Prácticas SQL en el navegador · BDGE</title>
+  <title>Prácticas MongoDB en el navegador · BDGE</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/theme/material-darker.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/mode/sql/sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/mode/javascript/javascript.min.js"></script>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap");
     :root {
@@ -120,6 +120,23 @@
       font-size: .9rem;
       overflow-wrap: anywhere;
     }
+    .collection-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .collection-list li {
+      padding: 2px 9px;
+      background: #f5f0e4;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+    .collection-list code { color: var(--ink); font-weight: 700; }
     .page-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
     .page-tab[aria-current="page"] { color: #fffdf8; background: #302a1d; border-color: #302a1d; }
     .practice-page-heading { margin-top: 20px; }
@@ -154,6 +171,7 @@
     }
     .exercise-heading h2 { margin: 1px 0 3px; font-size: 1.13rem; }
     .exercise-heading p { margin: 0; color: var(--muted); }
+    .exercise-heading code { overflow-wrap: anywhere; }
     .editor-area { padding: 14px 20px 16px; }
     .editor-label {
       display: flex;
@@ -199,7 +217,7 @@
       tab-size: 2;
     }
     .CodeMirror-scroll { min-height: 112px; max-height: 360px; }
-    .editor-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    .editor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; }
     .result {
       min-height: 58px;
       padding: 12px 20px 18px;
@@ -212,21 +230,21 @@
     .result-check.ok { color: var(--green); }
     .result-check.warn { color: var(--gold-dark); }
     .result-check.bad { color: var(--red); }
-    .check-note { color: var(--muted); font-size: .85rem; }
-    .button.check-query:disabled { cursor: not-allowed; }
     .result-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .table-wrap { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: 7px; }
-    table { width: 100%; border-collapse: collapse; font-size: .91rem; }
-    th, td {
-      padding: 7px 10px;
-      text-align: left;
-      vertical-align: top;
-      border-bottom: 1px solid #e9e3d8;
+    .documents {
+      max-width: 100%;
+      max-height: 520px;
+      margin: 0;
+      padding: 12px 14px;
+      overflow: auto;
+      color: #f8f4e9;
+      background: var(--code);
+      border: 1px solid #11100d;
+      border-radius: 7px;
+      font: 13px/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
-    th { position: sticky; top: 0; color: #3d3526; background: #f1e7c9; font-weight: 800; }
-    tr:last-child td { border-bottom: 0; }
-    td { max-width: 560px; overflow-wrap: anywhere; }
-    td.null { color: #82796a; font-style: italic; }
     .empty { color: var(--muted); }
     footer { margin-top: 18px; color: var(--muted); font-size: .9rem; }
     @media (max-width: 600px) {
@@ -237,41 +255,41 @@
       .file-label { width: 100%; }
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.14.2/sql-wasm.js"></script>
 </head>
 <body>
   <header class="page-header">
     <div class="header-inner">
       <p class="eyebrow">BDGE · prototipo de aula</p>
-      <h1>Prácticas SQL en el navegador</h1>
-      <p class="intro">Ejercicios de las sesiones 1 y 2 con Stack Overflow en español. Escribe una consulta y examínala aquí mismo: SQLite se ejecuta en este navegador.</p>
+      <h1>Prácticas MongoDB en el navegador</h1>
+      <p class="intro">Ejercicios de consulta y agregación sobre Stack Overflow en español, al hilo de las sesiones 3 y 4. Escribe un <code>find</code> o un <em>pipeline</em> y ejecútalo aquí mismo: las consultas se resuelven en este navegador con mingo.</p>
     </div>
   </header>
 
   <main>
     <section class="database-panel" aria-labelledby="database-title">
       <div class="database-top">
-        <h2 id="database-title">Stack Overflow en español</h2>
-        <span id="db-status" class="status loading" role="status" aria-live="polite">Preparando SQLite…</span>
+        <h2 id="database-title">Stack Overflow en español · muestra JSONL</h2>
+        <span id="db-status" class="status loading" role="status" aria-live="polite">Preparando el motor…</span>
       </div>
       <p class="database-note">
-        Al abrir la página se intenta cargar Stack Overflow desde dos fragmentos XZ del repositorio
-        <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>.
-        Si falla, puedes usar la muestra, abrir una copia local o probar el fichero comprimido de la release. La base se carga una vez y se comparte entre todas las páginas de ejercicios.
+        Al abrir la página se descarga la muestra reducida del <em>dump</em> desde
+        <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>:
+        unos 12,5 MB comprimidos con hilos completos (cada pregunta con todas sus respuestas, comentarios, votos y usuarios).
+        Si falla, puedes reintentarlo, usar la muestra mínima incrustada en la página o abrir los ficheros descargados a mano.
+        Los datos se cargan una vez y se comparten entre todas las páginas de ejercicios.
       </p>
       <div class="controls">
-        <button id="load-real" class="button primary" type="button" disabled>Reintentar descarga XZ</button>
-        <button id="load-release" class="button" type="button" disabled>Cargar .db.gz de la release</button>
-        <button id="load-demo" class="button" type="button" disabled>Volver a la muestra pequeña</button>
-        <label class="button file-label">Abrir un fichero local
-          <input id="local-file" type="file" accept=".db,.sqlite,.sqlite3,.gz,application/gzip,application/x-sqlite3">
+        <button id="load-remote" class="button primary" type="button" disabled>Reintentar descarga</button>
+        <button id="load-demo" class="button" type="button" disabled>Usar la muestra mínima</button>
+        <label class="button file-label">Abrir ficheros locales
+          <input id="local-files" type="file" accept=".jsonl,.gz,application/gzip,application/jsonl" multiple>
         </label>
-        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/download/sqlite-backup-25-26/es.stackoverflow.db.gz" target="_blank" rel="noreferrer">Descargar .db.gz</a>
-        <button id="check-link" class="button" type="button" disabled>Probar acceso CORS</button>
+        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/tag/jsonl-sample-26-27" target="_blank" rel="noreferrer">Descargar la muestra</a>
       </div>
       <p id="connection-result" class="connection-result" aria-live="polite"></p>
-      <p class="connection-result">Las consultas se muestran en bloques de 100 filas; ejecuta una sentencia cada vez. Puedes retroceder en consultas SELECT. La descarga alternativa usa el fichero .db.gz de la release; si no se puede cargar desde la web, descárgalo y ábrelo con «Abrir un fichero local».</p>
-      <p class="connection-result"><strong>Compatibilidad:</strong> la página ejecuta SQLite en el navegador, no MySQL 8. Los ejercicios de la sesión 2 adaptan la sintaxis; el particionado, <code>MATCH ... AGAINST</code> y <code>EXPLAIN ANALYZE</code> de MySQL no se pueden ejecutar aquí.</p>
+      <ul id="collection-list" class="collection-list" aria-label="Colecciones cargadas"></ul>
+      <p class="connection-result">Los resultados se muestran en bloques de 25 documentos. El código del editor se evalúa en tu navegador y nada se envía a ningún servidor.</p>
+      <p class="connection-result"><strong>Compatibilidad:</strong> mingo ejecuta el lenguaje de consulta de MongoDB sobre objetos en memoria, no es un <code>mongod</code>. No hay índices, ni <code>explain()</code>, ni transacciones, ni búsqueda vectorial: esos ejercicios siguen necesitando el servidor del boletín. Además, el <code>Body</code> de las publicaciones, el <code>Text</code> de los comentarios y el <code>AboutMe</code> de los usuarios vienen cortados a 100 caracteres.</p>
     </section>
 
     <nav id="page-navigation" class="page-navigation" aria-label="Páginas de ejercicios"></nav>
@@ -285,7 +303,7 @@
     </section>
 
     <footer>
-      <p>La base no se envía a ningún servidor. Esta práctica usa SQLite en el navegador; no emula MySQL 8. Los ejercicios cubren consultas portables y adaptan algunas funciones. El particionado, <code>MATCH ... AGAINST</code>, el tipo JSON de MySQL y <code>EXPLAIN ANALYZE</code> no funcionan aquí con la sintaxis de clase.</p>
+      <p>Los datos no se envían a ningún servidor: la muestra se descarga y se consulta dentro del navegador. Las cifras de esta muestra no son las del <em>dump</em> completo, porque se conserva una pregunta de cada ocho con su hilo entero; los resultados de clase, con el <em>dump</em> completo, serán distintos.</p>
     </footer>
   </main>
 
