@@ -2,9 +2,10 @@
  * Traductor del pequeño subconjunto de PyMongo que se acepta en los editores.
  *
  * No intenta ejecutar Python ni convertir un programa general. Sólo adapta la
- * sintaxis de consulta que se usa en la asignatura a la fachada JavaScript que
- * hay sobre mingo. Para ampliar el dialecto, añade primero una equivalencia a
- * una de las tablas y un caso a pymongo-compat.test.mjs.
+ * sintaxis de consulta y actualización que se usa en la asignatura a la
+ * fachada JavaScript que hay sobre mingo. Para ampliar el dialecto, añade
+ * primero una equivalencia a una de las tablas y un caso a
+ * pymongo-compat.test.mjs.
  */
 
 export const PYTHON_LITERALS = Object.freeze({
@@ -16,7 +17,21 @@ export const PYTHON_LITERALS = Object.freeze({
 export const PYMONGO_METHODS = Object.freeze({
   count_documents: "countDocuments",
   find_one: "findOne",
+  update_one: "updateOne",
+  update_many: "updateMany",
   to_list: "all"
+});
+
+export const PYMONGO_ATTRIBUTES = Object.freeze({
+  matched_count: "matchedCount",
+  modified_count: "modifiedCount",
+  upserted_id: "upsertedId"
+});
+
+export const PYMONGO_ARGUMENTS = Object.freeze({
+  allow_disk_use: "allowDiskUse",
+  array_filters: "arrayFilters",
+  bypass_document_validation: "bypassDocumentValidation"
 });
 
 function isIdentifierStart(character) {
@@ -78,10 +93,15 @@ function translateNamesAndLiterals(source) {
       let end = index + 1;
       while (end < source.length && isIdentifierPart(source[end])) end += 1;
       const identifier = source.slice(index, end);
-      const isMethod = previousNonSpace(source, index) === ".";
+      const isMember = previousNonSpace(source, index) === ".";
+      let after = end;
+      while (/\s/.test(source[after] || "")) after += 1;
+      const isMethod = isMember && source[after] === "(";
       output += isMethod && PYMONGO_METHODS[identifier]
         ? PYMONGO_METHODS[identifier]
-        : (PYTHON_LITERALS[identifier] || identifier);
+        : (isMember && !isMethod && PYMONGO_ATTRIBUTES[identifier]
+          ? PYMONGO_ATTRIBUTES[identifier]
+          : (PYTHON_LITERALS[identifier] || identifier));
       index = end;
       continue;
     }
@@ -174,6 +194,75 @@ function translateSortList(argument) {
   return changed ? leading + "[" + translated.join(",") + "]" + trailing : argument;
 }
 
+function findMethodCallOutsideStrings(source, start) {
+  let quote = null;
+  let escaped = false;
+  for (let index = start; index < source.length; index += 1) {
+    const character = source[index];
+    if (quote !== null) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === "#" || (character === "/" && source[index + 1] === "/")) {
+      const end = source.indexOf("\n", index);
+      if (end === -1) return null;
+      index = end;
+      continue;
+    }
+    if (character !== "." || !isIdentifierStart(source[index + 1])) continue;
+    let nameEnd = index + 2;
+    while (nameEnd < source.length && isIdentifierPart(source[nameEnd])) nameEnd += 1;
+    let opening = nameEnd;
+    while (/\s/.test(source[opening] || "")) opening += 1;
+    if (source[opening] === "(") {
+      return { start: index, name: source.slice(index + 1, nameEnd), opening: opening };
+    }
+    index = nameEnd - 1;
+  }
+  return null;
+}
+
+function translateKeywordArgumentList(argument) {
+  const parts = splitTopLevel(argument);
+  const positional = [];
+  const keywords = [];
+  parts.forEach(function (part) {
+    const match = part.match(/^\s*([A-Za-z_]\w*)\s*=(?!=)([\s\S]*)$/);
+    if (!match) {
+      positional.push(part);
+      return;
+    }
+    const key = PYMONGO_ARGUMENTS[match[1]] || match[1];
+    keywords.push(JSON.stringify(key) + ":" + match[2]);
+  });
+  if (!keywords.length) return argument;
+  positional.push("{" + keywords.join(",") + "}");
+  return positional.join(",");
+}
+
+function translateKeywordArguments(source) {
+  let output = "";
+  let cursor = 0;
+  while (cursor < source.length) {
+    const call = findMethodCallOutsideStrings(source, cursor);
+    if (!call) return output + source.slice(cursor);
+    const closing = findClosing(source, call.opening, "(", ")");
+    if (closing === -1) return output + source.slice(cursor);
+    output += source.slice(cursor, call.opening + 1);
+    const argument = source.slice(call.opening + 1, closing);
+    const nested = translateKeywordArguments(argument);
+    output += translateKeywordArgumentList(nested) + ")";
+    cursor = closing + 1;
+  }
+  return output;
+}
+
 function translateSortTuples(source) {
   let output = "";
   let cursor = 0;
@@ -228,5 +317,5 @@ function translateSortTuples(source) {
 }
 
 export function translatePythonQuery(source) {
-  return translateNamesAndLiterals(translateSortTuples(String(source)));
+  return translateNamesAndLiterals(translateKeywordArguments(translateSortTuples(String(source))));
 }

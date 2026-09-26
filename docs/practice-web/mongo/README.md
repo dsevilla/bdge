@@ -53,7 +53,8 @@ mínima incrustada en `app.js`, suficiente para probar la sintaxis.
 ## Qué se puede ejecutar
 
 El editor admite una expresión con sintaxis PyMongo sobre el objeto `db`, que
-la página ya proporciona. No se crea un cliente y no se escribe `await`:
+la página ya proporciona. No se crea un cliente y no se escribe `await`. Los
+siguientes son ejemplos independientes:
 
 ```python
 db.posts.find(
@@ -65,21 +66,33 @@ db.posts.aggregate([
 ]).to_list()
 db.users.count_documents({"Reputation": {"$gte": 1000}})
 db.posts.distinct("PostTypeId")
+db.posts.update_many(
+    {"$and": [{"PostTypeId": 1}, {"Score": {"$gte": 20}}]},
+    {"$set": {"Revisado": True}}
+)
+db.posts.update_one({"Id": 101}, {"$inc": {"Score": 1}}).modified_count
 ```
 
-Cada colección ofrece `find`, `find_one`, `aggregate`, `count_documents` y
-`distinct`. Se aceptan los literales `None`, `True` y `False`,
+Cada colección ofrece `find`, `find_one`, `aggregate`, `count_documents`,
+`distinct`, `update_one` y `update_many`. Se aceptan los literales `None`, `True` y `False`,
 `datetime(año, mes, día)` y `datetime.fromisoformat("2020-01-01")`. `find` y
 `aggregate` pueden terminar en `to_list()`; la página también materializa el
-cursor cuando se omite. Las consultas son expresiones de lectura con la forma
-`db.colección.operación(...)`. El código se evalúa en el navegador del alumno y
-nada se envía a ningún servidor.
+cursor cuando se omite. Los filtros admiten condiciones anidadas con `$and`,
+`$or`, `$nor` y el resto de operadores que proporcione mingo. Un pipeline de
+`aggregate` puede tener tantos pasos como permita mingo. `update_one` y
+`update_many` aplican los operadores de actualización sobre la copia en memoria
+del conjunto cargado; `upsert=True` crea un documento cuando no hay coincidencias.
+Sobre el conjunto completo, un `update_many` recorre todos los documentos en
+memoria; para experimentar conviene empezar con la muestra mínima. El código se
+evalúa en el navegador del alumno y nada se envía a ningún servidor.
 
 El traductor es deliberadamente pequeño y está separado del motor. Las tablas
-`PYTHON_LITERALS` y `PYMONGO_METHODS` contienen las equivalencias sencillas; el
-caso especial de `sort([("campo", dirección), ...])` convierte las tuplas en
-pares internos. Al ampliar el dialecto, añade la traducción en
-`pymongo-compat.js` y un caso en `pymongo-compat.test.mjs`. Compruébalo con:
+`PYTHON_LITERALS`, `PYMONGO_METHODS`, `PYMONGO_ATTRIBUTES` y
+`PYMONGO_ARGUMENTS` contienen las equivalencias sencillas; el caso especial de
+`sort([("campo", dirección), ...])` convierte las tuplas en pares internos y
+los argumentos con nombre se agrupan en un objeto JavaScript. Al ampliar el
+dialecto, añade la traducción en `pymongo-compat.js` y un caso en
+`pymongo-compat.test.mjs`. Compruébalo con:
 
 ```console
 node addendum/practice-web/mongo/pymongo-compat.test.mjs

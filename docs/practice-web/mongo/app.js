@@ -472,6 +472,96 @@ function makeQueryCursor(source) {
   return cursor;
 }
 
+function cloneValue(value) {
+  if (value instanceof Date) return new Date(value.getTime());
+  if (Array.isArray(value)) return value.map(cloneValue);
+  if (value !== null && typeof value === "object") {
+    return Object.keys(value).reduce(function (copy, key) {
+      copy[key] = cloneValue(value[key]);
+      return copy;
+    }, {});
+  }
+  return value;
+}
+
+function setDocumentField(document, path, value) {
+  const parts = String(path).split(".");
+  let target = document;
+  for (let index = 0; index < parts.length - 1; index += 1) {
+    if (target[parts[index]] === null || typeof target[parts[index]] !== "object") {
+      target[parts[index]] = {};
+    }
+    target = target[parts[index]];
+  }
+  target[parts[parts.length - 1]] = cloneValue(value);
+}
+
+function upsertSeed(filter) {
+  const seed = {};
+  Object.keys(filter || {}).forEach(function (key) {
+    if (key.startsWith("$")) return;
+    const value = filter[key];
+    if (value !== null && typeof value === "object" && !(value instanceof Date) && !Array.isArray(value)) {
+      const keys = Object.keys(value);
+      if (keys.some(function (candidate) { return candidate.startsWith("$"); })) {
+        if (keys.length === 1 && keys[0] === "$eq") setDocumentField(seed, key, value.$eq);
+        return;
+      }
+    }
+    setDocumentField(seed, key, value);
+  });
+  return seed;
+}
+
+function updateConfig(options) {
+  const config = {};
+  if (!options || typeof options !== "object") return config;
+  if (Array.isArray(options.arrayFilters)) config.arrayFilters = options.arrayFilters;
+  if (options.sort !== undefined) config.sort = normalizeSortSpecification(options.sort);
+  if (options.let !== undefined) config.let = options.let;
+  return config;
+}
+
+function invalidateAfterMutation() {
+  resultStates.clear();
+  document.querySelectorAll(".result").forEach(function (result) {
+    result.replaceChildren();
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "Los datos han cambiado. Ejecuta de nuevo la consulta.";
+    result.append(empty);
+  });
+  renderCollectionList();
+}
+
+function updateDocuments(documents, operation, filter, modifier, options) {
+  const updateFunction = operation === "one" ? mingo.updateOne : mingo.updateMany;
+  if (typeof updateFunction !== "function") {
+    throw new Error("La versión de mingo cargada no ofrece " + (operation === "one" ? "updateOne" : "updateMany") + ".");
+  }
+  const criteria = filter || {};
+  const updateOptions = options && typeof options === "object" ? options : {};
+  let result = updateFunction(
+    documents,
+    criteria,
+    modifier,
+    updateConfig(updateOptions),
+    queryOptions()
+  );
+  if (updateOptions.upsert && result.matchedCount === 0) {
+    const inserted = [upsertSeed(criteria)];
+    updateFunction(inserted, {}, modifier, updateConfig(updateOptions), queryOptions());
+    documents.push(inserted[0]);
+    result = {
+      matchedCount: 0,
+      modifiedCount: 0,
+      upsertedId: inserted[0]._id === undefined ? null : inserted[0]._id
+    };
+  }
+  invalidateAfterMutation();
+  return result;
+}
+
 function makeCollection(name, documents) {
   return {
     name: name,
@@ -484,6 +574,12 @@ function makeCollection(name, documents) {
     },
     aggregate: function (pipeline) {
       return makeQueryCursor(new mingo.Aggregator(pipeline || [], queryOptions()).run(documents));
+    },
+    updateOne: function (filter, modifier, options) {
+      return updateDocuments(documents, "one", filter, modifier, options);
+    },
+    updateMany: function (filter, modifier, options) {
+      return updateDocuments(documents, "many", filter, modifier, options);
     },
     countDocuments: function (filter) {
       return mingo.find(documents, filter || {}, null, queryOptions()).all().length;

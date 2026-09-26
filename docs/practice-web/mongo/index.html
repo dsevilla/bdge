@@ -323,17 +323,30 @@
       </p>
       <ul>
         <li>Usa diccionarios Python, con las claves entre comillas: <code>{"PostTypeId": 1}</code>.</li>
-        <li>Escribe <code>None</code>, <code>True</code> y <code>False</code>, y métodos como <code>find_one</code> y <code>count_documents</code>.</li>
+        <li>Escribe <code>None</code>, <code>True</code> y <code>False</code>, y métodos como <code>find_one</code>, <code>count_documents</code>, <code>update_one</code> y <code>update_many</code>.</li>
+        <li>Combina condiciones con <code>$and</code> y <code>$or</code>; son claves de los diccionarios del filtro, igual que en MongoDB.</li>
         <li>Ordena con <code>sort("Score", -1)</code> o con varios pares: <code>sort([("Score", -1), ("Id", 1)])</code>.</li>
         <li><code>find</code> y <code>aggregate</code> pueden terminar en <code>to_list()</code>. También se admite omitirlo en esta página.</li>
+        <li><code>update_one</code> y <code>update_many</code> modifican la copia en memoria; sus resultados tienen <code>matched_count</code> y <code>modified_count</code>. <code>upsert=True</code> también está disponible.</li>
         <li>Para fechas usa <code>datetime(año, mes, día)</code> o <code>datetime.fromisoformat("2020-01-01")</code>; se interpretan en UTC.</li>
       </ul>
       <pre class="syntax-example"><code>db.posts.find(
-    {"PostTypeId": 1, "OwnerUserId": {"$ne": None}},
+    {"$and": [
+        {"PostTypeId": 1},
+        {"$or": [{"Score": {"$gte": 20}}, {"AnswerCount": {"$gte": 5}}]}
+    ]},
     {"Id": 1, "Title": 1, "Score": 1}
 ).sort([("Score", -1), ("Id", 1)]).limit(10).to_list()</code></pre>
+      <pre class="syntax-example"><code>db.posts.update_many(
+    {"$and": [{"PostTypeId": 1}, {"Score": {"$gte": 20}}]},
+    {"$set": {"Revisado": True}}
+)</code></pre>
+      <pre class="syntax-example"><code>db.posts.update_one(
+    {"Id": 101},
+    {"$inc": {"Score": 1}}
+).modified_count</code></pre>
       <p class="connection-result">
-        Es un subconjunto deliberado de PyMongo para consultas de lectura. Si un ejercicio futuro necesita otra construcción, se añade una equivalencia al traductor común.
+        La página traduce este subconjunto de PyMongo a la API de mingo. Las actualizaciones sólo viven en la sesión del navegador y se pierden al recargar o cambiar de conjunto de datos. Sobre el conjunto completo, un <code>update_many</code> recorre los documentos en memoria; para experimentar conviene empezar con la muestra mínima.
       </p>
     </section>
 

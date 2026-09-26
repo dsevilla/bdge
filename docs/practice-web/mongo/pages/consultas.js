@@ -15,6 +15,20 @@ export const page = {
       solution: `db.posts.count_documents({ "PostTypeId": 1 })`
     },
     {
+      id: "condiciones-complejas",
+      title: "Combina condiciones con $and y $or",
+      prompt: "Devuelve las preguntas con al menos 20 puntos o al menos 5 respuestas. Escribe las dos alternativas dentro de un $or y combínalo con PostTypeId mediante $and. Devuelve Id, Title, Score y AnswerCount, ordenadas por Score descendente e Id ascendente.",
+      solution: `db.posts.find(
+  {
+    "$and": [
+      { "PostTypeId": 1 },
+      { "$or": [{ "Score": { "$gte": 20 } }, { "AnswerCount": { "$gte": 5 } }] }
+    ]
+  },
+  { "Id": 1, "Title": 1, "Score": 1, "AnswerCount": 1 }
+).sort([("Score", -1), ("Id", 1)]).to_list()`
+    },
+    {
       id: "preguntas-mas-vistas",
       title: "Ordena y proyecta",
       prompt: "Devuelve las diez preguntas más vistas con sólo Id, Title y ViewCount. Ordena por ViewCount descendente y desempata por Id ascendente para que el resultado sea determinista.",
