@@ -275,28 +275,31 @@
   <main>
     <section class="database-panel" aria-labelledby="database-title">
       <div class="database-top">
-        <h2 id="database-title">Stack Overflow en español · muestra JSONL</h2>
+        <h2 id="database-title">Stack Overflow en español · datos JSONL completos</h2>
         <span id="db-status" class="status loading" role="status" aria-live="polite">Preparando el motor…</span>
       </div>
       <p class="database-note">
-        Al abrir la página se descarga la muestra reducida del <em>dump</em> desde
+        Al abrir la página se descargan todas las filas del <em>dump</em> desde
         <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>:
-        unos 12,5 MB comprimidos con hilos completos (cada pregunta con todas sus respuestas, comentarios, votos y usuarios).
-        Si falla, puedes reintentarlo, usar la muestra mínima incrustada en la página o abrir los ficheros descargados a mano.
-        Los datos se cargan una vez y se comparten entre todas las páginas de ejercicios.
+        unos 106,7 MB comprimidos en cinco ficheros. Sólo <code>Body</code>, <code>Text</code> y <code>AboutMe</code> se limitan a 100 bytes UTF‑8;
+        la carga completa puede necesitar varios GB de memoria del navegador. El botón permite cambiar a una muestra de 12,5 MB, con una pregunta
+        de cada ocho y su hilo completo; las consultas devolverán menos filas. Si falla, puedes reintentarlo, usar la muestra mínima incrustada o
+        abrir los ficheros descargados a mano. Los datos se comparten entre todas las páginas de ejercicios.
       </p>
       <div class="controls">
         <button id="load-remote" class="button primary" type="button" disabled>Reintentar descarga</button>
+        <button id="toggle-dataset" class="button" type="button" disabled>Usar muestra reducida (12,5 MB)</button>
         <button id="load-demo" class="button" type="button" disabled>Usar la muestra mínima</button>
         <label class="button file-label">Abrir ficheros locales
           <input id="local-files" type="file" accept=".jsonl,.gz,application/gzip,application/jsonl" multiple>
         </label>
-        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/tag/jsonl-sample-26-27" target="_blank" rel="noreferrer">Descargar la muestra</a>
+        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/tag/jsonl-full-26-27" target="_blank" rel="noreferrer">Descargar JSONL completo</a>
+        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/tag/jsonl-sample-26-27" target="_blank" rel="noreferrer">Descargar JSONL reducido</a>
       </div>
       <p id="connection-result" class="connection-result" aria-live="polite"></p>
       <ul id="collection-list" class="collection-list" aria-label="Colecciones cargadas"></ul>
       <p class="connection-result">Los resultados se muestran en bloques de 25 documentos. El código del editor se evalúa en tu navegador y nada se envía a ningún servidor.</p>
-      <p class="connection-result"><strong>Compatibilidad:</strong> mingo ejecuta el lenguaje de consulta de MongoDB sobre objetos en memoria, no es un <code>mongod</code>. No hay índices, ni <code>explain()</code>, ni transacciones, ni búsqueda vectorial: esos ejercicios siguen necesitando el servidor del boletín. Además, el <code>Body</code> de las publicaciones, el <code>Text</code> de los comentarios y el <code>AboutMe</code> de los usuarios vienen cortados a 100 caracteres.</p>
+      <p class="connection-result"><strong>Compatibilidad:</strong> mingo ejecuta el lenguaje de consulta de MongoDB sobre objetos en memoria, no es un <code>mongod</code>. No hay índices, ni <code>explain()</code>, ni transacciones, ni búsqueda vectorial: esos ejercicios siguen necesitando el servidor del boletín. Además, el <code>Body</code> de las publicaciones, el <code>Text</code> de los comentarios y el <code>AboutMe</code> de los usuarios vienen limitados a 100 bytes UTF‑8.</p>
     </section>
 
     <nav id="page-navigation" class="page-navigation" aria-label="Páginas de ejercicios"></nav>
@@ -310,7 +313,7 @@
     </section>
 
     <footer>
-      <p>Los datos no se envían a ningún servidor: la muestra se descarga y se consulta dentro del navegador. Las cifras de esta muestra no son las del <em>dump</em> completo, porque se conserva una pregunta de cada ocho con su hilo entero; los resultados de clase, con el <em>dump</em> completo, serán distintos.</p>
+      <p>Los datos no se envían a ningún servidor: todas las filas se descargan y consultan dentro del navegador. Sólo se truncan los tres campos de texto indicados, así que las consultas que dependan de su contenido pueden diferir del <em>dump</em> original.</p>
     </footer>
   </main>
 

@@ -1,7 +1,7 @@
 import { PRACTICE_PAGES } from "./pages/index.js";
 "use strict";
 /*
- * Motor común de la práctica MongoDB. Descarga la muestra JSONL, la carga en
+ * Motor común de la práctica MongoDB. Descarga el JSONL completo, lo carga en
  * mingo y ejecuta el código de cada ejercicio. Las páginas de pages/ sólo
  * declaran contenido; este fichero no debe copiarse para añadir ejercicios.
  */
@@ -19,6 +19,10 @@ const DATA_SOURCES = [
     base: "https://raw.githubusercontent.com/dsevilla/bd2-data/main/es.stackoverflow/jsonl"
   }
 ];
+const DATA_VARIANTS = {
+  full: { name: "el conjunto completo", readyLabel: "Datos completos cargados" },
+  sample: { name: "la muestra reducida", readyLabel: "Muestra reducida cargada" }
+};
 const RESULT_PAGE_SIZE = 25;
 const MAX_TEXT_LENGTH = 1000;
 const DATE_SENTINEL = "\u0000ISODate\u0000";
@@ -32,6 +36,7 @@ const pageDescriptionEl = document.getElementById("practice-page-description");
 const editorModeNoteEl = document.getElementById("editor-mode-note");
 const exerciseListEl = document.getElementById("exercise-list");
 const loadRemoteButton = document.getElementById("load-remote");
+const toggleDatasetButton = document.getElementById("toggle-dataset");
 const loadDemoButton = document.getElementById("load-demo");
 const localFilesInput = document.getElementById("local-files");
 
@@ -39,6 +44,9 @@ let mingo = null;
 let db = null;
 let collections = null;
 let loading = false;
+let activeDataVariant = null;
+let requestedDataVariant = "full";
+let activeDataLabel = "Muestra mínima activa";
 let currentPageId = null;
 const resultStates = new Map();
 const editorDrafts = new Map();
@@ -335,21 +343,22 @@ async function streamToText(stream, label) {
   }
 }
 
-async function fetchCollection(base, name) {
-  const url = base + "/" + name + ".jsonl.gz";
+async function fetchCollection(base, name, variant) {
+  const filename = name + (variant === "sample" ? "-sample" : "") + ".jsonl.gz";
+  const url = base + "/" + filename;
   const response = await fetch(url, { mode: "cors" });
-  if (!response.ok) throw new Error(name + ".jsonl.gz respondió HTTP " + response.status + ".");
-  if (!response.body) throw new Error("El navegador no permitió leer " + name + ".jsonl.gz.");
+  if (!response.ok) throw new Error(filename + " respondió HTTP " + response.status + ".");
+  if (!response.body) throw new Error("El navegador no permitió leer " + filename + ".");
   const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
-  return parseJsonl(await streamToText(stream, "Descargando " + name), name + ".jsonl.gz");
+  return parseJsonl(await streamToText(stream, "Descargando " + name), filename);
 }
 
-async function loadFromSource(source) {
+async function loadFromSource(source, variant) {
   const loaded = {};
   for (let index = 0; index < COLLECTION_NAMES.length; index += 1) {
     const name = COLLECTION_NAMES[index];
     setStatus("Descargando " + name + " (" + (index + 1) + "/" + COLLECTION_NAMES.length + ")", "loading");
-    loaded[name] = await fetchCollection(source.base, name);
+    loaded[name] = await fetchCollection(source.base, name, variant);
   }
   return loaded;
 }
@@ -446,6 +455,7 @@ function makeCollection(name, documents) {
 }
 
 function buildDatabase(loaded, label) {
+  resultStates.clear();
   collections = {};
   COLLECTION_NAMES.forEach(function (name) {
     collections[name.toLowerCase()] = loaded[name] || [];
@@ -484,17 +494,49 @@ function renderCollectionList() {
 
 function setLoadingControls(isLoading) {
   loadRemoteButton.disabled = isLoading;
+  toggleDatasetButton.disabled = isLoading;
   loadDemoButton.disabled = isLoading;
   localFilesInput.disabled = isLoading;
 }
 
-async function loadRemoteData() {
+function updateDatasetToggleButton() {
+  const displayedVariant = activeDataVariant || requestedDataVariant;
+  toggleDatasetButton.textContent = displayedVariant === "sample"
+    ? "Volver a datos completos (106,7 MB)"
+    : "Usar muestra reducida (12,5 MB)";
+}
+
+async function loadRemoteData(variant) {
   if (loading || !mingo) return;
+  const targetVariant = variant || activeDataVariant || "full";
+  const target = DATA_VARIANTS[targetVariant];
+  requestedDataVariant = targetVariant;
   loading = true;
   setLoadingControls(true);
-  messageEl.textContent = "Descargando la muestra JSONL comprimida y descomprimiéndola en el navegador.";
   const failures = [];
   try {
+    const releaseCurrentData = Boolean(
+      (activeDataVariant && activeDataVariant !== targetVariant)
+      || activeDataLabel.startsWith("Ficheros locales cargados")
+    );
+    if (releaseCurrentData) {
+      db = null;
+      collections = null;
+      resultStates.clear();
+      activeDataVariant = null;
+      activeDataLabel = "Sin datos activos";
+      collectionListEl.replaceChildren();
+      document.querySelectorAll(".result").forEach(function (result) {
+        result.replaceChildren();
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "Cargando el nuevo conjunto de datos…";
+        result.append(empty);
+      });
+      setStatus("Liberando el conjunto anterior", "loading");
+      await yieldToBrowser();
+    }
+    messageEl.textContent = "Descargando " + target.name + " y descomprimiéndolo en el navegador.";
     if (typeof DecompressionStream === "undefined") {
       throw new Error("Este navegador no ofrece DecompressionStream, necesario para leer los ficheros .gz.");
     }
@@ -502,10 +544,13 @@ async function loadRemoteData() {
       const source = DATA_SOURCES[index];
       try {
         const started = performance.now();
-        const loaded = await loadFromSource(source);
+        const loaded = await loadFromSource(source, targetVariant);
         const total = COLLECTION_NAMES.reduce(function (sum, name) { return sum + loaded[name].length; }, 0);
-        buildDatabase(loaded, "Muestra cargada · " + formatCount(total) + " documentos");
-        messageEl.textContent = "Carga correcta desde " + source.label + " en "
+        activeDataVariant = targetVariant;
+        activeDataLabel = target.readyLabel + " · " + formatCount(total) + " documentos";
+        buildDatabase(loaded, activeDataLabel);
+        updateDatasetToggleButton();
+        messageEl.textContent = "Carga correcta de " + target.name + " desde " + source.label + " en "
           + ((performance.now() - started) / 1000).toFixed(1) + " s.";
         return;
       } catch (error) {
@@ -514,13 +559,21 @@ async function loadRemoteData() {
     }
     throw new Error(failures.join(" | "));
   } catch (error) {
-    setStatus("No se pudo cargar la muestra", "error");
-    messageEl.textContent = "No se pudo descargar la muestra desde el repositorio. "
-      + "La muestra mínima incrustada sigue disponible y también puedes descargar los ficheros "
-      + "y abrirlos con «Abrir ficheros locales». Detalle: " + error.message;
+    if (db) {
+      setStatus(activeDataLabel, "ready");
+      messageEl.textContent = "No se pudo cargar " + target.name + ". Se mantiene "
+        + activeDataLabel + ". Puedes reintentarlo, abrir ficheros locales o usar la muestra mínima. Detalle: "
+        + error.message;
+    } else {
+      setStatus("No hay datos cargados", "error");
+      messageEl.textContent = "No se pudo cargar " + target.name
+        + ". El conjunto anterior se liberó para reducir el uso máximo de memoria. "
+        + "Puedes reintentar la misma descarga o usar la muestra mínima. Detalle: " + error.message;
+    }
   } finally {
     loading = false;
     setLoadingControls(false);
+    updateDatasetToggleButton();
   }
 }
 
@@ -548,7 +601,11 @@ async function loadLocalFiles(files) {
     const missing = COLLECTION_NAMES.filter(function (name) { return !loaded[name]; });
     missing.forEach(function (name) { loaded[name] = []; });
     const total = COLLECTION_NAMES.reduce(function (sum, name) { return sum + loaded[name].length; }, 0);
-    buildDatabase(loaded, "Ficheros locales cargados · " + formatCount(total) + " documentos");
+    activeDataVariant = null;
+    requestedDataVariant = "full";
+    activeDataLabel = "Ficheros locales cargados · " + formatCount(total) + " documentos";
+    buildDatabase(loaded, activeDataLabel);
+    updateDatasetToggleButton();
     messageEl.textContent = missing.length
       ? "Carga correcta. Sin datos para: " + missing.join(", ") + "."
       : "Carga correcta desde los ficheros locales.";
@@ -804,12 +861,22 @@ showPageFromLocation();
 editorModeNoteEl.textContent = hasJsCodeMirror()
   ? "Resaltado JavaScript activo. Ctrl/Cmd + Intro ejecuta la consulta."
   : "No se pudo cargar CodeMirror; los cuadros de texto siguen disponibles sin resaltado.";
-loadRemoteButton.addEventListener("click", loadRemoteData);
+loadRemoteButton.addEventListener("click", function () {
+  loadRemoteData(activeDataVariant || requestedDataVariant);
+});
+toggleDatasetButton.addEventListener("click", function () {
+  const displayedVariant = activeDataVariant || requestedDataVariant;
+  loadRemoteData(displayedVariant === "sample" ? "full" : "sample");
+});
 loadDemoButton.addEventListener("click", function () {
   if (!mingo || loading) return;
   const demo = createDemoCollections();
   const total = COLLECTION_NAMES.reduce(function (sum, name) { return sum + demo[name].length; }, 0);
-  buildDatabase(demo, "Muestra mínima activa · " + formatCount(total) + " documentos");
+  activeDataVariant = null;
+  requestedDataVariant = "full";
+  activeDataLabel = "Muestra mínima activa · " + formatCount(total) + " documentos";
+  buildDatabase(demo, activeDataLabel);
+  updateDatasetToggleButton();
   messageEl.textContent = "Estás usando la muestra mínima incrustada en la página, pensada sólo para probar la sintaxis.";
 });
 localFilesInput.addEventListener("change", function () {
@@ -820,12 +887,15 @@ async function initialize() {
   try {
     setStatus("Cargando mingo…", "loading");
     mingo = await import(MINGO_URL);
-    buildDatabase(createDemoCollections(), "Muestra mínima activa");
-    setStatus("Descargando la muestra…", "loading");
+    activeDataVariant = null;
+    requestedDataVariant = "full";
+    activeDataLabel = "Muestra mínima activa";
+    buildDatabase(createDemoCollections(), activeDataLabel);
+    setStatus("Descargando el conjunto completo…", "loading");
     loadDemoButton.disabled = false;
     localFilesInput.disabled = false;
     loadRemoteButton.disabled = false;
-    await loadRemoteData();
+    await loadRemoteData("full");
   } catch (error) {
     setStatus("No se pudo iniciar el motor de consultas", "error");
     messageEl.textContent = "No se pudo cargar mingo desde jsDelivr: " + describeError(error);

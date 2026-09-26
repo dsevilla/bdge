@@ -41,12 +41,32 @@ por eso el panel va informando de cada paso.
 
 ## Los datos y el grafo
 
-Se descarga la muestra JSONL publicada en
+Se descargan todas las filas de `Users`, `Posts` y `Tags` desde el JSONL completo
+publicado en
 [`dsevilla/bd2-data`](https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl)
-—sólo `Users`, `Posts` y `Tags`, unos 7 MB— y el grafo se construye en el
-navegador: el esquema, los CSV en el sistema de ficheros virtual y un `COPY` por
-tabla. Sale un grafo de unos 81.000 nodos y 145.000 relaciones, con `WROTE`,
-`ANSWERS` y `TAGGED_WITH`.
+—unos 61,28 MB comprimidos— y el grafo se construye en el navegador: primero se
+lee el JSONL, después se crean el esquema y los CSV en el sistema de ficheros
+virtual, y finalmente se ejecuta un `COPY` por tabla. Son 892.294 nodos
+(469.417 usuarios, 419.881 publicaciones y 2.996 etiquetas), además de las
+relaciones `WROTE`, `ANSWERS` y `TAGGED_WITH` que se pueden construir con esos
+registros. El conjunto no se muestrea; `Posts.Body` está limitado a 100 bytes
+UTF-8.
+
+La construcción del grafo completo puede tardar varios minutos y requerir
+varios GB de memoria del navegador. Las cifras de nodos y relaciones se muestran
+al terminar la carga.
+
+El botón «Usar muestra reducida» reconstruye el grafo con los ficheros
+`Users-sample.jsonl.gz`, `Posts-sample.jsonl.gz` y `Tags-sample.jsonl.gz`, unos
+6,9 MB comprimidos. También selecciona una pregunta de cada ocho y mantiene su
+hilo; las consultas devuelven cifras menores. «Volver a datos completos» carga
+de nuevo el grafo grande.
+
+Al alternar, se cierra el grafo actual antes de descargar el otro conjunto para
+reducir el pico de memoria; si la descarga falla, el botón permite reintentarla.
+
+Las descargas están separadas en dos releases: [JSONL completo de 2026-27](https://github.com/dsevilla/bd2-data/releases/tag/jsonl-full-26-27)
+y [JSONL reducido de 2026-27](https://github.com/dsevilla/bd2-data/releases/tag/jsonl-sample-26-27).
 
 Construirlo en el navegador, en vez de publicar la base ya hecha, es
 deliberado: así la página puede enseñar la transformación del documento al

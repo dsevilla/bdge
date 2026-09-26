@@ -1,7 +1,7 @@
 import { PRACTICE_PAGES } from "./pages/index.js";
 "use strict";
 /*
- * Motor común de la práctica de grafos. Descarga la muestra JSONL, construye
+ * Motor común de la práctica de grafos. Descarga el JSONL completo, construye
  * el grafo en Ladybug (WebAssembly) y ejecuta el Cypher de cada ejercicio,
  * dibujando el resultado cuando contiene nodos o relaciones. Las páginas de
  * pages/ sólo declaran contenido; este fichero no debe copiarse para añadir
@@ -26,6 +26,10 @@ const DATA_SOURCES = [
     base: "https://raw.githubusercontent.com/dsevilla/bd2-data/main/es.stackoverflow/jsonl"
   }
 ];
+const DATA_VARIANTS = {
+  full: { name: "el conjunto completo", readyLabel: "Conjunto completo" },
+  sample: { name: "la muestra reducida", readyLabel: "Muestra reducida" }
+};
 const SOURCE_FILES = ["Users", "Posts", "Tags"];
 const RESULT_PAGE_SIZE = 25;
 const GRAPH_NODE_LIMIT = 300;
@@ -88,11 +92,14 @@ const pageDescriptionEl = document.getElementById("practice-page-description");
 const editorModeNoteEl = document.getElementById("editor-mode-note");
 const exerciseListEl = document.getElementById("exercise-list");
 const loadRemoteButton = document.getElementById("load-remote");
+const toggleDatasetButton = document.getElementById("toggle-dataset");
 
 let lbug = null;
 let database = null;
 let connection = null;
 let loading = false;
+let activeDataVariant = null;
+let requestedDataVariant = "full";
 let currentPageId = null;
 const resultStates = new Map();
 const editorDrafts = new Map();
@@ -376,14 +383,15 @@ function parseJsonl(text, label) {
   return documents;
 }
 
-async function fetchCollection(base, name) {
-  const response = await fetch(base + "/" + name + ".jsonl.gz", { mode: "cors" });
-  if (!response.ok) throw new Error(name + ".jsonl.gz respondió HTTP " + response.status + ".");
-  if (!response.body) throw new Error("El navegador no permitió leer " + name + ".jsonl.gz.");
+async function fetchCollection(base, name, variant) {
+  const filename = name + (variant === "sample" ? "-sample" : "") + ".jsonl.gz";
+  const response = await fetch(base + "/" + filename, { mode: "cors" });
+  if (!response.ok) throw new Error(filename + " respondió HTTP " + response.status + ".");
+  if (!response.body) throw new Error("El navegador no permitió leer " + filename + ".");
   const text = await new Response(
     response.body.pipeThrough(new DecompressionStream("gzip"))
   ).text();
-  return parseJsonl(text, name + ".jsonl.gz");
+  return parseJsonl(text, filename);
 }
 
 function csvValue(value) {
@@ -438,7 +446,12 @@ function renderSchemaSource() {
 async function buildGraph(documents) {
   setStatus("Creando el esquema del grafo", "loading");
   await yieldToBrowser();
-  if (connection) connection = null;
+  destroyGraphs();
+  resultStates.clear();
+  document.querySelectorAll(".result").forEach(function (result) {
+    result.replaceChildren();
+  });
+  closeGraphDatabase();
   database = new lbug.Database();
   connection = new lbug.Connection(database);
   SCHEMA_STATEMENTS.forEach(function (statement) { connection.query(statement); });
@@ -448,6 +461,8 @@ async function buildGraph(documents) {
   const files = buildCsvFiles(documents);
   const fs = await lbug.getFS();
   Object.keys(files).forEach(function (name) {
+    const path = "/" + name;
+    if (fs.analyzePath(path).exists) fs.unlink(path);
     fs.createDataFile("/", name, files[name], true, true);
   });
 
@@ -483,13 +498,42 @@ function renderCounts(counts) {
   });
 }
 
-async function loadEverything() {
+function updateDatasetToggleButton() {
+  const displayedVariant = activeDataVariant || requestedDataVariant;
+  toggleDatasetButton.textContent = displayedVariant === "sample"
+    ? "Volver a datos completos (61,3 MB)"
+    : "Usar muestra reducida (6,9 MB)";
+}
+
+async function loadEverything(variant) {
   if (loading || !lbug) return;
+  const targetVariant = variant || activeDataVariant || "full";
+  const target = DATA_VARIANTS[targetVariant];
+  const releasedForVariantChange = Boolean(activeDataVariant && activeDataVariant !== targetVariant);
+  requestedDataVariant = targetVariant;
   loading = true;
   loadRemoteButton.disabled = true;
-  messageEl.textContent = "Descargando la muestra y construyendo el grafo en el navegador.";
+  toggleDatasetButton.disabled = true;
   const failures = [];
+  let graphBuildStarted = false;
   try {
+    if (releasedForVariantChange) {
+      destroyGraphs();
+      resultStates.clear();
+      closeGraphDatabase();
+      activeDataVariant = null;
+      collectionListEl.replaceChildren();
+      document.querySelectorAll(".result").forEach(function (result) {
+        result.replaceChildren();
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "Cargando el nuevo conjunto de datos…";
+        result.append(empty);
+      });
+      setStatus("Liberando el grafo anterior", "loading");
+      await yieldToBrowser();
+    }
+    messageEl.textContent = "Descargando " + target.name + " y construyendo el grafo en el navegador.";
     if (typeof DecompressionStream === "undefined") {
       throw new Error("Este navegador no ofrece DecompressionStream, necesario para leer los ficheros .gz.");
     }
@@ -502,15 +546,18 @@ async function loadEverything() {
           const name = SOURCE_FILES[fileIndex];
           setStatus("Descargando " + name + " (" + (fileIndex + 1) + "/" + SOURCE_FILES.length + ")", "loading");
           await yieldToBrowser();
-          documents[name] = await fetchCollection(source.base, name);
+          documents[name] = await fetchCollection(source.base, name, targetVariant);
         }
+        graphBuildStarted = true;
         await buildGraph(documents);
         const counts = graphCounts();
         renderCounts(counts);
+        activeDataVariant = targetVariant;
+        updateDatasetToggleButton();
         const nodes = counts.slice(0, 3).reduce(function (sum, entry) { return sum + entry.total; }, 0);
         const edges = counts.slice(3).reduce(function (sum, entry) { return sum + entry.total; }, 0);
-        setStatus("Grafo listo · " + formatCount(nodes) + " nodos y " + formatCount(edges) + " relaciones", "ready");
-        messageEl.textContent = "Construido desde " + source.label + " en "
+        setStatus(target.readyLabel + " · " + formatCount(nodes) + " nodos y " + formatCount(edges) + " relaciones", "ready");
+        messageEl.textContent = "Construido con " + target.name + " desde " + source.label + " en "
           + ((performance.now() - started) / 1000).toFixed(1) + " s.";
         document.querySelectorAll(".result").forEach(function (result) {
           result.replaceChildren();
@@ -526,11 +573,26 @@ async function loadEverything() {
     }
     throw new Error(failures.join(" | "));
   } catch (error) {
+    if (graphBuildStarted) {
+      destroyGraphs();
+      resultStates.clear();
+      closeGraphDatabase();
+      activeDataVariant = null;
+      collectionListEl.replaceChildren();
+    }
     setStatus("No se pudo construir el grafo", "error");
-    messageEl.textContent = "No se pudo descargar la muestra o construir el grafo. Detalle: " + error.message;
+    messageEl.textContent = "No se pudo descargar " + target.name + " o construir el grafo."
+      + (activeDataVariant
+        ? " Se mantiene el conjunto anterior."
+        : releasedForVariantChange
+          ? " El conjunto anterior se liberó al cambiar de tamaño."
+          : " No quedó un grafo activo.")
+      + " Puedes reintentar la misma carga. Detalle: " + error.message;
   } finally {
     loading = false;
     loadRemoteButton.disabled = false;
+    toggleDatasetButton.disabled = false;
+    updateDatasetToggleButton();
   }
 }
 
@@ -602,6 +664,17 @@ function collectGraphElements(rows) {
 function destroyGraphs() {
   graphInstances.forEach(function (network) { network.destroy(); });
   graphInstances.clear();
+}
+
+function closeGraphDatabase() {
+  if (connection) {
+    connection.close();
+    connection = null;
+  }
+  if (database) {
+    database.close();
+    database = null;
+  }
 }
 
 function renderGraph(container, elements, resultId) {
@@ -934,7 +1007,14 @@ showPageFromLocation();
 editorModeNoteEl.textContent = hasCypherCodeMirror()
   ? "Resaltado Cypher activo. Ctrl/Cmd + Intro ejecuta la consulta."
   : "No se pudo cargar CodeMirror; los cuadros de texto siguen disponibles sin resaltado.";
-loadRemoteButton.addEventListener("click", loadEverything);
+loadRemoteButton.addEventListener("click", function () {
+  loadEverything(activeDataVariant || requestedDataVariant);
+});
+toggleDatasetButton.addEventListener("click", function () {
+  const displayedVariant = activeDataVariant || requestedDataVariant;
+  loadEverything(displayedVariant === "sample" ? "full" : "sample");
+});
+updateDatasetToggleButton();
 
 async function initialize() {
   try {
@@ -942,7 +1022,7 @@ async function initialize() {
     lbug = (await import(LBUG_URL)).default;
     await lbug.init();
     setStatus("Motor listo · Ladybug " + lbug.getVersion(), "loading");
-    await loadEverything();
+    await loadEverything("full");
   } catch (error) {
     setStatus("No se pudo iniciar el motor de grafos", "error");
     messageEl.textContent = "No se pudo cargar Ladybug desde jsDelivr: "

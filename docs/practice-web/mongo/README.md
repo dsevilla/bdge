@@ -19,26 +19,34 @@ copies el cargador al añadir contenido.
 
 ## Los datos
 
-La página descarga la muestra reducida del *dump* de Stack Overflow en español
-publicada en
+La página descarga todas las filas de las cinco tablas del *dump* de Stack
+Overflow en español, publicadas en
 [`dsevilla/bd2-data`](https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl):
-cinco ficheros JSON Lines comprimidos, 12,5 MB en total, con 246.898
+cinco ficheros JSON Lines comprimidos, 106,73 MB en total, con 2.417.431
 documentos en `db.posts`, `db.users`, `db.comments`, `db.votes` y `db.tags`.
+Esta es la opción predeterminada; el botón «Usar muestra reducida» carga los
+ficheros `*-sample.jsonl.gz`, unos 12,5 MB y 246.898 documentos. Esa alternativa
+conserva una pregunta de cada ocho con sus respuestas, comentarios y votos.
+Al cambiar de opción se reemplazan las colecciones y se borran los resultados
+anteriores. Para reducir el pico de memoria, la aplicación libera el conjunto
+actual antes de descargar la otra variante; si esa descarga falla, se puede
+reintentar desde el botón de carga.
+
+Las descargas están separadas en dos releases: [JSONL completo de 2026-27](https://github.com/dsevilla/bd2-data/releases/tag/jsonl-full-26-27)
+y [JSONL reducido de 2026-27](https://github.com/dsevilla/bd2-data/releases/tag/jsonl-sample-26-27).
 
 Se lee de jsDelivr, con `raw.githubusercontent.com` como alternativa. **No se
 puede leer de los *assets* de una *release* de GitHub**: no envían cabeceras
-CORS y el navegador rechaza la petición. Por eso la muestra está versionada en
-el repositorio de datos, no sólo publicada como *release*.
+CORS y el navegador rechaza la petición. Por eso los ficheros están versionados
+en el repositorio de datos, además de publicarse como *release* para descarga.
 
-La muestra conserva hilos completos —una pregunta de cada ocho con todas sus
-respuestas, comentarios, votos y usuarios—, así que los `$lookup` cuadran y no
-hay referencias colgando. Los campos `Body`, `Text` y `AboutMe` vienen cortados
-a 100 caracteres. Las cifras no son las del *dump* completo: los resultados de
-clase serán distintos, y conviene decírselo a los alumnos.
-
-Si la descarga falla, la página se queda con una muestra mínima incrustada en
-`app.js`, suficiente para probar la sintaxis, y ofrece abrir los ficheros
-descargados a mano.
+La opción completa no muestrea filas. En ambas variantes `Posts.Body`,
+`Comments.Text` y `Users.AboutMe` se limitan a un máximo de 100 bytes UTF-8; por
+tanto, las consultas que dependan del contenido de esos campos pueden diferir
+del *dump* original. La carga completa puede necesitar varios GB de memoria del
+navegador. Si falla una descarga sin cambiar de variante, la página conserva la
+base activa y ofrece reintentar, abrir ficheros locales o usar una muestra
+mínima incrustada en `app.js`, suficiente para probar la sintaxis.
 
 ## Qué se puede ejecutar
 

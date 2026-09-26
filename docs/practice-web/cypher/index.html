@@ -322,13 +322,16 @@
         <span id="db-status" class="status loading" role="status" aria-live="polite">Preparando el motor…</span>
       </div>
       <p class="database-note">
-        Al abrir la página se descarga la muestra del <em>dump</em> publicada en
+        Al abrir la página se descargan <code>Users</code>, <code>Posts</code> y <code>Tags</code> completos desde el <em>dump</em> publicado en
         <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>
-        y se construye el grafo aquí mismo: primero el esquema, después la carga. Tarda unos segundos la primera vez y nada sale de tu navegador.
+        (unos 61,3 MB comprimidos) y se construye el grafo aquí mismo: primero el esquema, después la carga. Puede tardar varios minutos y necesitar varios GB de memoria; nada sale de tu navegador.
+        El botón permite cambiar a la muestra reducida (unos 6,9 MB), con una pregunta de cada ocho y su hilo completo; las cifras serán menores.
       </p>
       <div class="controls">
         <button id="load-remote" class="button primary" type="button" disabled>Reconstruir el grafo</button>
-        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/tag/jsonl-sample-26-27" target="_blank" rel="noreferrer">Descargar los datos</a>
+        <button id="toggle-dataset" class="button" type="button" disabled>Usar muestra reducida (6,9 MB)</button>
+        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/tag/jsonl-full-26-27" target="_blank" rel="noreferrer">Descargar JSONL completo</a>
+        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/tag/jsonl-sample-26-27" target="_blank" rel="noreferrer">Descargar JSONL reducido</a>
       </div>
       <p id="connection-result" class="connection-result" aria-live="polite"></p>
       <ul id="collection-list" class="collection-list" aria-label="Nodos y relaciones cargados"></ul>
@@ -353,7 +356,7 @@
       </p>
       <table class="mapping">
         <caption class="connection-result" style="text-align: left; caption-side: bottom;">
-          Del documento al grafo: qué campo de la muestra JSONL se convierte en qué.
+          Del documento al grafo: qué campo del JSONL completo se convierte en qué.
         </caption>
         <thead>
           <tr><th scope="col">En los documentos</th><th scope="col">En el grafo</th></tr>
@@ -388,8 +391,8 @@
       <p>
         El motor es <a href="https://ladybugdb.com/" target="_blank" rel="noreferrer">Ladybug</a> compilado a WebAssembly, continuación del proyecto Kuzu. Habla Cypher, pero
         <strong>no es Neo4j</strong>: no hay APOC ni GDS, los planes de <code>EXPLAIN</code> son los suyos y el esquema es obligatorio.
-        Los ejercicios de índices y <code>PROFILE</code> del boletín siguen necesitando el servidor de clase. Además esta muestra conserva
-        una pregunta de cada ocho con su hilo completo, así que las cifras no son las del <em>dump</em> entero.
+        Los ejercicios de índices y <code>PROFILE</code> del boletín siguen necesitando el servidor de clase. El grafo usa todas las filas de
+        <code>Users</code>, <code>Posts</code> y <code>Tags</code>; el <code>Body</code> de las publicaciones está limitado a 100 bytes UTF‑8.
       </p>
     </footer>
   </main>

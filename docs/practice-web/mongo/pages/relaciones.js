@@ -1,7 +1,8 @@
 /*
  * Ejercicios de relaciones entre colecciones y de modelado, al hilo de la
  * sesión 4: referencia frente a datos embebidos, $lookup y documentos de
- * hilo. La muestra conserva hilos completos, así que estos joins cuadran.
+ * hilo. Los datos completos permiten observar las relaciones entre preguntas,
+ * respuestas, comentarios y votos.
  */
 export const page = {
   id: "relaciones",

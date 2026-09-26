@@ -11,7 +11,7 @@ export const page = {
     {
       id: "contar-preguntas",
       title: "Cuenta las preguntas",
-      prompt: "En Stack Overflow, PostTypeId 1 es una pregunta y 2 una respuesta (4 y 5 son los textos de las etiquetas). Cuenta cuántas preguntas hay en la muestra con countDocuments.",
+      prompt: "En Stack Overflow, PostTypeId 1 es una pregunta y 2 una respuesta (4 y 5 son los textos de las etiquetas). Cuenta cuántas preguntas hay en el conjunto de datos con countDocuments.",
       solution: `db.posts.countDocuments({ PostTypeId: 1 })`
     },
     {
@@ -74,7 +74,7 @@ export const page = {
     {
       id: "tipos-presentes",
       title: "Valores distintos de un campo",
-      prompt: "Averigua con distinct qué valores de PostTypeId aparecen realmente en la muestra.",
+      prompt: "Averigua con distinct qué valores de PostTypeId aparecen realmente en el conjunto de datos.",
       solution: `db.posts.distinct("PostTypeId")`
     }
   ]
