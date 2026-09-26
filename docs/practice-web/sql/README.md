@@ -1,23 +1,35 @@
 # Prácticas SQL en el navegador
 
-Esta aplicación se publica como `practica-sql/` en GitHub Pages. El job
-`publish-github-pages` copia este directorio a `docs/practica-sql/`; la portada
+Esta aplicación se publica en `practice-web/sql/` de GitHub Pages. El job
+`publish-github-pages` copia este directorio a `docs/practice-web/sql/`; la portada
 genera su enlace a partir de `practice.json`. La página separa el motor de
 práctica del contenido:
 
 - `index.html` contiene el marco y los controles comunes de la base de datos.
-- `app.js` implementa la descarga, SQLite, ejecución, paginación y navegación.
+- `app.js` implementa la carga de datos, la ejecución, la paginación y la navegación.
+- `engine.js` inicializa DuckDB-Wasm y expone la ejecución SQL asíncrona.
 - CodeMirror 5 añade resaltado SQL en modo MySQL 8; si falla su CDN, los
   cuadros de texto siguen funcionando sin resaltado. El coloreado no valida la
-  consulta: la ejecución sigue siendo SQLite.
+  consulta: la ejecución la hace DuckDB-Wasm.
 - `pages/index.js` registra las páginas disponibles.
 - `pages/` contiene un módulo por página de ejercicios. Ahora se incluyen las
   sesiones 1 y 2.
-- `xz-worker.js` descomprime la base XZ fuera del hilo de la interfaz.
 
-La base se carga una sola vez. Al cambiar de página se conserva para que los
-ejercicios nuevos puedan consultar las mismas tablas. No copies el cargador ni
-el worker al añadir contenido.
+La carga remota usa `read_parquet` sobre `es.stackoverflow/parquet` en
+`dsevilla/bd2-data`, desde GitHub Raw. Se combina `Posts1.parquet`,
+`Posts2.parquet` y `Posts3.parquet` para formar `Posts`. Al iniciar, la página
+materializa `Posts`, `Users`, `Tags`, `Comments` y `Votes` en la base DuckDB en
+memoria. Las consultas del alumnado acceden a esas tablas locales durante la
+sesión y no vuelven a leer los ficheros remotos. Si falla el acceso remoto, se
+puede elegir el mismo conjunto de Parquet localmente o seguir con la muestra.
+Al añadir ejercicios se pueden usar las tablas compartidas sin cambiar el
+cargador.
+
+Los ficheros que hay actualmente en `bd2-data` son una copia anterior a la que
+se publicará para 2026-2027. Sirven para probar el acceso CORS de GitHub Raw y
+la lectura de DuckDB-Wasm; no representan el dataset que usará finalmente el
+curso. Al reconstruirlos, se conserva este flujo y se actualizan las rutas si
+cambian los nombres de los fragmentos.
 
 ## Añadir ejercicios a una página
 
@@ -77,14 +89,13 @@ cambia entre ellas. También se puede enlazar directamente a una página con
 
 Sirve el directorio por HTTP, por ejemplo desde la raíz del repositorio con
 `python3 -m http.server 8765 --bind 127.0.0.1`, y abre
-`/addendum/practica-web/sql/`. No abras `index.html` con `file://`,
+`/addendum/practice-web/sql/`. No abras `index.html` con `file://`,
 porque los módulos ES y el worker necesitan una página servida por HTTP o HTTPS.
 
 ## Alcance SQL
 
-La página usa SQLite compilado a WebAssembly mediante sql.js, no un servidor
-MySQL 8. Los ejercicios de la sesión 2 practican CTE, funciones ventana,
-`UNION ALL`, JSON y lectura del plan con `EXPLAIN QUERY PLAN`; adaptan la
-sintaxis a SQLite. Los ejemplos de MySQL sobre particionado, `FULLTEXT` con
+La página usa DuckDB-Wasm, no un servidor MySQL 8. Los ejercicios de la sesión
+2 practican CTE, funciones ventana, `UNION ALL`, JSON y lectura del plan con
+`EXPLAIN`. Los ejemplos de MySQL sobre particionado, `FULLTEXT` con
 `MATCH ... AGAINST`, índices funcionales de JSON y `EXPLAIN ANALYZE` no se
 pueden reproducir aquí con el mismo comportamiento.

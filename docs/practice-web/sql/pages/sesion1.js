@@ -10,12 +10,11 @@ export const page = {
     {
       id: "inventario-tablas",
       title: "Explora las tablas",
-      prompt: "Muestra en orden alfabético las tablas y vistas de la base. En SQLite puedes consultar sqlite_master; excluye los objetos internos cuyo nombre empieza por sqlite_.",
-      solution: `SELECT type AS Tipo, name AS Nombre
-FROM sqlite_master
-WHERE type IN ('table', 'view')
-  AND name NOT LIKE 'sqlite_%'
-ORDER BY type, name;`
+      prompt: "Muestra en orden alfabético las tablas y vistas de la base. En DuckDB puedes consultar information_schema.tables; limita la salida al esquema main.",
+      solution: `SELECT table_type AS Tipo, table_name AS Nombre
+FROM information_schema.tables
+WHERE table_schema = 'main'
+ORDER BY table_type, table_name;`
     },
     {
       id: "preguntas-mas-contestadas",

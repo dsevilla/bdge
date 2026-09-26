@@ -1,7 +1,7 @@
 # Práctica de grafos con Cypher en el navegador
 
-Esta aplicación se publica como `practica-cypher/` en GitHub Pages. El job
-`publish-github-pages` copia este directorio a `docs/practica-cypher/`; la
+Esta aplicación se publica en `practice-web/cypher/` de GitHub Pages. El job
+`publish-github-pages` copia este directorio a `docs/practice-web/cypher/`; la
 portada genera su enlace a partir de `practice.json`. La estructura es la misma
 que en las prácticas de SQL y MongoDB:
 
@@ -108,5 +108,5 @@ borradores al cambiar entre ellas y admite enlazar directamente con
 
 Sirve el directorio por HTTP, por ejemplo desde la raíz del repositorio con
 `python3 -m http.server 8765 --bind 127.0.0.1`, y abre
-`/addendum/practica-web/cypher/`. No abras `index.html` con `file://`: los
+`/addendum/practice-web/cypher/`. No abras `index.html` con `file://`: los
 módulos ES necesitan una página servida por HTTP o HTTPS.

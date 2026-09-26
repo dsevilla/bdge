@@ -237,14 +237,13 @@
       .file-label { width: 100%; }
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.14.2/sql-wasm.js"></script>
 </head>
 <body>
   <header class="page-header">
     <div class="header-inner">
       <p class="eyebrow">BDGE · prototipo de aula</p>
       <h1>Prácticas SQL en el navegador</h1>
-      <p class="intro">Ejercicios de las sesiones 1 y 2 con Stack Overflow en español. Escribe una consulta y examínala aquí mismo: SQLite se ejecuta en este navegador.</p>
+      <p class="intro">Ejercicios de las sesiones 1 y 2 con Stack Overflow en español. Escribe una consulta y examínala aquí mismo: DuckDB-Wasm se ejecuta en este navegador.</p>
     </div>
   </header>
 
@@ -252,26 +251,24 @@
     <section class="database-panel" aria-labelledby="database-title">
       <div class="database-top">
         <h2 id="database-title">Stack Overflow en español</h2>
-        <span id="db-status" class="status loading" role="status" aria-live="polite">Preparando SQLite…</span>
+        <span id="db-status" class="status loading" role="status" aria-live="polite">Preparando DuckDB-Wasm…</span>
       </div>
       <p class="database-note">
-        Al abrir la página se intenta cargar Stack Overflow desde dos fragmentos XZ del repositorio
-        <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>.
-        Si falla, puedes usar la muestra, abrir una copia local o probar el fichero comprimido de la release. La base se carga una vez y se comparte entre todas las páginas de ejercicios.
+        DuckDB consulta directamente los Parquet alojados en
+        <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/parquet" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>.
+        También puedes seleccionar copias locales de Posts, Users, Tags, Comments y Votes.
+        La muestra pequeña permite probar los ejercicios si falla el acceso remoto.
       </p>
       <div class="controls">
-        <button id="load-real" class="button primary" type="button" disabled>Reintentar descarga XZ</button>
-        <button id="load-release" class="button" type="button" disabled>Cargar .db.gz de la release</button>
+        <button id="load-real" class="button primary" type="button" disabled>Cargar Parquet remotos</button>
         <button id="load-demo" class="button" type="button" disabled>Volver a la muestra pequeña</button>
-        <label class="button file-label">Abrir un fichero local
-          <input id="local-file" type="file" accept=".db,.sqlite,.sqlite3,.gz,application/gzip,application/x-sqlite3">
+        <label class="button file-label">Abrir Parquet locales
+          <input id="local-file" type="file" accept=".parquet" multiple disabled>
         </label>
-        <a class="button" href="https://github.com/dsevilla/bd2-data/releases/download/sqlite-backup-25-26/es.stackoverflow.db.gz" target="_blank" rel="noreferrer">Descargar .db.gz</a>
-        <button id="check-link" class="button" type="button" disabled>Probar acceso CORS</button>
       </div>
       <p id="connection-result" class="connection-result" aria-live="polite"></p>
-      <p class="connection-result">Las consultas se muestran en bloques de 100 filas; ejecuta una sentencia cada vez. Puedes retroceder en consultas SELECT. La descarga alternativa usa el fichero .db.gz de la release; si no se puede cargar desde la web, descárgalo y ábrelo con «Abrir un fichero local».</p>
-      <p class="connection-result"><strong>Compatibilidad:</strong> la página ejecuta SQLite en el navegador, no MySQL 8. Los ejercicios de la sesión 2 adaptan la sintaxis; el particionado, <code>MATCH ... AGAINST</code> y <code>EXPLAIN ANALYZE</code> de MySQL no se pueden ejecutar aquí.</p>
+      <p class="connection-result">Los resultados se muestran en bloques de 100 filas; ejecuta una sentencia cada vez. Puedes retroceder en consultas SELECT. Al cargar datos, DuckDB materializa las cinco tablas en memoria. Las consultas posteriores usan esas tablas durante la sesión. Los ejercicios DML crean una tabla temporal aparte.</p>
+      <p class="connection-result"><strong>Compatibilidad:</strong> los ejercicios usan el dialecto de DuckDB. MySQL 8 sigue siendo el motor de los cuadernos de la asignatura; sus opciones de particionado, índices y JSON pueden tener otra sintaxis y comportamiento.</p>
     </section>
 
     <nav id="page-navigation" class="page-navigation" aria-label="Páginas de ejercicios"></nav>
@@ -285,7 +282,7 @@
     </section>
 
     <footer>
-      <p>La base no se envía a ningún servidor. Esta práctica usa SQLite en el navegador; no emula MySQL 8. Los ejercicios cubren consultas portables y adaptan algunas funciones. El particionado, <code>MATCH ... AGAINST</code>, el tipo JSON de MySQL y <code>EXPLAIN ANALYZE</code> no funcionan aquí con la sintaxis de clase.</p>
+      <p>Los archivos locales y las consultas se procesan en tu navegador. Los cambios en tablas temporales se pierden al recargar la página o cambiar de base.</p>
     </footer>
   </main>
 

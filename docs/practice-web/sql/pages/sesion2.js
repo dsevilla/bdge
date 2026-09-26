@@ -1,24 +1,24 @@
 /*
  * Ejercicios de consulta basados en SQL/sesión 2.
- * Se usan las alternativas de SQLite disponibles en sql.js.
+ * Se usa el dialecto de DuckDB.
  */
 export const page = {
   id: "sesion-2",
   title: "Sesión 2 · Consultas y estructuras avanzadas",
-  description: "CTE, UNION ALL, funciones ventana, JSON y planes de consulta en SQLite.",
+  description: "CTE, UNION ALL, funciones ventana, JSON y planes de consulta en DuckDB.",
   exercises: [
     {
       id: "resumen-mensual",
       title: "Resume las preguntas por mes con una CTE",
       prompt: "Usa una CTE para contar preguntas por mes y calcular su puntuación media. Muestra los 24 meses más recientes.",
       solution: `WITH PreguntasPorMes AS (
-  SELECT strftime('%Y-%m', CreationDate) AS Mes,
+  SELECT strftime(CAST(CreationDate AS TIMESTAMP), '%Y-%m') AS Mes,
          COUNT(*) AS NumeroPreguntas,
          ROUND(AVG(Score), 2) AS PuntuacionMedia
   FROM Posts
   WHERE PostTypeId = 1
     AND CreationDate IS NOT NULL
-  GROUP BY strftime('%Y-%m', CreationDate)
+  GROUP BY strftime(CAST(CreationDate AS TIMESTAMP), '%Y-%m')
 )
 SELECT Mes, NumeroPreguntas, PuntuacionMedia
 FROM PreguntasPorMes
@@ -69,10 +69,10 @@ LIMIT 20;`
       solution: `WITH PreguntasPosicionadas AS (
   SELECT Id,
          Title,
-         strftime('%Y', CreationDate) AS Anio,
+         strftime(CAST(CreationDate AS TIMESTAMP), '%Y') AS Anio,
          Score,
          ROW_NUMBER() OVER (
-           PARTITION BY strftime('%Y', CreationDate)
+           PARTITION BY strftime(CAST(CreationDate AS TIMESTAMP), '%Y')
            ORDER BY Score DESC, Id ASC
          ) AS Posicion
   FROM Posts
@@ -113,7 +113,7 @@ ORDER BY Profundidad, Id;`
     {
       id: "json-documento",
       title: "Construye y consulta un objeto JSON",
-      prompt: "Construye un objeto JSON con id, título, puntuación y autor para cinco preguntas. Extrae la puntuación del documento con json_extract. Es una adaptación SQLite del trabajo con JSON de la sesión.",
+      prompt: "Construye un objeto JSON con id, título, puntuación y autor para cinco preguntas. Extrae la puntuación del documento con json_extract. Es una adaptación DuckDB del trabajo con JSON de la sesión.",
       solution: `SELECT Id,
        json_object(
          'id', Id,
@@ -133,8 +133,8 @@ LIMIT 5;`
     {
       id: "plan-consulta",
       title: "Lee el plan de una consulta",
-      prompt: "Usa EXPLAIN QUERY PLAN para consultar una fila por su clave primaria. Identifica en la columna detail si SQLite busca por el índice de la clave o recorre la tabla.",
-      solution: `EXPLAIN QUERY PLAN
+      prompt: "Usa EXPLAIN para consultar una publicación por Id. Lee los operadores, las columnas proyectadas y el filtro. Con los Parquet, busca READ_PARQUET y observa si el filtro se aplica en la lectura; con la muestra verás una tabla en memoria.",
+      solution: `EXPLAIN
 SELECT Id, Title
 FROM Posts
 WHERE Id = 42;`

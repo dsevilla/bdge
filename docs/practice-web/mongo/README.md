@@ -1,7 +1,7 @@
 # Prácticas MongoDB en el navegador
 
-Esta aplicación se publica como `practica-mongo/` en GitHub Pages. El job
-`publish-github-pages` copia este directorio a `docs/practica-mongo/`; la
+Esta aplicación se publica en `practice-web/mongo/` de GitHub Pages. El job
+`publish-github-pages` copia este directorio a `docs/practice-web/mongo/`; la
 portada genera su enlace a partir de `practice.json`. La página separa el motor
 de práctica del contenido, igual que la práctica de SQL:
 
@@ -116,5 +116,5 @@ se puede enlazar directamente a una página con `#agregacion`.
 
 Sirve el directorio por HTTP, por ejemplo desde la raíz del repositorio con
 `python3 -m http.server 8765 --bind 127.0.0.1`, y abre
-`/addendum/practica-web/mongo/`. No abras `index.html` con `file://`, porque los
+`/addendum/practice-web/mongo/`. No abras `index.html` con `file://`, porque los
 módulos ES necesitan una página servida por HTTP o HTTPS.
