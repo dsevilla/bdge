@@ -23,6 +23,8 @@
       --green: #226548;
       --red: #a33b2b;
       --code: #211f1a;
+      --page-width: 1600px;
+      --page-gutter: clamp(18px, 4vw, 64px);
     }
     * { box-sizing: border-box; }
     body {
@@ -34,12 +36,17 @@
     }
     button, textarea { font: inherit; }
     .page-header {
-      padding: 30px clamp(18px, 4vw, 64px) 24px;
+      padding: 30px 0 24px;
       color: #fffdf8;
       background: #302a1d;
       border-bottom: 6px solid var(--gold);
     }
-    .header-inner, main { width: min(1440px, 100%); margin: 0 auto; }
+    .header-inner, main {
+      width: min(var(--page-width), 100%);
+      margin: 0 auto;
+      padding-right: var(--page-gutter);
+      padding-left: var(--page-gutter);
+    }
     .eyebrow {
       margin: 0 0 5px;
       color: #f1d982;
@@ -50,7 +57,7 @@
     }
     h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.15; }
     .intro { max-width: 850px; margin: 10px 0 0; color: #eee7d8; }
-    main { padding: 22px clamp(14px, 3vw, 42px) 56px; }
+    main { padding-top: 22px; padding-bottom: 56px; }
     .database-panel {
       padding: 18px 20px;
       background: var(--paper);
