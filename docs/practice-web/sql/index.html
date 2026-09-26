@@ -82,6 +82,34 @@
     .status.error { color: #7e281e; background: #fff0ec; border-color: #e7b7ac; }
     .status.loading { color: #554300; background: #fff4cb; }
     .database-note { margin: 10px 0 14px; color: var(--muted); }
+    .materialization-panel {
+      margin-bottom: 16px;
+      padding: 18px 20px;
+      background: #fff9e8;
+      border: 1px solid #e5d497;
+      border-radius: 12px;
+    }
+    .materialization-panel h2 { margin: 0; font-size: 1.15rem; }
+    .materialization-panel p { margin: 10px 0 0; }
+    .parquet-map {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+      gap: 5px 24px;
+      margin: 12px 0 0;
+    }
+    .parquet-map > div { display: flex; gap: 9px; }
+    .parquet-map dt { flex: 0 0 auto; font-weight: 700; }
+    .parquet-map dd { margin: 0; color: var(--muted); }
+    .materialization-code {
+      max-width: 100%;
+      overflow-x: auto;
+      margin: 12px 0 0;
+      padding: 12px 14px;
+      color: #f8f4e9;
+      background: var(--code);
+      border-radius: 8px;
+      font: .82rem/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    }
     .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
     .button {
       display: inline-flex;
@@ -248,6 +276,25 @@
   </header>
 
   <main>
+    <section class="materialization-panel" aria-labelledby="materialization-title">
+      <h2 id="materialization-title">Cómo se prepara la base de datos</h2>
+      <p>Al abrir esta práctica, DuckDB-Wasm se inicia en tu navegador y carga automáticamente los Parquet desde GitHub. Para formar la tabla <code>Posts</code>, une sus tres fragmentos con <code>read_parquet</code> y materializa el resultado con <code>CREATE TABLE … AS SELECT …</code>:</p>
+      <pre class="materialization-code"><code>CREATE TABLE Posts AS
+SELECT * FROM read_parquet([
+  'https://raw.githubusercontent.com/dsevilla/bd2-data/main/es.stackoverflow/parquet/Posts1.parquet',
+  'https://raw.githubusercontent.com/dsevilla/bd2-data/main/es.stackoverflow/parquet/Posts2.parquet',
+  'https://raw.githubusercontent.com/dsevilla/bd2-data/main/es.stackoverflow/parquet/Posts3.parquet'
+]);</code></pre>
+      <dl class="parquet-map" aria-label="Tablas y ficheros Parquet de origen">
+        <div><dt>Posts</dt><dd>Posts1.parquet, Posts2.parquet y Posts3.parquet</dd></div>
+        <div><dt>Users</dt><dd>Users.parquet</dd></div>
+        <div><dt>Tags</dt><dd>Tags.parquet</dd></div>
+        <div><dt>Comments</dt><dd>Comments.parquet</dd></div>
+        <div><dt>Votes</dt><dd>Votes.parquet</dd></div>
+      </dl>
+      <p>La aplicación repite esa operación para las cinco tablas. Una vez cargadas, los ejercicios consultan <code>Posts</code>, <code>Users</code>, <code>Tags</code>, <code>Comments</code> y <code>Votes</code> dentro de DuckDB; cada consulta SQL usa esas tablas y no vuelve a leer ni descargar los Parquet. Se conservan en la memoria del navegador durante esta sesión: si recargas la página o eliges otra base, hay que cargarlos otra vez.</p>
+    </section>
+
     <section class="database-panel" aria-labelledby="database-title">
       <div class="database-top">
         <h2 id="database-title">Stack Overflow en español</h2>
@@ -267,7 +314,7 @@
         </label>
       </div>
       <p id="connection-result" class="connection-result" aria-live="polite"></p>
-      <p class="connection-result">Los resultados se muestran en bloques de 100 filas; ejecuta una sentencia cada vez. Puedes retroceder en consultas SELECT. Al cargar datos, DuckDB materializa las cinco tablas en memoria. Las consultas posteriores usan esas tablas durante la sesión. Los ejercicios DML crean una tabla temporal aparte.</p>
+      <p class="connection-result">Los resultados se muestran en bloques de 100 filas; ejecuta una sentencia cada vez. Puedes retroceder en consultas SELECT. Los ejercicios DML crean una tabla temporal aparte.</p>
       <p class="connection-result"><strong>Compatibilidad:</strong> los ejercicios usan el dialecto de DuckDB. MySQL 8 sigue siendo el motor de los cuadernos de la asignatura; sus opciones de particionado, índices y JSON pueden tener otra sintaxis y comportamiento.</p>
     </section>
 
