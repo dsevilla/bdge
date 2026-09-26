@@ -8,7 +8,9 @@ de práctica del contenido, igual que la práctica de SQL:
 - `index.html` contiene el marco y los controles comunes de los datos.
 - `app.js` implementa la descarga, la carga en mingo, la evaluación del código,
   la comprobación contra la solución y la navegación.
-- CodeMirror 5 añade resaltado JavaScript; si falla su CDN, los cuadros de texto
+- `pymongo-compat.js` traduce el subconjunto de PyMongo admitido a la fachada
+  JavaScript interna de mingo.
+- CodeMirror 5 añade resaltado Python; si falla su CDN, los cuadros de texto
   siguen funcionando sin resaltado.
 - `pages/index.js` registra las páginas disponibles.
 - `pages/` contiene un módulo por página de ejercicios: `consultas.js`,
@@ -50,19 +52,38 @@ mínima incrustada en `app.js`, suficiente para probar la sintaxis.
 
 ## Qué se puede ejecutar
 
-El editor admite una expresión al estilo de `mongosh` sobre el objeto `db`:
+El editor admite una expresión con sintaxis PyMongo sobre el objeto `db`, que
+la página ya proporciona. No se crea un cliente y no se escribe `await`:
 
-```js
-db.posts.find({ PostTypeId: 1 }, { Id: 1, Title: 1 }).sort({ Score: -1 }).limit(10)
-db.posts.aggregate([{ $group: { _id: "$PostTypeId", n: { $sum: 1 } } }])
-db.users.countDocuments({ Reputation: { $gte: 1000 } })
+```python
+db.posts.find(
+    {"PostTypeId": 1},
+    {"Id": 1, "Title": 1}
+).sort([("Score", -1), ("Id", 1)]).limit(10).to_list()
+db.posts.aggregate([
+    {"$group": {"_id": "$PostTypeId", "n": {"$sum": 1}}}
+]).to_list()
+db.users.count_documents({"Reputation": {"$gte": 1000}})
 db.posts.distinct("PostTypeId")
 ```
 
-Cada colección ofrece `find`, `findOne`, `aggregate`, `countDocuments` y
-`distinct`; `ISODate("2020-01-01")` construye fechas. El código se evalúa en el
-navegador del alumno y nada se envía a ningún servidor. También se admite un
-bloque con varias sentencias que termine en `return`.
+Cada colección ofrece `find`, `find_one`, `aggregate`, `count_documents` y
+`distinct`. Se aceptan los literales `None`, `True` y `False`,
+`datetime(año, mes, día)` y `datetime.fromisoformat("2020-01-01")`. `find` y
+`aggregate` pueden terminar en `to_list()`; la página también materializa el
+cursor cuando se omite. Las consultas son expresiones de lectura con la forma
+`db.colección.operación(...)`. El código se evalúa en el navegador del alumno y
+nada se envía a ningún servidor.
+
+El traductor es deliberadamente pequeño y está separado del motor. Las tablas
+`PYTHON_LITERALS` y `PYMONGO_METHODS` contienen las equivalencias sencillas; el
+caso especial de `sort([("campo", dirección), ...])` convierte las tuplas en
+pares internos. Al ampliar el dialecto, añade la traducción en
+`pymongo-compat.js` y un caso en `pymongo-compat.test.mjs`. Compruébalo con:
+
+```console
+node addendum/practice-web/mongo/pymongo-compat.test.mjs
+```
 
 El motor es [mingo](https://github.com/kofrasa/mingo), que implementa el
 lenguaje de consulta de MongoDB sobre objetos en memoria. **No es un `mongod`**:
@@ -87,7 +108,7 @@ objeto a `exercises`:
   id: "nuevo-ejercicio",
   title: "Título visible",
   prompt: "Enunciado del ejercicio.",
-  solution: `db.posts.aggregate([...])`
+  solution: `db.posts.aggregate([...]).to_list()`
 }
 ```
 

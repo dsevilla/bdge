@@ -1,4 +1,5 @@
 import { PRACTICE_PAGES } from "./pages/index.js";
+import { translatePythonQuery } from "./pymongo-compat.js";
 "use strict";
 /*
  * Motor común de la práctica MongoDB. Descarga el JSONL completo, lo carga en
@@ -25,7 +26,7 @@ const DATA_VARIANTS = {
 };
 const RESULT_PAGE_SIZE = 25;
 const MAX_TEXT_LENGTH = 1000;
-const DATE_SENTINEL = "\u0000ISODate\u0000";
+const DATE_SENTINEL = "\u0000datetime\u0000";
 
 const statusEl = document.getElementById("db-status");
 const messageEl = document.getElementById("connection-result");
@@ -53,10 +54,10 @@ const editorDrafts = new Map();
 const exercisesByEditor = new Map();
 const editorInstances = new Map();
 
-function hasJsCodeMirror() {
+function hasPythonCodeMirror() {
   return typeof window.CodeMirror === "function"
     && window.CodeMirror.modes
-    && typeof window.CodeMirror.modes.javascript === "function";
+    && typeof window.CodeMirror.modes.python === "function";
 }
 
 function setStatus(message, kind) {
@@ -136,7 +137,7 @@ function renderPracticePage(pageId) {
     label.className = "editor-label";
     label.htmlFor = editorId;
     const labelText = document.createElement("span");
-    labelText.textContent = "Consulta MongoDB";
+    labelText.textContent = "Consulta MongoDB con sintaxis PyMongo";
     const shortcut = document.createElement("span");
     shortcut.textContent = "Atajo: ";
     const controlKey = document.createElement("kbd");
@@ -150,7 +151,7 @@ function renderPracticePage(pageId) {
     const editor = document.createElement("textarea");
     editor.id = editorId;
     editor.spellcheck = false;
-    editor.setAttribute("aria-label", "Consulta MongoDB · " + exercise.title);
+    editor.setAttribute("aria-label", "Consulta PyMongo · " + exercise.title);
     editor.value = editorDrafts.has(editorId)
       ? editorDrafts.get(editorId)
       : (exercise.starter || "");
@@ -191,9 +192,9 @@ function renderPracticePage(pageId) {
     editorArea.append(label, editor, actions);
     section.append(heading, editorArea, result);
     exerciseListEl.append(section);
-    if (hasJsCodeMirror()) {
+    if (hasPythonCodeMirror()) {
       const codeEditor = window.CodeMirror.fromTextArea(editor, {
-        mode: "javascript",
+        mode: "python",
         theme: "material-darker",
         lineNumbers: true,
         lineWrapping: true,
@@ -269,14 +270,14 @@ function setEditorValue(editorId, value) {
 
 function showSolution(editorId) {
   const exercise = exercisesByEditor.get(editorId);
-  const startMarker = "// SOLUCIÓN DE REFERENCIA (comentada; quita '// ' de cada línea para ejecutarla)";
+  const startMarker = "# SOLUCIÓN DE REFERENCIA (comentada; quita '# ' de cada línea para ejecutarla)";
   if (!exercise || !exercise.solution) return;
   const currentValue = getEditorValue(editorId);
   if (!currentValue.includes(startMarker)) {
     const code = exercise.solution.split("\n").map(function (line) {
-      return "// " + line;
+      return "# " + line;
     }).join("\n");
-    const block = startMarker + "\n" + code + "\n// FIN DE LA SOLUCIÓN DE REFERENCIA";
+    const block = startMarker + "\n" + code + "\n# FIN DE LA SOLUCIÓN DE REFERENCIA";
     const existingText = currentValue.replace(/\s+$/, "");
     setEditorValue(editorId, (existingText ? existingText + "\n\n" : "") + block);
   }
@@ -422,18 +423,67 @@ function queryOptions() {
   };
 }
 
+function normalizeSortSpecification(specification, direction) {
+  if (typeof specification === "string") {
+    return { [specification]: direction === undefined ? 1 : direction };
+  }
+  if (Array.isArray(specification)) {
+    const result = {};
+    specification.forEach(function (entry) {
+      if (!Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== "string") {
+        throw new TypeError("sort espera pares (campo, dirección).");
+      }
+      result[entry[0]] = entry[1];
+    });
+    return result;
+  }
+  if (specification !== null && typeof specification === "object") return specification;
+  throw new TypeError("sort espera un campo o una lista de pares (campo, dirección).");
+}
+
+function makeQueryCursor(source) {
+  let current = source;
+  const cursor = {
+    sort: function (specification, direction) {
+      if (!current || typeof current.sort !== "function" || Array.isArray(current)) {
+        throw new TypeError("sort sólo se admite sobre el resultado de find.");
+      }
+      current = current.sort(normalizeSortSpecification(specification, direction));
+      return cursor;
+    },
+    skip: function (amount) {
+      if (!current || typeof current.skip !== "function") {
+        throw new TypeError("skip sólo se admite sobre el resultado de find.");
+      }
+      current = current.skip(amount);
+      return cursor;
+    },
+    limit: function (amount) {
+      if (!current || typeof current.limit !== "function") {
+        throw new TypeError("limit sólo se admite sobre el resultado de find.");
+      }
+      current = current.limit(amount);
+      return cursor;
+    },
+    all: function () {
+      return Array.isArray(current) ? current : current.all();
+    }
+  };
+  return cursor;
+}
+
 function makeCollection(name, documents) {
   return {
     name: name,
     find: function (filter, projection) {
-      return mingo.find(documents, filter || {}, projection, queryOptions());
+      return makeQueryCursor(mingo.find(documents, filter || {}, projection, queryOptions()));
     },
     findOne: function (filter, projection) {
       const rows = mingo.find(documents, filter || {}, projection, queryOptions()).limit(1).all();
       return rows.length ? rows[0] : null;
     },
     aggregate: function (pipeline) {
-      return new mingo.Aggregator(pipeline || [], queryOptions()).run(documents);
+      return makeQueryCursor(new mingo.Aggregator(pipeline || [], queryOptions()).run(documents));
     },
     countDocuments: function (filter) {
       return mingo.find(documents, filter || {}, null, queryOptions()).all().length;
@@ -624,27 +674,46 @@ async function loadLocalFiles(files) {
  * ------------------------------------------------------------------ */
 
 function isoDate(value) {
-  const moment = new Date(value);
-  if (Number.isNaN(moment.getTime())) throw new Error("ISODate no entiende la fecha «" + value + "».");
+  let source = String(value).trim().replace(" ", "T");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(source)) source += "T00:00:00Z";
+  else if (/^\d{4}-\d{2}-\d{2}T/.test(source) && !/(?:Z|[+-]\d{2}:?\d{2})$/i.test(source)) {
+    source += "Z";
+  }
+  const moment = new Date(source);
+  if (Number.isNaN(moment.getTime())) throw new Error("datetime no entiende la fecha «" + value + "».");
   return moment;
 }
 
-function evaluateCode(code) {
-  const source = code.trim().replace(/;+\s*$/, "");
-  let runner;
-  try {
-    runner = new Function("db", "ISODate", '"use strict"; return (\n' + source + "\n);");
-  } catch (error) {
-    // No era una expresión: se admite también un bloque con su propio return.
-    runner = new Function("db", "ISODate", '"use strict";\n' + code);
+function pythonDateTime(year, month, day, hour, minute, second, microsecond) {
+  if (arguments.length === 1 && typeof year === "string") return isoDate(year);
+  if (![year, month, day].every(Number.isInteger)) {
+    throw new TypeError("datetime espera al menos año, mes y día enteros.");
   }
-  return runner(db, isoDate);
+  return new Date(Date.UTC(
+    year,
+    month - 1,
+    day,
+    hour || 0,
+    minute || 0,
+    second || 0,
+    Math.floor((microsecond || 0) / 1000)
+  ));
+}
+
+pythonDateTime.fromisoformat = function (value) {
+  return isoDate(value);
+};
+
+function evaluateCode(code) {
+  const translated = translatePythonQuery(code);
+  const source = translated.trim().replace(/;+\s*$/, "");
+  const runner = new Function("db", "datetime", '"use strict"; return (\n' + source + "\n);");
+  return runner(db, pythonDateTime);
 }
 
 function toDocuments(value) {
   if (value === undefined) {
-    throw new Error("La consulta no devolvió nada. Escribe una expresión como db.posts.find({…}) "
-      + "o, si usas varias sentencias, termina con return.");
+    throw new Error("La consulta no devolvió nada. Escribe una expresión como db.posts.find({…}).to_list().");
   }
   if (value === null) return [null];
   if (Array.isArray(value)) return value;
@@ -670,7 +739,7 @@ function formatDocument(document) {
   if (text === undefined) return String(document);
   return text.replace(
     new RegExp('"' + DATE_SENTINEL + '([^"]*)"', "g"),
-    'ISODate("$1")'
+    'datetime.fromisoformat("$1")'
   );
 }
 
@@ -769,8 +838,10 @@ function runExercise(editorId, resultId, compare) {
     showError(container, "Escribe una consulta antes de ejecutarla.");
     return;
   }
-  if (code.split(/\r?\n/).every(function (line) { return !line.trim() || line.trim().startsWith("//"); })) {
-    showError(container, "El editor sólo contiene comentarios. Quita «// » de las líneas de la solución para ejecutarla.");
+  if (code.split(/\r?\n/).every(function (line) {
+    return !line.trim() || line.trim().startsWith("#") || line.trim().startsWith("//");
+  })) {
+    showError(container, "El editor sólo contiene comentarios. Quita «# » de las líneas de la solución para ejecutarla.");
     return;
   }
   const buttons = Array.from(document.querySelectorAll('[data-editor="' + editorId + '"]'));
@@ -858,8 +929,8 @@ exerciseListEl.addEventListener("click", function (event) {
 window.addEventListener("popstate", showPageFromLocation);
 window.addEventListener("hashchange", showPageFromLocation);
 showPageFromLocation();
-editorModeNoteEl.textContent = hasJsCodeMirror()
-  ? "Resaltado JavaScript activo. Ctrl/Cmd + Intro ejecuta la consulta."
+editorModeNoteEl.textContent = hasPythonCodeMirror()
+  ? "Sintaxis PyMongo y resaltado Python activos. Ctrl/Cmd + Intro ejecuta la consulta."
   : "No se pudo cargar CodeMirror; los cuadros de texto siguen disponibles sin resaltado.";
 loadRemoteButton.addEventListener("click", function () {
   loadRemoteData(activeDataVariant || requestedDataVariant);

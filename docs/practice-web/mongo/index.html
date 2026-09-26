@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/theme/material-darker.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/mode/python/python.min.js"></script>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap");
     :root {
@@ -64,6 +64,19 @@
       border: 1px solid var(--line);
       border-radius: 12px;
       box-shadow: 0 2px 6px #29251d0a;
+    }
+    .syntax-panel { margin-top: 16px; }
+    .syntax-panel h2 { margin: 0; font-size: 1.1rem; }
+    .syntax-panel p { margin: 9px 0 0; }
+    .syntax-panel ul { margin: 9px 0 0; padding-left: 22px; }
+    .syntax-example {
+      margin: 12px 0 0;
+      padding: 12px 14px;
+      overflow: auto;
+      color: #f8f4e9;
+      background: var(--code);
+      border-radius: 8px;
+      font: 13px/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
     }
     .database-top {
       display: flex;
@@ -300,6 +313,28 @@
       <ul id="collection-list" class="collection-list" aria-label="Colecciones cargadas"></ul>
       <p class="connection-result">Los resultados se muestran en bloques de 25 documentos. El código del editor se evalúa en tu navegador y nada se envía a ningún servidor.</p>
       <p class="connection-result"><strong>Compatibilidad:</strong> mingo ejecuta el lenguaje de consulta de MongoDB sobre objetos en memoria, no es un <code>mongod</code>. No hay índices, ni <code>explain()</code>, ni transacciones, ni búsqueda vectorial: esos ejercicios siguen necesitando el servidor del boletín. Además, el <code>Body</code> de las publicaciones, el <code>Text</code> de los comentarios y el <code>AboutMe</code> de los usuarios vienen limitados a 100 bytes UTF‑8.</p>
+    </section>
+
+    <section class="database-panel syntax-panel" aria-labelledby="syntax-title">
+      <h2 id="syntax-title">Cómo escribir las consultas</h2>
+      <p>
+        Escribe una expresión con la forma <code>db.colección.operación(...)</code>, usando la sintaxis de PyMongo que vemos en clase.
+        No hace falta crear un cliente, conectarse ni escribir <code>await</code>: la página ya proporciona <code>db</code> y traduce este pequeño subconjunto antes de pasarlo a mingo.
+      </p>
+      <ul>
+        <li>Usa diccionarios Python, con las claves entre comillas: <code>{"PostTypeId": 1}</code>.</li>
+        <li>Escribe <code>None</code>, <code>True</code> y <code>False</code>, y métodos como <code>find_one</code> y <code>count_documents</code>.</li>
+        <li>Ordena con <code>sort("Score", -1)</code> o con varios pares: <code>sort([("Score", -1), ("Id", 1)])</code>.</li>
+        <li><code>find</code> y <code>aggregate</code> pueden terminar en <code>to_list()</code>. También se admite omitirlo en esta página.</li>
+        <li>Para fechas usa <code>datetime(año, mes, día)</code> o <code>datetime.fromisoformat("2020-01-01")</code>; se interpretan en UTC.</li>
+      </ul>
+      <pre class="syntax-example"><code>db.posts.find(
+    {"PostTypeId": 1, "OwnerUserId": {"$ne": None}},
+    {"Id": 1, "Title": 1, "Score": 1}
+).sort([("Score", -1), ("Id", 1)]).limit(10).to_list()</code></pre>
+      <p class="connection-result">
+        Es un subconjunto deliberado de PyMongo para consultas de lectura. Si un ejercicio futuro necesita otra construcción, se añade una equivalencia al traductor común.
+      </p>
     </section>
 
     <nav id="page-navigation" class="page-navigation" aria-label="Páginas de ejercicios"></nav>
