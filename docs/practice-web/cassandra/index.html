@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Laboratorio de modelado Cassandra · BDGE</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="page-header">
+    <div class="header-inner">
+      <p class="eyebrow">BDGE · PROTOTIPO DE AULA</p>
+      <h1>Laboratorio de modelado Cassandra</h1>
+      <p class="intro">Practica claves de partición, columnas de clustering y consultas dirigidas por el modelo con un pequeño simulador de CQL que funciona en el navegador.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="database-panel explanation" aria-labelledby="about-title">
+      <h2 id="about-title">Qué se está simulando</h2>
+      <p>Este laboratorio implementa un subconjunto educativo de CQL. Puedes crear tablas, cargar ocho filas sintéticas, observar las particiones y consultar sus filas. El boletín de Cassandra se ejecuta contra Cassandra real; esta página sirve para razonar sobre el esquema antes de conectarte a un clúster.</p>
+      <p class="notice"><strong>No es un clúster Cassandra:</strong> no simula nodos, tokens, replicación, consistencia, latencia, índices, TTL, contadores ni colecciones. Si una construcción válida de Cassandra queda fuera del subconjunto, la aplicación lo indica como «No implementado en este simulador».</p>
+      <details>
+        <summary>Subconjunto disponible</summary>
+        <ul>
+          <li><code>CREATE TABLE</code>, <code>DROP TABLE</code>, tipos <code>int</code>, <code>bigint</code>, <code>text</code>, <code>boolean</code> y <code>timestamp</code>.</li>
+          <li>Claves simples y compuestas, clustering y <code>CLUSTERING ORDER BY</code>.</li>
+          <li><code>INSERT</code> con upsert, y <code>SELECT</code> con igualdad, intervalos, <code>LIMIT</code> y <code>ALLOW FILTERING</code>.</li>
+          <li>No se aceptan <code>IN</code>, <code>OR</code>, agregaciones, <code>UPDATE</code>, <code>DELETE</code> ni <code>ORDER BY</code> de la consulta.</li>
+        </ul>
+      </details>
+    </section>
+
+    <div class="workspace">
+      <section class="database-panel controls-panel" aria-labelledby="controls-title">
+        <div class="panel-heading">
+          <h2 id="controls-title">Escribe CQL</h2>
+          <span id="status" class="status" role="status" aria-live="polite">Preparando ejercicio…</span>
+        </div>
+        <label for="exercise">Ejercicio</label>
+        <select id="exercise"></select>
+        <p id="prompt" class="prompt"></p>
+        <label for="editor">Sentencias CQL</label>
+        <textarea id="editor" spellcheck="false" rows="15" aria-describedby="editor-help"></textarea>
+        <p id="editor-help" class="help">Se analizan todas las sentencias antes de ejecutarlas. Límite: 64 KiB y 100 sentencias.</p>
+        <div class="button-row">
+          <button id="run" class="button primary" type="button">Ejecutar</button>
+          <button id="check" class="button" type="button">Comprobar</button>
+          <button id="load" class="button" type="button">Cargar datos de ejemplo</button>
+          <button id="reset" class="button" type="button">Reiniciar ejercicio</button>
+          <button id="solution" class="button subtle" type="button">Mostrar solución</button>
+        </div>
+        <p id="message" class="message" aria-live="polite"></p>
+      </section>
+
+      <section class="database-panel state-panel" aria-labelledby="state-title">
+        <div class="panel-heading">
+          <h2 id="state-title">Estado materializado</h2>
+          <span id="state-count" class="muted"></span>
+        </div>
+        <div id="schema-view" class="empty-state">Todavía no hay tablas. Crea una tabla o carga el ejercicio.</div>
+        <div id="partition-view" class="partition-grid"></div>
+      </section>
+    </div>
+
+    <section class="database-panel result-panel" aria-labelledby="result-title">
+      <div class="panel-heading">
+        <h2 id="result-title">Resultado y explicación del acceso</h2>
+        <span id="result-kind" class="muted"></span>
+      </div>
+      <div id="explanation" class="explanation-box empty-state">Ejecuta una sentencia para ver qué recorrido representa en este laboratorio.</div>
+      <pre id="result" class="result"><code></code></pre>
+      <div id="result-pagination" class="pagination" hidden>
+        <button id="previous-page" class="button" type="button">Página anterior</button>
+        <span id="page-label" class="muted"></span>
+        <button id="next-page" class="button" type="button">Página siguiente</button>
+      </div>
+    </section>
+
+    <p class="references">Referencias: <a href="https://cassandra.apache.org/doc/latest/cassandra/reference/cql-commands/create-table.html">CREATE TABLE en Apache Cassandra</a> y <a href="https://cassandra.apache.org/doc/latest/cassandra/developing/cql/dml.html">sentencias de consulta y escritura</a>.</p>
+  </main>
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>
