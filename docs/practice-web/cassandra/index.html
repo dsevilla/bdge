@@ -15,75 +15,146 @@
 <body>
   <header class="page-header">
     <div class="header-inner">
-      <p class="eyebrow">BDGE · PROTOTIPO DE AULA</p>
+      <p class="eyebrow">BDGE · Sesiones 5 y 6 · Prototipo de aula</p>
       <h1>Laboratorio de modelado Cassandra</h1>
-      <p class="intro">Practica claves de partición, columnas de clustering y consultas dirigidas por el modelo con un pequeño simulador de CQL que funciona en el navegador.</p>
+      <p class="intro">Diseña las claves de las tablas de una aplicación de preguntas y respuestas con datos reales de Stack Overflow en español, y observa en qué nodo acaba cada fila y qué nodos toca cada consulta.</p>
     </div>
   </header>
 
   <main>
-    <section class="database-panel explanation" aria-labelledby="about-title">
-      <h2 id="about-title">Qué se está simulando</h2>
-      <p>Este laboratorio implementa un subconjunto educativo de CQL. Puedes crear tablas, cargar ocho filas sintéticas, observar las particiones y consultar sus filas. El boletín de Cassandra se ejecuta contra Cassandra real; esta página sirve para razonar sobre el esquema antes de conectarte a un clúster.</p>
-      <p class="notice"><strong>No es un clúster Cassandra:</strong> no simula nodos, tokens, replicación, consistencia, latencia, índices, TTL, contadores ni colecciones. Si una construcción válida de Cassandra queda fuera del subconjunto, la aplicación lo indica como «No implementado en este simulador».</p>
+    <section class="panel problem" aria-labelledby="problem-title">
+      <h2 id="problem-title">El problema: el diseño empieza por las consultas</h2>
+      <div class="problem-grid">
+        <div>
+          <p>En SQL se diseñan las tablas a partir de las entidades, <code>Users</code> y <code>Posts</code>, y el optimizador resuelve después cualquier consulta, aunque nadie la previera. Cassandra reparte cada tabla entre los nodos del clúster según su <strong>clave de partición</strong>: el coordinador calcula el <em>token</em> de esa clave y sabe qué nodo guarda la partición. Sólo es eficiente la consulta que conoce la clave. Todas las demás tienen que preguntar a todos los nodos.</p>
+          <p>Por eso primero se enumeran las consultas de la aplicación y después se elige, para cada una, una clave que le permita leer <strong>una partición en un nodo</strong>. Dentro de la partición, las <strong>columnas de clustering</strong> fijan el orden de las filas.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="plain-table">
+            <caption>Consultas de la aplicación</caption>
+            <thead><tr><th>Consulta</th><th>Qué se conoce</th><th>Diseño</th><th>Ejercicios</th></tr></thead>
+            <tbody>
+              <tr><td>Preguntas de un usuario, las más recientes primero</td><td><code>autorid</code></td><td>Partición por autor, clustering por fecha</td><td>1, 2</td></tr>
+              <tr><td>Portada con las preguntas de un mes</td><td><code>mes</code></td><td>Filtrado, índice secundario u otra tabla</td><td>3, 6</td></tr>
+              <tr><td>Preguntas de una etiqueta en un mes</td><td><code>etiqueta</code>, <code>mes</code></td><td>Otra tabla con partición compuesta</td><td>4, 5</td></tr>
+              <tr><td>Abrir una pregunta por su Id</td><td><code>preguntaid</code></td><td>Índice global hecho a mano</td><td>7</td></tr>
+              <tr><td>Publicar una pregunta</td><td>Todo</td><td>Escribir en cada tabla</td><td>8</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <h3>Cuatro salidas cuando la clave no sirve para una consulta</h3>
+      <ul class="options">
+        <li><strong>ALLOW FILTERING.</strong> Pregunta a todos los nodos y lee todas las filas para descartar la mayoría. El coste crece con la tabla, no con el resultado.</li>
+        <li><strong>Índice secundario (SAI).</strong> Cada nodo indexa sólo sus filas: es un índice <em>local</em>. Sigue preguntando a todos los nodos, pero cada uno lee sólo lo que coincide.</li>
+        <li><strong>Otra tabla con otra clave.</strong> Copia los datos organizados para esa consulta. Lee un nodo, a cambio de más espacio y más escrituras.</li>
+        <li><strong>Índice global.</strong> Una tabla pequeña que va del valor buscado a la clave de la fila original. Son dos lecturas de un nodo y la aplicación mantiene la copia.</li>
+      </ul>
       <details>
-        <summary>Subconjunto disponible</summary>
+        <summary>Qué simula este laboratorio y qué no</summary>
         <ul>
-          <li><code>CREATE TABLE</code>, <code>DROP TABLE</code>, tipos <code>int</code>, <code>bigint</code>, <code>text</code>, <code>boolean</code> y <code>timestamp</code>.</li>
-          <li>Claves simples y compuestas, clustering y <code>CLUSTERING ORDER BY</code>.</li>
-          <li><code>INSERT</code> con upsert, y <code>SELECT</code> con igualdad, intervalos, <code>LIMIT</code> y <code>ALLOW FILTERING</code>.</li>
-          <li>No se aceptan <code>IN</code>, <code>OR</code>, agregaciones, <code>UPDATE</code>, <code>DELETE</code> ni <code>ORDER BY</code> de la consulta.</li>
+          <li>Un clúster de cuatro nodos con factor de replicación 1: cada partición vive en un único nodo. El anillo de tokens se divide en cuatro rangos iguales.</li>
+          <li>El token es un <em>hash</em> didáctico de 32 bits, no el Murmur3 de 64 bits de Cassandra: los nodos concretos no coincidirán con un clúster real, pero sí el principio.</li>
+          <li>Las cifras de nodos contactados, particiones y filas examinadas describen el trabajo del simulador, no tiempos medidos. No hay réplicas, consistencia, latencia, SSTables, TTL, contadores ni colecciones.</li>
+          <li>CQL disponible: <code>CREATE TABLE</code>, <code>DROP TABLE</code>, <code>CREATE INDEX … USING 'sai'</code>, <code>DROP INDEX</code>, <code>INSERT</code> con <em>upsert</em> y <code>SELECT</code> con igualdad, intervalos, <code>LIMIT</code> y <code>ALLOW FILTERING</code>. Tipos <code>int</code>, <code>bigint</code>, <code>text</code>, <code>boolean</code> y <code>timestamp</code>. Lo que quede fuera se rechaza como «No implementado en este simulador».</li>
+          <li>Los boletines de las sesiones 5 y 6 usan Cassandra real; este laboratorio sirve para razonar el diseño antes.</li>
         </ul>
       </details>
     </section>
 
+    <section class="panel data-panel" aria-labelledby="data-title">
+      <div class="panel-heading">
+        <h2 id="data-title">Los datos</h2>
+        <span id="data-status" class="status" role="status" aria-live="polite">Muestra mínima</span>
+      </div>
+      <p>Preguntas de 2016 de la muestra reducida de Stack Overflow en español, <code>Posts-sample</code> y <code>Users-sample</code> de <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>, que conserva una pregunta de cada ocho. Mientras se descargan, o si falla la red, se usa una muestra mínima incrustada con las del primer trimestre.</p>
+      <div class="button-row">
+        <button id="load-remote" class="button" type="button">Descargar la muestra de 2016</button>
+        <button id="load-mini" class="button" type="button">Usar la muestra mínima</button>
+      </div>
+      <p id="data-message" class="help" aria-live="polite"></p>
+      <details>
+        <summary>Columnas que el laboratorio sabe rellenar</summary>
+        <p>Al crear una tabla, el laboratorio la puebla en el acto con las preguntas, usando las columnas cuyo nombre y tipo coinciden con esta lista, igual que el cargador de un cuaderno. Si la tabla tiene la columna <code>etiqueta</code>, escribe una fila por cada etiqueta de la pregunta. Una fila con NULL en la clave primaria no se puede escribir y se omite.</p>
+        <dl id="source-columns" class="source-columns"></dl>
+      </details>
+    </section>
+
+    <nav id="exercise-nav" class="exercise-nav" aria-label="Ejercicios"></nav>
+
     <div class="workspace">
-      <section class="database-panel controls-panel" aria-labelledby="controls-title">
-        <div class="panel-heading">
-          <h2 id="controls-title">Escribe CQL</h2>
-          <span id="status" class="status" role="status" aria-live="polite">Preparando ejercicio…</span>
+      <section class="panel exercise-panel" aria-labelledby="exercise-title">
+        <div class="exercise-heading">
+          <span id="exercise-number" class="number" aria-hidden="true"></span>
+          <h2 id="exercise-title"></h2>
         </div>
-        <label for="exercise">Ejercicio</label>
-        <select id="exercise"></select>
-        <p id="prompt" class="prompt"></p>
-        <label for="editor">Sentencias CQL</label>
-        <textarea id="editor" spellcheck="false" rows="15" aria-describedby="editor-help"></textarea>
-        <p id="editor-help" class="help">CQL con resaltado basado en el modo SQL de Cassandra. Ctrl/Cmd + Intro ejecuta. Se analizan las sentencias antes de ejecutarlas; límite de 64 KiB y 100 sentencias.</p>
+        <div class="brief">
+          <div class="brief-block need">
+            <h3>La necesidad</h3>
+            <p id="exercise-need"></p>
+          </div>
+          <div class="brief-block task">
+            <h3>Qué tienes que hacer</h3>
+            <ol id="exercise-steps"></ol>
+          </div>
+          <div class="brief-block observe">
+            <h3>Qué observar</h3>
+            <ul id="exercise-observe"></ul>
+          </div>
+          <div class="brief-block expected">
+            <h3>Resultado esperado</h3>
+            <p id="exercise-expected"></p>
+          </div>
+        </div>
+        <label for="editor" class="editor-label"><span>Sentencias CQL</span><span>Ejecutar: <kbd>Ctrl/Cmd</kbd> + <kbd>Intro</kbd></span></label>
+        <textarea id="editor" spellcheck="false" rows="14" aria-describedby="editor-help"></textarea>
+        <p id="editor-help" class="help">Puedes escribir varias sentencias separadas por <code>;</code> y comentarios con <code>--</code>. Cada ejecución trabaja sobre el estado actual; «Reiniciar» vuelve al estado inicial del ejercicio.</p>
         <div class="button-row">
           <button id="run" class="button primary" type="button">Ejecutar</button>
           <button id="check" class="button" type="button">Comprobar</button>
-          <button id="load" class="button" type="button">Cargar datos de ejemplo</button>
           <button id="reset" class="button" type="button">Reiniciar ejercicio</button>
           <button id="solution" class="button subtle" type="button">Mostrar solución</button>
         </div>
         <p id="message" class="message" aria-live="polite"></p>
       </section>
 
-      <section class="database-panel state-panel" aria-labelledby="state-title">
+      <section class="panel cluster-panel" aria-labelledby="cluster-title">
         <div class="panel-heading">
-          <h2 id="state-title">Estado materializado</h2>
-          <span id="state-count" class="muted"></span>
+          <h2 id="cluster-title">Clúster de cuatro nodos</h2>
+          <span id="cluster-summary" class="muted"></span>
         </div>
-        <div id="schema-view" class="empty-state">Todavía no hay tablas. Crea una tabla o carga el ejercicio.</div>
-        <div id="partition-view" class="partition-grid"></div>
+        <div id="table-tabs" class="table-tabs" role="tablist" aria-label="Tabla que se dibuja"></div>
+        <p id="table-schema" class="table-schema"></p>
+        <p class="help">Cada cuadrado es una fila y cada color, una partición. Las filas de una partición están siempre juntas y en el mismo nodo. Tras un <code>SELECT</code>, se resaltan los nodos contactados y las particiones leídas.</p>
+        <div id="nodes" class="nodes"></div>
+        <div id="legend" class="legend"></div>
       </section>
     </div>
 
-    <section class="database-panel result-panel" aria-labelledby="result-title">
+    <section class="panel result-panel" aria-labelledby="result-title">
       <div class="panel-heading">
-        <h2 id="result-title">Resultado y explicación del acceso</h2>
+        <h2 id="result-title">Resultado</h2>
         <span id="result-kind" class="muted"></span>
       </div>
-      <div id="explanation" class="explanation-box empty-state">Ejecuta una sentencia para ver qué recorrido representa en este laboratorio.</div>
-      <pre id="result" class="result"><code></code></pre>
+      <ul id="statement-log" class="statement-log"></ul>
+      <div id="access" class="access" hidden>
+        <div class="metrics">
+          <div class="metric"><span id="metric-nodes" class="metric-value"></span><span class="metric-label">nodos contactados</span></div>
+          <div class="metric"><span id="metric-partitions" class="metric-value"></span><span class="metric-label">particiones leídas</span></div>
+          <div class="metric"><span id="metric-examined" class="metric-value"></span><span class="metric-label">filas examinadas</span></div>
+          <div class="metric"><span id="metric-returned" class="metric-value"></span><span class="metric-label">filas devueltas</span></div>
+        </div>
+        <p id="access-reason" class="access-reason"></p>
+      </div>
+      <div id="result-table" class="result-table"><p class="empty">Ejecuta una consulta para ver sus filas.</p></div>
       <div id="result-pagination" class="pagination" hidden>
-        <button id="previous-page" class="button" type="button">Página anterior</button>
+        <button id="previous-page" class="button small" type="button">Anteriores</button>
         <span id="page-label" class="muted"></span>
-        <button id="next-page" class="button" type="button">Página siguiente</button>
+        <button id="next-page" class="button small" type="button">Siguientes</button>
       </div>
     </section>
 
-    <p class="references">Referencias: <a href="https://cassandra.apache.org/doc/latest/cassandra/reference/cql-commands/create-table.html">CREATE TABLE en Apache Cassandra</a> y <a href="https://cassandra.apache.org/doc/latest/cassandra/developing/cql/dml.html">sentencias de consulta y escritura</a>.</p>
+    <p class="references">Referencias: <a href="https://cassandra.apache.org/doc/latest/cassandra/developing/data-modeling/index.html">modelado de datos en Apache Cassandra</a>, <a href="https://cassandra.apache.org/doc/latest/cassandra/reference/cql-commands/create-table.html">CREATE TABLE</a>, <a href="https://cassandra.apache.org/doc/latest/cassandra/developing/cql/indexing/sai/sai-overview.html">índices SAI</a> y <a href="https://cassandra.apache.org/doc/latest/cassandra/developing/cql/dml.html">SELECT e INSERT</a>. Datos de Stack Overflow en español con licencia CC BY-SA.</p>
   </main>
   <script type="module" src="app.mjs"></script>
 </body>

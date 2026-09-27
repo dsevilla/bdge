@@ -258,11 +258,17 @@ class Parser {
   }
 
   parseStatement() {
-    if (this.takeKeyword("CREATE")) return this.parseCreateTable();
-    if (this.takeKeyword("DROP")) return this.parseDropTable();
+    if (this.takeKeyword("CREATE")) {
+      if (keyword(this.current(), "INDEX") || keyword(this.current(), "CUSTOM")) return this.parseCreateIndex();
+      return this.parseCreateTable();
+    }
+    if (this.takeKeyword("DROP")) {
+      if (this.takeKeyword("INDEX")) return this.parseDropIndex();
+      return this.parseDropTable();
+    }
     if (this.takeKeyword("INSERT")) return this.parseInsert();
     if (this.takeKeyword("SELECT")) return this.parseSelect();
-    this.fail("Sentencia no implementada en este simulador; se esperaba CREATE, DROP, INSERT o SELECT");
+    this.fail("Sentencia no implementada en este simulador; se esperaba CREATE TABLE, CREATE INDEX, DROP, INSERT o SELECT");
   }
 
   parseTableName() {
@@ -378,6 +384,49 @@ class Parser {
     while (this.takePunctuation(",")) names.push(this.expectIdentifier());
     if (!this.punctuationAtCurrent(end)) this.fail(`Se esperaba «${end}»`);
     return names;
+  }
+
+  /**
+   * CREATE [CUSTOM] INDEX [IF NOT EXISTS] [nombre] ON tabla (columna)
+   * [USING 'sai']. El simulador trata cualquier índice como un índice
+   * secundario local a cada nodo, que es lo que son también los SAI.
+   */
+  parseCreateIndex() {
+    this.takeKeyword("CUSTOM");
+    this.expectKeyword("INDEX");
+    const ifNotExists = this.takeKeyword("IF")
+      ? (this.expectKeyword("NOT"), this.expectKeyword("EXISTS"), true)
+      : false;
+    const name = keyword(this.current(), "ON") ? null : this.expectIdentifier();
+    this.expectKeyword("ON");
+    const table = this.parseTableName();
+    this.expectPunctuation("(");
+    const columnToken = this.current();
+    if (keyword(columnToken, "KEYS") || keyword(columnToken, "VALUES") || keyword(columnToken, "ENTRIES") || keyword(columnToken, "FULL")) {
+      this.fail("Los índices sobre colecciones no están implementados en este simulador");
+    }
+    const column = this.expectIdentifier();
+    if (this.punctuationAtCurrent(",")) this.fail("Los índices de varias columnas no están implementados en este simulador");
+    this.expectPunctuation(")");
+    let using = null;
+    if (this.takeKeyword("USING")) {
+      const token = this.current();
+      if (token.type !== "string") this.fail("USING necesita el nombre de la clase del índice entre comillas, como 'sai'");
+      this.advance();
+      using = token.value;
+      if (!["sai", "storageattachedindex", "org.apache.cassandra.index.sai.storageattachedindex"].includes(using.toLowerCase())) {
+        this.fail(`El tipo de índice «${using}» no está implementado en este simulador; usa 'sai'`, token);
+      }
+    }
+    if (keyword(this.current(), "WITH")) this.fail("Las opciones WITH de un índice no están implementadas en este simulador");
+    return { kind: "create-index", name, ifNotExists, table, column, using };
+  }
+
+  parseDropIndex() {
+    const ifExists = this.takeKeyword("IF")
+      ? (this.expectKeyword("EXISTS"), true)
+      : false;
+    return { kind: "drop-index", name: this.parseTableName(), ifExists };
   }
 
   parseDropTable() {

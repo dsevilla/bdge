@@ -211,6 +211,44 @@ section.section-divider footer { display: none; }
 .column { flex: 1; }
 .column img { display: block; margin: 0 auto; max-height: 250px; max-width: 100%; }
 
+/* Rejilla de figuras con pie, escrita como lista Markdown sin HTML:
+   `- ![alt](img/a.png) Pie`. Todas las imágenes ocupan una caja de la misma
+   altura, así que los pies quedan alineados aunque las figuras tengan
+   proporciones distintas. */
+section.figure-grid ul {
+  display: grid;
+  gap: 22px;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  list-style: none;
+  margin: 8px 0 26px;
+  padding: 0;
+}
+section.figure-grid li {
+  align-items: center;
+  color: var(--bdge-ink-soft);
+  display: flex;
+  flex-direction: column;
+  font-size: 26px;
+  font-weight: 700;
+  gap: 12px;
+  line-height: 1.15;
+  margin: 0;
+  text-align: center;
+}
+section.figure-grid li::marker { content: none; }
+section.figure-grid li img {
+  background: #fff;
+  border: 1px solid var(--bdge-line);
+  border-radius: 8px;
+  box-sizing: border-box;
+  height: 190px;
+  object-fit: contain;
+  padding: 8px;
+  width: 100%;
+}
+section.figure-grid > p { font-size: 31px; }
+
 section.dense { font-size: 29px; line-height: 1.17; }
 section.dense table { font-size: 26px; }
 section.code { font-size: 30px; }

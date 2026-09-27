@@ -1,5 +1,5 @@
 {
   "label": "Cassandra · Sesiones 5 y 6",
   "title": "Laboratorio de modelado Cassandra",
-  "description": "Practica claves de partición, clustering y consultas con un simulador educativo de CQL y datos sintéticos."
+  "description": "Diseña claves de partición, tablas por consulta e índices con preguntas reales de Stack Overflow y observa en qué nodo cae cada fila."
 }
