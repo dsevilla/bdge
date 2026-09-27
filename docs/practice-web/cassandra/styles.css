@@ -48,6 +48,20 @@ label { display: block; margin-top: 12px; font-weight: 700; }
 select, textarea { width: 100%; border: 1px solid #cfc4ad; border-radius: 8px; color: var(--ink); background: #fffefa; }
 select { min-height: 40px; padding: 7px 10px; }
 textarea { display: block; min-height: 260px; margin-top: 6px; padding: 13px; resize: vertical; line-height: 1.45; }
+.CodeMirror {
+  min-height: 260px;
+  max-height: 520px;
+  height: auto;
+  margin-top: 6px;
+  color: #f8f4e9;
+  background: var(--code);
+  border: 1px solid #11100d;
+  border-radius: 8px;
+  font: 14px/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  tab-size: 2;
+}
+.CodeMirror-scroll { min-height: 260px; max-height: 520px; }
+.CodeMirror-focused { outline: 3px solid #e3b62f80; outline-offset: 2px; }
 textarea:focus, select:focus, button:focus-visible { outline: 3px solid #e3b62f80; outline-offset: 2px; }
 .prompt { padding: 12px 13px; background: #faf5e9; border-radius: 8px; }
 .help, .muted, .references { color: var(--muted); font-size: .92rem; }
@@ -92,4 +106,4 @@ td { overflow-wrap: anywhere; }
 a { color: #6c5200; }
 a:hover { color: #392900; }
 @media (max-width: 850px) { .workspace { grid-template-columns: 1fr; } }
-@media (max-width: 520px) { .page-header { padding-top: 22px; } .database-panel { padding: 15px; } .button { flex: 1 1 45%; } textarea { min-height: 220px; } }
+@media (max-width: 520px) { .page-header { padding-top: 22px; } .database-panel { padding: 15px; } .button { flex: 1 1 45%; } textarea, .CodeMirror { min-height: 220px; } .CodeMirror-scroll { min-height: 220px; } }

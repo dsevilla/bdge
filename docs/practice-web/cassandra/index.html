@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>Laboratorio de modelado Cassandra · BDGE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/theme/material-darker.min.css">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/mode/sql/sql.min.js"></script>
+  <script src="cql-mode.js"></script>
 </head>
 <body>
   <header class="page-header">
@@ -43,7 +48,7 @@
         <p id="prompt" class="prompt"></p>
         <label for="editor">Sentencias CQL</label>
         <textarea id="editor" spellcheck="false" rows="15" aria-describedby="editor-help"></textarea>
-        <p id="editor-help" class="help">Se analizan todas las sentencias antes de ejecutarlas. Límite: 64 KiB y 100 sentencias.</p>
+        <p id="editor-help" class="help">CQL con resaltado basado en el modo SQL de Cassandra. Ctrl/Cmd + Intro ejecuta. Se analizan las sentencias antes de ejecutarlas; límite de 64 KiB y 100 sentencias.</p>
         <div class="button-row">
           <button id="run" class="button primary" type="button">Ejecutar</button>
           <button id="check" class="button" type="button">Comprobar</button>

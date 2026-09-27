@@ -22,6 +22,58 @@ const previousPage = document.querySelector("#previous-page");
 const nextPage = document.querySelector("#next-page");
 const pageLabel = document.querySelector("#page-label");
 const RESULT_PAGE_SIZE = 100;
+const codeEditor = typeof window.CodeMirror === "function"
+  ? window.CodeMirror.fromTextArea(editor, {
+    mode: "text/x-bdge-cassandra",
+    theme: "material-darker",
+    lineNumbers: true,
+    lineWrapping: true,
+    indentUnit: 2,
+    tabSize: 2,
+    indentWithTabs: false,
+    extraKeys: {
+      "Ctrl-Enter": runFromShortcut,
+      "Cmd-Enter": runFromShortcut,
+    },
+  })
+  : null;
+
+function runFromShortcut() {
+  document.querySelector("#run").click();
+}
+
+function getEditorValue() {
+  return codeEditor ? codeEditor.getValue() : editor.value;
+}
+
+function setEditorValue(value) {
+  if (codeEditor) codeEditor.setValue(value);
+  else editor.value = value;
+}
+
+if (codeEditor) {
+  codeEditor.getInputField().setAttribute("aria-label", "Sentencias CQL");
+  codeEditor.getInputField().setAttribute("aria-describedby", "editor-help");
+  const label = document.querySelector('label[for="editor"]');
+  label.addEventListener("click", function (event) {
+    event.preventDefault();
+    codeEditor.focus();
+  });
+  codeEditor.refresh();
+} else {
+  const editorHelp = document.querySelector("#editor-help");
+  editorHelp.textContent = "No se pudo cargar CodeMirror; puedes escribir CQL igualmente, sin resaltado. Ctrl/Cmd + Intro ejecuta.";
+  editor.addEventListener("keydown", function (event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      runFromShortcut();
+    }
+    if (event.key === "Tab") {
+      event.preventDefault();
+      editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
+    }
+  });
+}
 
 let resultPage = 0;
 let exercise = EXERCISES[0];
@@ -148,7 +200,7 @@ function refreshExercise() {
   database = initialDatabase(exercise);
   lastResults = [];
   resultPage = 0;
-  editor.value = exercise.starter;
+  setEditorValue(exercise.starter);
   prompt.textContent = exercise.prompt;
   setMessage();
   setStatus("Ejercicio preparado");
@@ -158,7 +210,7 @@ function refreshExercise() {
 
 function run() {
   try {
-    lastResults = executeCql(database, editor.value);
+    lastResults = executeCql(database, getEditorValue());
     resultPage = 0;
     setStatus("Ejecutado", "ready");
     setMessage(`${lastResults.length} sentencia${lastResults.length === 1 ? "" : "s"} ejecutada${lastResults.length === 1 ? "" : "s"}.`, "success");
@@ -188,7 +240,7 @@ function loadData() {
 function check() {
   try {
     const checkDatabase = initialDatabase(exercise);
-    const checkResults = executeCql(checkDatabase, editor.value);
+    const checkResults = executeCql(checkDatabase, getEditorValue());
     if ((exercise.loadAfterRun && !exercise.initialCql) || exercise.checkLoadAfterRun) loadExerciseData(checkDatabase, exercise);
     const checked = checkExercise(exercise, checkDatabase, checkResults);
     setStatus(checked.ok ? "Comprobación correcta" : "Revisa la solución", checked.ok ? "success" : "error");
@@ -201,7 +253,7 @@ function check() {
 }
 
 function showSolution() {
-  editor.value = exercise.solution;
+  setEditorValue(exercise.solution);
   setMessage("Se ha colocado una solución pública de referencia en el editor; ejecútala para observar el resultado.");
 }
 
