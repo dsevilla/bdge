@@ -136,10 +136,11 @@ function renderState() {
 
 function renderPartitions(table) {
   const rows = tableRows(table);
-  const names = table.primaryKey.partitionColumns;
+  const partitionColumns = table.primaryKey.partitionColumns;
+  const keyColumns = partitionColumns.concat(table.primaryKey.clusteringColumns);
   const groups = new Map();
   for (const row of rows) {
-    const keyValues = names.map((name) => row[name]);
+    const keyValues = partitionColumns.map((name) => row[name]);
     const key = JSON.stringify(keyValues);
     if (!groups.has(key)) groups.set(key, { keyValues, rows: [] });
     groups.get(key).rows.push(row);
@@ -150,12 +151,12 @@ function renderPartitions(table) {
     const tableElement = element("table");
     const head = element("thead");
     const headRow = element("tr");
-    for (const column of table.columns) headRow.append(element("th", column.name));
+    for (const name of keyColumns) headRow.append(element("th", name));
     head.append(headRow);
     const body = element("tbody");
     for (const row of partitionRows) {
       const tableRow = element("tr");
-      for (const column of table.columns) tableRow.append(element("td", display(row[column.name])));
+      for (const name of keyColumns) tableRow.append(element("td", display(row[name])));
       body.append(tableRow);
     }
     tableElement.append(head, body);
