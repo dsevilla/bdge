@@ -5,7 +5,7 @@
  * sintaxis de consulta y actualización que se usa en la asignatura a la
  * fachada JavaScript que hay sobre mingo. Para ampliar el dialecto, añade
  * primero una equivalencia a una de las tablas y un caso a
- * pymongo-compat.test.mjs.
+ * tests/mongo-pymongo-compat.test.mjs.
  */
 
 export const PYTHON_LITERALS = Object.freeze({
