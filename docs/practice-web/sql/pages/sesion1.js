@@ -10,6 +10,8 @@ export const page = {
     {
       id: "inventario-tablas",
       title: "Explora las tablas",
+      temas: ["catalogo", "ordenacion"],
+      dificultad: "facil",
       prompt: "Muestra en orden alfabético las tablas y vistas de la base. En DuckDB puedes consultar information_schema.tables; limita la salida al esquema main.",
       solution: `SELECT table_type AS Tipo, table_name AS Nombre
 FROM information_schema.tables
@@ -19,6 +21,8 @@ ORDER BY table_type, table_name;`
     {
       id: "preguntas-mas-contestadas",
       title: "Ordena preguntas por número de respuestas",
+      temas: ["filtros", "ordenacion"],
+      dificultad: "facil",
       prompt: "Obtén las diez preguntas con mayor AnswerCount. Muestra Id, Title y AnswerCount; desempata por Id ascendente.",
       solution: `SELECT Id, Title, AnswerCount
 FROM Posts
@@ -29,6 +33,8 @@ LIMIT 10;`
     {
       id: "publicaciones-por-tipo",
       title: "Resume las publicaciones por tipo",
+      temas: ["agregacion", "agrupacion"],
+      dificultad: "media",
       prompt: "Para cada PostTypeId calcula cuántas publicaciones hay y su puntuación media. Conserva los grupos con al menos diez filas.",
       solution: `SELECT PostTypeId,
        COUNT(*) AS NumeroPublicaciones,
@@ -41,6 +47,8 @@ ORDER BY PostTypeId;`
     {
       id: "preguntas-y-autores",
       title: "Relaciona preguntas y autores",
+      temas: ["join-externo", "ordenacion"],
+      dificultad: "media",
       prompt: "Muestra diez preguntas con su puntuación y el DisplayName del autor. Conserva también las preguntas cuyo autor no tenga una fila referenciable en Users.",
       solution: `SELECT p.Id, p.Title, p.Score, u.DisplayName
 FROM Posts AS p
@@ -52,6 +60,8 @@ LIMIT 10;`
     {
       id: "comentarios-sin-usuario",
       title: "Cuenta comentarios sin usuario referenciable",
+      temas: ["join-externo", "nulos", "agregacion"],
+      dificultad: "media",
       prompt: "Cuenta los comentarios cuyo UserId sea NULL o no encuentre correspondencia en Users. Usa LEFT JOIN y filtra por la clave de Users.",
       solution: `SELECT COUNT(*) AS ComentariosSinUsuario
 FROM Comments AS c
@@ -61,6 +71,8 @@ WHERE u.Id IS NULL;`
     {
       id: "preguntas-sin-respuesta",
       title: "Encuentra preguntas sin respuesta",
+      temas: ["subconsultas", "ordenacion"],
+      dificultad: "media",
       prompt: "Devuelve diez preguntas sin ninguna respuesta. Usa NOT EXISTS y ordena por fecha más reciente e Id para que el resultado sea determinista.",
       solution: `SELECT q.Id, q.Title, q.CreationDate
 FROM Posts AS q
@@ -77,6 +89,8 @@ LIMIT 10;`
     {
       id: "votos-por-tipo",
       title: "Agrupa los votos por tipo",
+      temas: ["agregacion", "agrupacion"],
+      dificultad: "facil",
       prompt: "Cuenta las filas de Votes para cada VoteTypeId y ordena de más frecuente a menos frecuente. Los tipos 2 y 3 representan votos positivos y negativos.",
       solution: `SELECT VoteTypeId, COUNT(*) AS NumeroVotos
 FROM Votes
@@ -86,6 +100,8 @@ ORDER BY NumeroVotos DESC, VoteTypeId ASC;`
     {
       id: "usuarios-por-reputacion",
       title: "Clasifica usuarios por reputación",
+      temas: ["case", "agrupacion"],
+      dificultad: "media",
       prompt: "Usa CASE para agrupar usuarios como Nuevo (menos de 100), Activo (de 100 a 1000, incluidos) o Experto (más de 1000). Cuenta las filas de cada categoría.",
       solution: `SELECT CASE
          WHEN Reputation < 100 THEN 'Nuevo'
@@ -100,6 +116,8 @@ ORDER BY Categoria;`
     {
       id: "etiquetas-populares",
       title: "Consulta las etiquetas más usadas",
+      temas: ["ordenacion"],
+      dificultad: "facil",
       prompt: "Muestra veinte filas de Tags ordenadas por Count descendente. Usa TagName como desempate.",
       solution: `SELECT TagName, Count
 FROM Tags
@@ -109,6 +127,8 @@ LIMIT 20;`
     {
       id: "crear-tabla-temporal",
       title: "Prepara una tabla temporal para DML",
+      temas: ["ddl"],
+      dificultad: "facil",
       prompt: "Como paso 1 de la secuencia DML, crea EjercicioDML como tabla TEMP con Id como clave primaria, Descripcion obligatoria y Completada con valor inicial 0. Esta tabla temporal no altera el dump y desaparece al recargar la página.",
       solution: `CREATE TEMP TABLE IF NOT EXISTS EjercicioDML (
   Id INTEGER PRIMARY KEY,
@@ -119,6 +139,9 @@ LIMIT 20;`
     {
       id: "insertar-temporal",
       title: "Inserta filas de práctica",
+      temas: ["dml"],
+      dificultad: "facil",
+      requiere: ["crear-tabla-temporal"],
       prompt: "Paso 2 de DML: inserta dos tareas con Id 1 y 2. Haz que puedas ejecutar la solución varias veces sin duplicar filas.",
       solution: `INSERT OR REPLACE INTO EjercicioDML (Id, Descripcion, Completada)
 VALUES
@@ -128,6 +151,9 @@ VALUES
     {
       id: "actualizar-temporal",
       title: "Actualiza una tarea",
+      temas: ["dml"],
+      dificultad: "facil",
+      requiere: ["insertar-temporal"],
       prompt: "Paso 3 de DML: marca como completada la tarea con Id 1 y comprueba el contenido con una consulta SELECT.",
       solution: `UPDATE EjercicioDML
 SET Completada = 1
@@ -136,12 +162,18 @@ WHERE Id = 1;`
     {
       id: "iniciar-transaccion",
       title: "Inicia una transacción",
+      temas: ["transacciones"],
+      dificultad: "media",
+      requiere: ["actualizar-temporal"],
       prompt: "Paso 4 de DML: inicia una transacción. Ejecuta después, en el ejercicio siguiente, una modificación de la tarea 2.",
       solution: `BEGIN;`
     },
     {
       id: "actualizar-en-transaccion",
       title: "Modifica dentro de la transacción",
+      temas: ["transacciones", "dml"],
+      dificultad: "media",
+      requiere: ["iniciar-transaccion"],
       prompt: "Paso 5: marca la tarea 2 como completada. Después ejecuta ROLLBACK en el siguiente ejercicio.",
       solution: `UPDATE EjercicioDML
 SET Completada = 1
@@ -150,12 +182,18 @@ WHERE Id = 2;`
     {
       id: "deshacer-transaccion",
       title: "Deshaz los cambios de la transacción",
+      temas: ["transacciones"],
+      dificultad: "media",
+      requiere: ["actualizar-en-transaccion"],
       prompt: "Paso 6: ejecuta ROLLBACK y, en el ejercicio siguiente, consulta la tabla para comprobar que la tarea 2 sigue pendiente.",
       solution: `ROLLBACK;`
     },
     {
       id: "consultar-temporal",
       title: "Comprueba el estado de la tabla temporal",
+      temas: ["transacciones", "consulta-basica"],
+      dificultad: "facil",
+      requiere: ["deshacer-transaccion"],
       prompt: "Muestra las dos tareas en orden de Id. Tras el rollback, solo la tarea 1 debe aparecer completada.",
       solution: `SELECT Id, Descripcion, Completada
 FROM EjercicioDML

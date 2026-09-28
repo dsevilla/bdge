@@ -10,6 +10,8 @@ export const page = {
     {
       id: "resumen-mensual",
       title: "Resume las preguntas por mes con una CTE",
+      temas: ["cte", "fechas", "agrupacion"],
+      dificultad: "media",
       prompt: "Usa una CTE para contar preguntas por mes y calcular su puntuación media. Muestra los 24 meses más recientes.",
       solution: `WITH PreguntasPorMes AS (
   SELECT strftime(CAST(CreationDate AS TIMESTAMP), '%Y-%m') AS Mes,
@@ -28,6 +30,8 @@ LIMIT 24;`
     {
       id: "respuestas-y-ctes",
       title: "Compara AnswerCount con un recuento calculado",
+      temas: ["cte", "join-externo", "nulos"],
+      dificultad: "dificil",
       prompt: "Agrega las respuestas por ParentId en una CTE y compárala con AnswerCount de cada pregunta. Conserva preguntas sin respuestas y muestra las veinte con más respuestas declaradas.",
       solution: `WITH RespuestasPorPregunta AS (
   SELECT ParentId AS PreguntaId,
@@ -50,6 +54,8 @@ LIMIT 20;`
     {
       id: "eventos-union-all",
       title: "Combina usuarios y publicaciones con UNION ALL",
+      temas: ["conjuntos", "case"],
+      dificultad: "media",
       prompt: "Construye una línea de tiempo de altas de usuarios, preguntas y respuestas. Devuelve tipo, Id y fecha; limita la salida a veinte eventos recientes con desempates explícitos.",
       solution: `SELECT 'usuario' AS TipoEvento, Id AS EntidadId, CreationDate
 FROM Users
@@ -65,6 +71,8 @@ LIMIT 20;`
     {
       id: "mejores-por-anio",
       title: "Encuentra las tres preguntas mejor puntuadas de cada año",
+      temas: ["ventanas", "cte", "fechas"],
+      dificultad: "dificil",
       prompt: "Usa ROW_NUMBER() con PARTITION BY año y filtra después las tres primeras de cada año. Desempata por Id ascendente.",
       solution: `WITH PreguntasPosicionadas AS (
   SELECT Id,
@@ -88,6 +96,8 @@ ORDER BY Anio DESC, Posicion ASC, Id ASC;`
     {
       id: "hilo-recursivo",
       title: "Recorre una pregunta y sus respuestas con WITH RECURSIVE",
+      temas: ["recursiva", "subconsultas"],
+      dificultad: "dificil",
       prompt: "Elige una pregunta con muchas respuestas y construye un hilo con la pregunta en profundidad 0 y sus respuestas en profundidad 1. El modelo de Posts de este dataset tiene dos niveles.",
       solution: `WITH RECURSIVE Hilo(Id, ParentId, Profundidad, Title) AS (
   SELECT Id, ParentId, 0, Title
@@ -113,6 +123,8 @@ ORDER BY Profundidad, Id;`
     {
       id: "json-documento",
       title: "Construye y consulta un objeto JSON",
+      temas: ["json"],
+      dificultad: "media",
       prompt: "Construye un objeto JSON con id, título, puntuación y autor para cinco preguntas. Extrae la puntuación del documento con json_extract. Es una adaptación DuckDB del trabajo con JSON de la sesión.",
       solution: `SELECT Id,
        json_object(
@@ -133,6 +145,8 @@ LIMIT 5;`
     {
       id: "plan-consulta",
       title: "Lee el plan de una consulta",
+      temas: ["planes"],
+      dificultad: "media",
       prompt: "Usa EXPLAIN para consultar una publicación por Id. Lee los operadores, las columnas proyectadas y el filtro. Con los Parquet, busca READ_PARQUET y observa si el filtro se aplica en la lectura; con la muestra verás una tabla en memoria.",
       solution: `EXPLAIN
 SELECT Id, Title
