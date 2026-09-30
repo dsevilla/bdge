@@ -251,6 +251,8 @@ section.figure-grid > p { font-size: 31px; }
 
 section.dense { font-size: 29px; line-height: 1.17; }
 section.dense table { font-size: 26px; }
+section.small-table table { font-size: 21px; margin: 8px auto 16px; }
+section.small-table th, section.small-table td { padding: 6px 10px; }
 section.code { font-size: 30px; }
 section.code pre { font-size: 23px; line-height: 1.2; }
 
