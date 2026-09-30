@@ -209,6 +209,9 @@ section.section-divider footer { display: none; }
 
 .columns { align-items: center; display: flex; gap: 28px; width: 100%; }
 .column { flex: 1; }
+/* `<div class="columns top">`: alinea las columnas por arriba (p. ej. tablas de
+   distinta altura). Marp elimina los atributos `style` del HTML en línea. */
+.columns.top { align-items: flex-start; }
 .column img { display: block; margin: 0 auto; max-height: 250px; max-width: 100%; }
 
 /* Rejilla de figuras con pie, escrita como lista Markdown sin HTML:
