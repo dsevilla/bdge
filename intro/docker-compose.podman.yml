@@ -1,0 +1,13 @@
+# Ajuste para Podman rootless. Se combina con `docker-compose.yml`; con Docker no se usa.
+#
+#   podman compose -f docker-compose.yml -f docker-compose.podman.yml up
+#
+# En Podman rootless el usuario del contenedor no es el de tu equipo: `jovyan`
+# (uid 1000, grupo `users` 100) corresponde a un uid subordinado y no puede
+# escribir en el repositorio montado. `keep-id` hace que TU usuario, sea cual
+# sea su uid, aparezca dentro como uid 1000 / gid 100, o sea, como `jovyan`. Los
+# números son los de la imagen, no los del equipo, y no hay que cambiarlos.
+# El contenedor sigue arrancando como root, así que `sudo` sigue funcionando.
+services:
+  notebook:
+    userns_mode: "keep-id:uid=1000,gid=100"
