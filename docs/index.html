@@ -30,6 +30,8 @@
     a { border: 2px solid var(--rojo); border-radius: .4rem; color: var(--rojo); font-weight: 700; padding: .55rem .8rem; text-decoration: none; }
     a.principal { background: var(--rojo); color: white; }
     a:hover, a:focus-visible { box-shadow: 0 0 0 .2rem rgb(242 183 5 / 45%); outline: none; }
+    .tira { margin: 0; text-align: center; }
+    .tira img { border: 1px solid var(--linea); border-radius: .75rem; box-shadow: 0 .3rem 1rem rgb(24 35 45 / 8%); height: auto; max-width: min(100%, 46rem); }
     footer { border-top: 1px solid var(--linea); color: #5e6b74; padding-bottom: 2rem; padding-top: 1.5rem; }
     @media (max-width: 56rem) {
       header { align-items: flex-start; flex-direction: column; padding-top: 2rem; }
@@ -187,6 +189,9 @@
       </article>
     </div>
   </section>
+    <figure class="tira">
+      <img src="img/comic-rosetta.svg" alt="Tira «La piedra de los datos»: un explorador encuentra una piedra Rosetta con el mismo dato escrito en XML, CSV, JSON y Parquet" loading="lazy">
+    </figure>
   </main>
   <footer>Universidad de Murcia</footer>
 </body>
