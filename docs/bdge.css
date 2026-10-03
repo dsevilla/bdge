@@ -189,6 +189,12 @@ section.figure-only p { margin: 0 auto; text-align: center; }
    padding-top (same specificity, figure-only comes later): restore it. */
 section.figure-only.long-title { padding-top: 126px; }
 section.figure-only img { display: block; margin: 0 auto; max-height: 510px; max-width: 100%; }
+/* Página de cómic a diapositiva completa, sin título: la tira es más alta que
+   ancha (unos 2:3), así que se limita por la altura y se centra. 660 px más
+   el relleno (28 + 32) llenan los 720 px de la diapositiva sin que se salga. */
+section.comic-page { justify-content: center; padding: 28px 52px 32px; }
+section.comic-page p { margin: 0; text-align: center; }
+section.comic-page img { display: block; margin: 0 auto; max-height: 660px; max-width: 100%; }
 /* Varias figuras en la misma diapositiva, de izquierda a derecha (p. ej.
    «A vs B»). Cada imagen conserva el tamaño que se le fije en Markdown. */
 section.figure-only.figure-row p { align-items: center; display: flex; gap: 32px; justify-content: center; }
