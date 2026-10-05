@@ -25,8 +25,7 @@ services:
       - MYSQL_ROOT_PASSWORD=root
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
-      interval: 20s
-      start_period: 60s
-      start_interval: 10s
+      interval: 10s
+      start_period: 30s
       timeout: 5s
-      retries: 20
+      retries: 30
