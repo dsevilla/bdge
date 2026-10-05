@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- B-tree de orden 4 (hasta 3 claves y 4 hijos por nodo).
+     Generado por teoria/figures/btree.py: no editar a mano. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
+  <style>
+    rect { fill: #fff5cc; stroke: #c98b00; stroke-width: 3; }
+    rect.strong { fill: #f2b705; }
+    rect.plain { fill: #fffefa; }
+    rect.empty { fill: #fffefa; stroke-dasharray: 7 6; stroke-width: 2; }
+    line { stroke: #c98b00; stroke-width: 2; }
+    text { fill: #18232d; font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 700;
+           text-anchor: middle; dominant-baseline: central; }
+    text.left { text-anchor: start; }
+    text.head { fill: #314554; font-size: 24px; }
+    text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
+    text.note { fill: #314554; font-size: 22px; font-weight: 400; }
+    text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    tspan.faint { fill: #5e6b74; font-weight: 400; }
+    path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
+    circle { fill: #a9251a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
+    </marker>
+  </defs>
+  <rect class="strong" x="538" y="24" width="100" height="58" rx="9"/>
+  <text x="563" y="53">30</text>
+  <line x1="588" y1="24" x2="588" y2="82"/>
+  <text x="613" y="53">60</text>
+  <rect x="151" y="226" width="100" height="58" rx="9"/>
+  <text x="176" y="255">10</text>
+  <line x1="201" y1="226" x2="201" y2="284"/>
+  <text x="226" y="255">20</text>
+  <rect class="plain" x="12" y="428" width="100" height="58" rx="9"/>
+  <text x="37" y="457">3</text>
+  <line x1="62" y1="428" x2="62" y2="486"/>
+  <text x="87" y="457">7</text>
+  <rect class="plain" x="126" y="428" width="150" height="58" rx="9"/>
+  <text x="151" y="457">12</text>
+  <line x1="176" y1="428" x2="176" y2="486"/>
+  <text x="201" y="457">15</text>
+  <line x1="226" y1="428" x2="226" y2="486"/>
+  <text x="251" y="457">18</text>
+  <rect class="plain" x="290" y="428" width="100" height="58" rx="9"/>
+  <text x="315" y="457">22</text>
+  <line x1="340" y1="428" x2="340" y2="486"/>
+  <text x="365" y="457">26</text>
+  <rect x="563" y="226" width="50" height="58" rx="9"/>
+  <text x="588" y="255">45</text>
+  <rect class="plain" x="431" y="428" width="150" height="58" rx="9"/>
+  <text x="456" y="457">34</text>
+  <line x1="481" y1="428" x2="481" y2="486"/>
+  <text x="506" y="457">38</text>
+  <line x1="531" y1="428" x2="531" y2="486"/>
+  <text x="556" y="457">41</text>
+  <rect class="plain" x="595" y="428" width="150" height="58" rx="9"/>
+  <text x="620" y="457">49</text>
+  <line x1="645" y1="428" x2="645" y2="486"/>
+  <text x="670" y="457">52</text>
+  <line x1="695" y1="428" x2="695" y2="486"/>
+  <text x="720" y="457">57</text>
+  <rect x="925" y="226" width="100" height="58" rx="9"/>
+  <text x="950" y="255">75</text>
+  <line x1="975" y1="226" x2="975" y2="284"/>
+  <text x="1000" y="255">90</text>
+  <rect class="plain" x="786" y="428" width="100" height="58" rx="9"/>
+  <text x="811" y="457">63</text>
+  <line x1="836" y1="428" x2="836" y2="486"/>
+  <text x="861" y="457">68</text>
+  <rect class="plain" x="900" y="428" width="150" height="58" rx="9"/>
+  <text x="925" y="457">78</text>
+  <line x1="950" y1="428" x2="950" y2="486"/>
+  <text x="975" y="457">82</text>
+  <line x1="1000" y1="428" x2="1000" y2="486"/>
+  <text x="1025" y="457">86</text>
+  <rect class="plain" x="1064" y="428" width="100" height="58" rx="9"/>
+  <text x="1089" y="457">93</text>
+  <line x1="1114" y1="428" x2="1114" y2="486"/>
+  <text x="1139" y="457">97</text>
+  <path class="arrow" d="M547 73 L201 223"/>
+  <path class="arrow" d="M160 275 L62 425"/>
+  <path class="arrow" d="M201 275 L201 425"/>
+  <path class="arrow" d="M242 275 L340 425"/>
+  <path class="arrow" d="M588 73 L588 223"/>
+  <path class="arrow" d="M572 275 L506 425"/>
+  <path class="arrow" d="M604 275 L670 425"/>
+  <path class="arrow" d="M629 73 L975 223"/>
+  <path class="arrow" d="M934 275 L836 425"/>
+  <path class="arrow" d="M975 275 L975 425"/>
+  <path class="arrow" d="M1016 275 L1114 425"/>
+  <circle cx="547" cy="73" r="4.5"/>
+  <circle cx="160" cy="275" r="4.5"/>
+  <circle cx="201" cy="275" r="4.5"/>
+  <circle cx="242" cy="275" r="4.5"/>
+  <circle cx="588" cy="73" r="4.5"/>
+  <circle cx="572" cy="275" r="4.5"/>
+  <circle cx="604" cy="275" r="4.5"/>
+  <circle cx="629" cy="73" r="4.5"/>
+  <circle cx="934" cy="275" r="4.5"/>
+  <circle cx="975" cy="275" r="4.5"/>
+  <circle cx="1016" cy="275" r="4.5"/>
+</svg>

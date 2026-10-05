@@ -60,6 +60,9 @@ section:not(.lead):not(.section-divider) h1 {
 h2 { font-size: 39px; margin: 20px 0 10px; }
 p, li { color: var(--bdge-ink); }
 li::marker { color: var(--bdge-red); font-weight: 700; }
+/* Las listas anidadas sólo se sangran lo justo para que su viñeta caiga bajo
+   el inicio del texto del elemento padre (el sangrado por omisión es 2em). */
+li > ul, li > ol { padding-left: 0.8em; }
 strong { color: var(--bdge-ink-soft); }
 a { color: var(--bdge-red); }
 

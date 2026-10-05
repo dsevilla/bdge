@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Índice hash: 10 claves en una tabla de 5 posiciones.
+     Generado por teoria/figures/hashindex.py: no editar a mano. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
+  <style>
+    rect { fill: #fff5cc; stroke: #c98b00; stroke-width: 3; }
+    rect.strong { fill: #f2b705; }
+    rect.plain { fill: #fffefa; }
+    rect.empty { fill: #fffefa; stroke-dasharray: 7 6; stroke-width: 2; }
+    line { stroke: #c98b00; stroke-width: 2; }
+    text { fill: #18232d; font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 700;
+           text-anchor: middle; dominant-baseline: central; }
+    text.left { text-anchor: start; }
+    text.head { fill: #314554; font-size: 24px; }
+    text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
+    text.note { fill: #314554; font-size: 22px; font-weight: 400; }
+    text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    tspan.faint { fill: #5e6b74; font-weight: 400; }
+    path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
+    circle { fill: #a9251a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
+    </marker>
+  </defs>
+  <text class="label left" x="20" y="24">Claves: entre 0 y 999</text>
+  <text class="label" x="605" y="24">Tabla hash</text>
+  <text class="label left" x="716" y="24">Claves con el mismo hash</text>
+  <rect class="strong" x="560" y="50" width="90" height="448" rx="9"/>
+  <text x="605" y="94.8">0</text>
+  <path class="arrow" d="M654 94.8 L712 94.8"/>
+  <rect x="716" y="69.8" width="96" height="50" rx="9"/>
+  <text x="764" y="94.8">215</text>
+  <path class="arrow" d="M816 94.8 L852 94.8"/>
+  <rect x="856" y="69.8" width="96" height="50" rx="9"/>
+  <text x="904" y="94.8">430</text>
+  <path class="arrow" d="M956 94.8 L992 94.8"/>
+  <rect x="996" y="69.8" width="96" height="50" rx="9"/>
+  <text x="1044" y="94.8">870</text>
+  <line x1="560" y1="139.6" x2="650" y2="139.6"/>
+  <text x="605" y="184.4">1</text>
+  <line x1="560" y1="229.2" x2="650" y2="229.2"/>
+  <text x="605" y="274">2</text>
+  <path class="arrow" d="M654 274 L712 274"/>
+  <rect x="716" y="249" width="96" height="50" rx="9"/>
+  <text x="764" y="274">17</text>
+  <path class="arrow" d="M816 274 L852 274"/>
+  <rect x="856" y="249" width="96" height="50" rx="9"/>
+  <text x="904" y="274">342</text>
+  <line x1="560" y1="318.8" x2="650" y2="318.8"/>
+  <text x="605" y="363.6">3</text>
+  <path class="arrow" d="M654 363.6 L712 363.6"/>
+  <rect x="716" y="338.6" width="96" height="50" rx="9"/>
+  <text x="764" y="363.6">108</text>
+  <path class="arrow" d="M816 363.6 L852 363.6"/>
+  <rect x="856" y="338.6" width="96" height="50" rx="9"/>
+  <text x="904" y="363.6">663</text>
+  <path class="arrow" d="M956 363.6 L992 363.6"/>
+  <rect x="996" y="338.6" width="96" height="50" rx="9"/>
+  <text x="1044" y="363.6">963</text>
+  <line x1="560" y1="408.4" x2="650" y2="408.4"/>
+  <text x="605" y="453.2">4</text>
+  <path class="arrow" d="M654 453.2 L712 453.2"/>
+  <rect x="716" y="428.2" width="96" height="50" rx="9"/>
+  <text x="764" y="453.2">524</text>
+  <path class="arrow" d="M816 453.2 L852 453.2"/>
+  <rect x="856" y="428.2" width="96" height="50" rx="9"/>
+  <text x="904" y="453.2">739</text>
+  <rect class="plain" x="20" y="50" width="96" height="448" rx="9"/>
+  <text x="68" y="72.4">17</text>
+  <text class="small" x="211" y="60.4">17 mod 5 = 2</text>
+  <path class="arrow" d="M122 72.4 L300 72.4 L556 264"/>
+  <line x1="20" y1="94.8" x2="116" y2="94.8"/>
+  <text x="68" y="117.2">108</text>
+  <text class="small" x="211" y="105.2">108 mod 5 = 3</text>
+  <path class="arrow" d="M122 117.2 L300 117.2 L556 343.6"/>
+  <line x1="20" y1="139.6" x2="116" y2="139.6"/>
+  <text x="68" y="162">215</text>
+  <text class="small" x="211" y="150">215 mod 5 = 0</text>
+  <path class="arrow" d="M122 162 L300 162 L556 74.8"/>
+  <line x1="20" y1="184.4" x2="116" y2="184.4"/>
+  <text x="68" y="206.8">342</text>
+  <text class="small" x="211" y="194.8">342 mod 5 = 2</text>
+  <path class="arrow" d="M122 206.8 L300 206.8 L556 284"/>
+  <line x1="20" y1="229.2" x2="116" y2="229.2"/>
+  <text x="68" y="251.6">430</text>
+  <text class="small" x="211" y="239.6">430 mod 5 = 0</text>
+  <path class="arrow" d="M122 251.6 L300 251.6 L556 94.8"/>
+  <line x1="20" y1="274" x2="116" y2="274"/>
+  <text x="68" y="296.4">524</text>
+  <text class="small" x="211" y="284.4">524 mod 5 = 4</text>
+  <path class="arrow" d="M122 296.4 L300 296.4 L556 443.2"/>
+  <line x1="20" y1="318.8" x2="116" y2="318.8"/>
+  <text x="68" y="341.2">663</text>
+  <text class="small" x="211" y="329.2">663 mod 5 = 3</text>
+  <path class="arrow" d="M122 341.2 L300 341.2 L556 363.6"/>
+  <line x1="20" y1="363.6" x2="116" y2="363.6"/>
+  <text x="68" y="386">739</text>
+  <text class="small" x="211" y="374">739 mod 5 = 4</text>
+  <path class="arrow" d="M122 386 L300 386 L556 463.2"/>
+  <line x1="20" y1="408.4" x2="116" y2="408.4"/>
+  <text x="68" y="430.8">870</text>
+  <text class="small" x="211" y="418.8">870 mod 5 = 0</text>
+  <path class="arrow" d="M122 430.8 L300 430.8 L556 114.8"/>
+  <line x1="20" y1="453.2" x2="116" y2="453.2"/>
+  <text x="68" y="475.6">963</text>
+  <text class="small" x="211" y="463.6">963 mod 5 = 3</text>
+  <path class="arrow" d="M122 475.6 L300 475.6 L556 383.6"/>
+</svg>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Índice invertido sobre 3 títulos de ejemplo.
+     Generado por teoria/figures/fulltext.py: no editar a mano. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
+  <style>
+    rect { fill: #fff5cc; stroke: #c98b00; stroke-width: 3; }
+    rect.strong { fill: #f2b705; }
+    rect.plain { fill: #fffefa; }
+    rect.empty { fill: #fffefa; stroke-dasharray: 7 6; stroke-width: 2; }
+    line { stroke: #c98b00; stroke-width: 2; }
+    text { fill: #18232d; font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 700;
+           text-anchor: middle; dominant-baseline: central; }
+    text.left { text-anchor: start; }
+    text.head { fill: #314554; font-size: 24px; }
+    text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
+    text.note { fill: #314554; font-size: 22px; font-weight: 400; }
+    text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    tspan.faint { fill: #5e6b74; font-weight: 400; }
+    path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
+    circle { fill: #a9251a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
+    </marker>
+  </defs>
+  <text class="label" x="1001" y="34">Índice full-text</text>
+  <text class="label" x="275" y="34">Tabla Posts</text>
+  <text class="head" x="946" y="87">Palabra</text>
+  <text class="head" x="1101" y="87">Filas</text>
+  <rect class="plain" x="846" y="112" width="310" height="324" rx="9"/>
+  <line x1="1046" y1="112" x2="1046" y2="436"/>
+  <line x1="846" y1="193" x2="1156" y2="193"/>
+  <line x1="846" y1="274" x2="1156" y2="274"/>
+  <line x1="846" y1="355" x2="1156" y2="355"/>
+  <text class="left" x="864" y="152.5">consultas</text>
+  <text x="1101" y="152.5">2, 3</text>
+  <text class="left" x="864" y="233.5">índices</text>
+  <text x="1101" y="233.5">1, 3</text>
+  <text class="left" x="864" y="314.5">lentas</text>
+  <text x="1101" y="314.5">2</text>
+  <text class="left" x="864" y="395.5">mysql</text>
+  <text x="1101" y="395.5">1, 2</text>
+  <text class="head" x="55" y="87">Id</text>
+  <text class="head" x="310" y="87">Title</text>
+  <rect class="plain" x="20" y="112" width="510" height="324" rx="9"/>
+  <line x1="90" y1="112" x2="90" y2="436"/>
+  <line x1="20" y1="220" x2="530" y2="220"/>
+  <line x1="20" y1="328" x2="530" y2="328"/>
+  <text x="55" y="166">1</text>
+  <text class="left" x="108" y="166" xml:space="preserve"><tspan></tspan><tspan>Índices</tspan><tspan> </tspan><tspan class="faint">en</tspan><tspan> </tspan><tspan>MySQL</tspan></text>
+  <text x="55" y="274">2</text>
+  <text class="left" x="108" y="274" xml:space="preserve"><tspan></tspan><tspan>Consultas</tspan><tspan> </tspan><tspan>lentas</tspan><tspan> </tspan><tspan class="faint">en</tspan><tspan> </tspan><tspan>MySQL</tspan></text>
+  <text x="55" y="382">3</text>
+  <text class="left" x="108" y="382" xml:space="preserve"><tspan></tspan><tspan>Índices</tspan><tspan> </tspan><tspan class="faint">y</tspan><tspan> </tspan><tspan>consultas</tspan></text>
+  <path class="arrow" d="M840 233.5 L536 154"/>
+  <path class="arrow" d="M840 395.5 L536 178"/>
+  <path class="arrow" d="M840 152.5 L536 250"/>
+  <path class="arrow" d="M840 314.5 L536 274"/>
+  <path class="arrow" d="M840 395.5 L536 298"/>
+  <path class="arrow" d="M840 152.5 L536 370"/>
+  <path class="arrow" d="M840 233.5 L536 394"/>
+  <text class="note" x="588" y="482">No se indexan las palabras de menos de 3 letras: «en», «y»</text>
+</svg>
