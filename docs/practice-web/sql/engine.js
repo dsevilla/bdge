@@ -66,10 +66,31 @@ export async function validateStatement(database, sql, readOnly = false) {
   if (!hasStatement) throw new Error("Escribe una consulta; el editor solo contiene comentarios o separadores.");
 }
 
+// Identificadores de tipo de Apache Arrow (enum Type).
+const ARROW_DATE = 8;
+const ARROW_TIMESTAMP = 10;
+
+// Arrow entrega DATE y TIMESTAMP como milisegundos desde 1970; se muestran
+// como lo haría DuckDB (YYYY-MM-DD y YYYY-MM-DD HH:MM:SS[.mmm]).
+function dateConverter(field) {
+  const typeId = field.type.typeId;
+  if (typeId !== ARROW_DATE && typeId !== ARROW_TIMESTAMP) return null;
+  const suffix = typeId === ARROW_TIMESTAMP && field.type.timezone ? "+00" : "";
+  return value => {
+    if (value === null || value === undefined) return value;
+    const date = new Date(Number(value));
+    if (Number.isNaN(date.getTime())) return String(value);
+    const iso = date.toISOString();
+    if (typeId === ARROW_DATE) return iso.slice(0, 10);
+    return iso.slice(0, 19).replace("T", " ") + (iso.slice(19, 23) === ".000" ? "" : iso.slice(19, 23)) + suffix;
+  };
+}
+
 export async function openCursor(database, sql) {
   const reader = await database.connection.send(sql, true);
   await reader.open();
   const columns = reader.schema.fields.map(field => field.name);
+  const converters = reader.schema.fields.map(dateConverter);
   const iterator = reader[Symbol.asyncIterator]();
   let batch = null;
   let rowIndex = 0;
@@ -88,7 +109,10 @@ export async function openCursor(database, sql) {
         batch = result.value;
         rowIndex = 0;
       }
-      const row = columns.map((_, index) => batch.getChildAt(index).get(rowIndex));
+      const row = columns.map((_, index) => {
+        const value = batch.getChildAt(index).get(rowIndex);
+        return converters[index] ? converters[index](value) : value;
+      });
       rowIndex += 1;
       return row;
     },
