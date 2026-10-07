@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Colección documental al estilo de MongoDB: 3 documentos con `_id`.
+     Generado por teoria/figures/documents.py: no editar a mano. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
+  <style>
+    rect { fill: #fff5cc; stroke: #c98b00; stroke-width: 3; }
+    rect.strong { fill: #f2b705; }
+    rect.plain { fill: #fffefa; }
+    rect.empty { fill: #fffefa; stroke-dasharray: 7 6; stroke-width: 2; }
+    line { stroke: #c98b00; stroke-width: 2; }
+    text { fill: #18232d; font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 700;
+           text-anchor: middle; dominant-baseline: central; }
+    text.left { text-anchor: start; }
+    text.head { fill: #314554; font-size: 24px; }
+    text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
+    text.note { fill: #314554; font-size: 22px; font-weight: 400; }
+    text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    text.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; font-size: 22px; font-weight: 400; }
+    tspan.faint { fill: #5e6b74; font-weight: 400; }
+    tspan.strong { font-weight: 700; }
+    tspan.light { font-weight: 400; }
+    tspan.accent { fill: #a9251a; font-weight: 700; }
+    tspan.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; }
+    path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
+    circle { fill: #a9251a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
+    </marker>
+  </defs>
+  <text class="code left" x="20" y="24">_id</text>
+  <text class="label left" x="176" y="24" xml:space="preserve"><tspan>Documento de la colección </tspan><tspan class="code">preguntas</tspan><tspan>: la base de datos ve sus campos</tspan></text>
+  <rect class="strong" x="20" y="50" width="96" height="150" rx="9"/>
+  <text class="code" x="68" y="125">10</text>
+  <path class="arrow" d="M122 125 L170 125"/>
+  <rect class="plain" x="176" y="50" width="980" height="150" rx="9"/>
+  <text class="code left" x="194" y="78.5" xml:space="preserve"><tspan>{ </tspan><tspan class="accent">"_id": 10</tspan><tspan>, "título": "Ordenar por fecha", "autor": "Ana",</tspan></text>
+  <text class="code left" x="221.28" y="109.5">"etiquetas": ["sql", "fechas"],</text>
+  <text class="code left" x="221.28" y="140.5">"respuestas": [</text>
+  <text class="code left" x="248.56" y="171.5">{ "autor": "Luis", "votos": 12, "aceptada": true } ] }</text>
+  <rect class="strong" x="20" y="216" width="96" height="88" rx="9"/>
+  <text class="code" x="68" y="260">11</text>
+  <path class="arrow" d="M122 260 L170 260"/>
+  <rect class="plain" x="176" y="216" width="980" height="88" rx="9"/>
+  <text class="code left" x="194" y="244.5" xml:space="preserve"><tspan>{ </tspan><tspan class="accent">"_id": 11</tspan><tspan>, "título": "Contar filas", "autor": "Ana",</tspan></text>
+  <text class="code left" x="221.28" y="275.5">"etiquetas": ["sql"], "respuestas": [] }</text>
+  <rect class="strong" x="20" y="320" width="96" height="88" rx="9"/>
+  <text class="code" x="68" y="364">12</text>
+  <path class="arrow" d="M122 364 L170 364"/>
+  <rect class="plain" x="176" y="320" width="980" height="88" rx="9"/>
+  <text class="code left" x="194" y="348.5" xml:space="preserve"><tspan>{ </tspan><tspan class="accent">"_id": 12</tspan><tspan>, "título": "Orden por fecha en SQL", "autor": "Luis",</tspan></text>
+  <text class="code left" x="221.28" y="379.5">"cerrada": true, "duplicada_de": 10 }</text>
+  <text class="note" x="588" y="493" xml:space="preserve"><tspan>Se puede buscar por cualquier campo: </tspan><tspan class="code">db.preguntas.find({ "etiquetas": "fechas" })</tspan><tspan class="strong">  →  _id 10</tspan></text>
+</svg>

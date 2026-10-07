@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tabla usuarios de HBase: 3 filas y 2 familias de columnas.
+     Generado por teoria/figures/columnfamily.py: no editar a mano. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
+  <style>
+    rect { fill: #fff5cc; stroke: #c98b00; stroke-width: 3; }
+    rect.strong { fill: #f2b705; }
+    rect.plain { fill: #fffefa; }
+    rect.empty { fill: #fffefa; stroke-dasharray: 7 6; stroke-width: 2; }
+    line { stroke: #c98b00; stroke-width: 2; }
+    text { fill: #18232d; font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 700;
+           text-anchor: middle; dominant-baseline: central; }
+    text.left { text-anchor: start; }
+    text.head { fill: #314554; font-size: 24px; }
+    text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
+    text.note { fill: #314554; font-size: 22px; font-weight: 400; }
+    text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    text.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; font-size: 22px; font-weight: 400; }
+    tspan.faint { fill: #5e6b74; font-weight: 400; }
+    tspan.strong { font-weight: 700; }
+    tspan.light { font-weight: 400; }
+    tspan.accent { fill: #a9251a; font-weight: 700; }
+    tspan.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; }
+    path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
+    circle { fill: #a9251a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
+    </marker>
+  </defs>
+  <text class="label" x="82" y="26">Clave de fila</text>
+  <rect class="strong" x="170" y="6" width="486" height="40" rx="9"/>
+  <text class="head" x="413" y="26" xml:space="preserve"><tspan class="light">Familia de columnas </tspan><tspan>perfil</tspan></text>
+  <rect class="strong" x="674" y="6" width="486" height="40" rx="9"/>
+  <text class="head" x="917" y="26" xml:space="preserve"><tspan class="light">Familia de columnas </tspan><tspan>actividad</tspan></text>
+  <rect class="strong" x="16" y="62" width="132" height="102" rx="9"/>
+  <text x="82" y="113">ana</text>
+  <rect x="170" y="62" width="486" height="102" rx="9"/>
+  <rect class="plain" x="180" y="72" width="227" height="82" rx="6"/>
+  <line x1="180" y1="114" x2="407" y2="114"/>
+  <text class="head" x="293.5" y="93">nombre</text>
+  <text class="head" x="293.5" y="134">Ana</text>
+  <rect class="plain" x="419" y="72" width="227" height="82" rx="6"/>
+  <line x1="419" y1="114" x2="646" y2="114"/>
+  <text class="head" x="532.5" y="93">ciudad</text>
+  <text class="head" x="532.5" y="134">Murcia</text>
+  <rect x="674" y="62" width="486" height="102" rx="9"/>
+  <rect class="plain" x="684" y="72" width="227" height="82" rx="6"/>
+  <line x1="684" y1="114" x2="911" y2="114"/>
+  <text class="head" x="797.5" y="93">reputación</text>
+  <text class="head" x="797.5" y="134">250</text>
+  <rect class="strong" x="16" y="180" width="132" height="102" rx="9"/>
+  <text x="82" y="231">luis</text>
+  <rect x="170" y="180" width="486" height="102" rx="9"/>
+  <rect class="plain" x="180" y="190" width="227" height="82" rx="6"/>
+  <line x1="180" y1="232" x2="407" y2="232"/>
+  <text class="head" x="293.5" y="211">nombre</text>
+  <text class="head" x="293.5" y="252">Luis</text>
+  <rect class="plain" x="419" y="190" width="227" height="82" rx="6"/>
+  <line x1="419" y1="232" x2="646" y2="232"/>
+  <text class="head" x="532.5" y="211">web</text>
+  <text class="head" x="532.5" y="252">luis.dev</text>
+  <rect x="674" y="180" width="486" height="102" rx="9"/>
+  <rect class="plain" x="684" y="190" width="227" height="82" rx="6"/>
+  <line x1="684" y1="232" x2="911" y2="232"/>
+  <text class="head" x="797.5" y="211">reputación</text>
+  <text class="head" x="797.5" y="252">80</text>
+  <rect class="plain" x="923" y="190" width="227" height="82" rx="6"/>
+  <line x1="923" y1="232" x2="1150" y2="232"/>
+  <text class="head" x="1036.5" y="211">respuestas</text>
+  <text class="head" x="1036.5" y="252">1</text>
+  <rect class="strong" x="16" y="298" width="132" height="102" rx="9"/>
+  <text x="82" y="349">marta</text>
+  <rect x="170" y="298" width="486" height="102" rx="9"/>
+  <rect class="plain" x="180" y="308" width="227" height="82" rx="6"/>
+  <line x1="180" y1="350" x2="407" y2="350"/>
+  <text class="head" x="293.5" y="329">nombre</text>
+  <text class="head" x="293.5" y="370">Marta</text>
+  <rect class="empty" x="674" y="298" width="486" height="102" rx="9"/>
+  <text class="label" x="917" y="349">sin columnas</text>
+  <text class="note" x="588" y="482" xml:space="preserve"><tspan class="strong">Una celda: (fila, familia:columna) → valor</tspan><tspan>      p. ej. (ana, actividad:reputación) → 250</tspan></text>
+</svg>

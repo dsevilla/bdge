@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Almacén clave-valor al estilo de Redis: 5 claves y sus valores.
+     Generado por teoria/figures/keyvalue.py: no editar a mano. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
+  <style>
+    rect { fill: #fff5cc; stroke: #c98b00; stroke-width: 3; }
+    rect.strong { fill: #f2b705; }
+    rect.plain { fill: #fffefa; }
+    rect.empty { fill: #fffefa; stroke-dasharray: 7 6; stroke-width: 2; }
+    line { stroke: #c98b00; stroke-width: 2; }
+    text { fill: #18232d; font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 700;
+           text-anchor: middle; dominant-baseline: central; }
+    text.left { text-anchor: start; }
+    text.head { fill: #314554; font-size: 24px; }
+    text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
+    text.note { fill: #314554; font-size: 22px; font-weight: 400; }
+    text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    text.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; font-size: 22px; font-weight: 400; }
+    tspan.faint { fill: #5e6b74; font-weight: 400; }
+    tspan.strong { font-weight: 700; }
+    tspan.light { font-weight: 400; }
+    tspan.accent { fill: #a9251a; font-weight: 700; }
+    tspan.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; }
+    path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
+    circle { fill: #a9251a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
+    </marker>
+  </defs>
+  <text class="label left" x="20" y="24">Clave</text>
+  <text class="label left" x="410" y="24">Valor</text>
+  <text class="label left" x="880" y="24">Tipo del valor</text>
+  <rect class="strong" x="20" y="50" width="330" height="58" rx="9"/>
+  <text class="code" x="185" y="79">sesión:9f2c</text>
+  <path class="arrow" d="M356 79 L404 79"/>
+  <rect class="plain" x="410" y="50" width="300.8" height="58" rx="9"/>
+  <text class="code" x="560.4" y="79">eyJ1c3VhcmlvIjogMX0…</text>
+  <text class="head left" x="880" y="66">string</text>
+  <text class="small left" x="880" y="93">opaco para la base de datos</text>
+  <rect class="strong" x="20" y="142" width="330" height="58" rx="9"/>
+  <text class="code" x="185" y="171">pregunta:10:visitas</text>
+  <path class="arrow" d="M356 171 L404 171"/>
+  <rect class="plain" x="410" y="142" width="82.56" height="58" rx="9"/>
+  <text class="code" x="451.28" y="171">1841</text>
+  <text class="head left" x="880" y="158">string</text>
+  <text class="small left" x="880" y="185">contador: INCR</text>
+  <rect class="strong" x="20" y="234" width="330" height="58" rx="9"/>
+  <text class="code" x="185" y="263">usuario:1</text>
+  <path class="arrow" d="M356 263 L404 263"/>
+  <rect class="plain" x="410" y="234" width="178.76" height="58" rx="9"/>
+  <rect x="410" y="234" width="109.84" height="58" rx="9"/>
+  <text class="code" x="464.92" y="263">nombre</text>
+  <text class="code" x="554.3" y="263">Ana</text>
+  <rect class="plain" x="598.76" y="234" width="233.32" height="58" rx="9"/>
+  <rect x="598.76" y="234" width="164.4" height="58" rx="9"/>
+  <text class="code" x="680.96" y="263">reputación</text>
+  <text class="code" x="797.62" y="263">250</text>
+  <text class="head left" x="880" y="250">hash</text>
+  <text class="small left" x="880" y="277">campo → valor</text>
+  <rect class="strong" x="20" y="326" width="330" height="58" rx="9"/>
+  <text class="code" x="185" y="355">pregunta:10:respuestas</text>
+  <path class="arrow" d="M356 355 L404 355"/>
+  <rect class="plain" x="410" y="326" width="55.28" height="58" rx="9"/>
+  <text class="code" x="437.64" y="355">21</text>
+  <rect class="plain" x="475.28" y="326" width="55.28" height="58" rx="9"/>
+  <text class="code" x="502.92" y="355">22</text>
+  <rect class="plain" x="540.56" y="326" width="55.28" height="58" rx="9"/>
+  <text class="code" x="568.2" y="355">23</text>
+  <text class="head left" x="880" y="342">list</text>
+  <text class="small left" x="880" y="369">en orden de llegada</text>
+  <rect class="strong" x="20" y="418" width="330" height="58" rx="9"/>
+  <text class="code" x="185" y="447">ranking:reputación</text>
+  <path class="arrow" d="M356 447 L404 447"/>
+  <rect class="plain" x="410" y="418" width="137.84" height="58" rx="9"/>
+  <rect x="410" y="418" width="55.28" height="58" rx="9"/>
+  <text class="code" x="437.64" y="447">80</text>
+  <text class="code" x="506.56" y="447">Luis</text>
+  <rect class="plain" x="557.84" y="418" width="137.84" height="58" rx="9"/>
+  <rect x="557.84" y="418" width="68.92" height="58" rx="9"/>
+  <text class="code" x="592.3" y="447">250</text>
+  <text class="code" x="661.22" y="447">Ana</text>
+  <text class="head left" x="880" y="434">sorted set</text>
+  <text class="small left" x="880" y="461">ordenado por puntuación</text>
+</svg>

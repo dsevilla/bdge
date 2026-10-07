@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tabla usuarios de Cassandra: 3 filas con distinto número de columnas y la columna web añadida sólo en una.
+     Generado por teoria/figures/cassandra.py: no editar a mano. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
+  <style>
+    rect { fill: #fff5cc; stroke: #c98b00; stroke-width: 3; }
+    rect.strong { fill: #f2b705; }
+    rect.plain { fill: #fffefa; }
+    rect.empty { fill: #fffefa; stroke-dasharray: 7 6; stroke-width: 2; }
+    line { stroke: #c98b00; stroke-width: 2; }
+    text { fill: #18232d; font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 700;
+           text-anchor: middle; dominant-baseline: central; }
+    text.left { text-anchor: start; }
+    text.head { fill: #314554; font-size: 24px; }
+    text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
+    text.note { fill: #314554; font-size: 22px; font-weight: 400; }
+    text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    text.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; font-size: 22px; font-weight: 400; }
+    tspan.faint { fill: #5e6b74; font-weight: 400; }
+    tspan.strong { font-weight: 700; }
+    tspan.light { font-weight: 400; }
+    tspan.accent { fill: #a9251a; font-weight: 700; }
+    tspan.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; }
+    path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
+    circle { fill: #a9251a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
+    </marker>
+  </defs>
+  <style>
+    rect.new { fill: #fffefa; stroke: #a9251a; stroke-width: 4; }
+    line.new { stroke: #a9251a; }
+    text.new { fill: #a9251a; }
+  </style>
+  <text class="label left" x="16" y="24">Clave de partición</text>
+  <text class="label left" x="238" y="24">Celdas de la fila, por orden de columna: sólo las que tienen valor</text>
+  <rect class="strong" x="16" y="50" width="200" height="102" rx="9"/>
+  <text x="116" y="101">ana</text>
+  <rect x="238" y="50" width="693.5" height="102" rx="9"/>
+  <rect class="plain" x="248" y="60" width="216.5" height="82" rx="6"/>
+  <line x1="248" y1="102" x2="464.5" y2="102"/>
+  <text class="head" x="356.25" y="81">ciudad</text>
+  <text class="head" x="356.25" y="122">Murcia</text>
+  <rect class="plain" x="476.5" y="60" width="216.5" height="82" rx="6"/>
+  <line x1="476.5" y1="102" x2="693" y2="102"/>
+  <text class="head" x="584.75" y="81">nombre</text>
+  <text class="head" x="584.75" y="122">Ana</text>
+  <rect class="plain" x="705" y="60" width="216.5" height="82" rx="6"/>
+  <line x1="705" y1="102" x2="921.5" y2="102"/>
+  <text class="head" x="813.25" y="81">reputación</text>
+  <text class="head" x="813.25" y="122">250</text>
+  <rect class="strong" x="16" y="168" width="200" height="102" rx="9"/>
+  <text x="116" y="219">luis</text>
+  <rect x="238" y="168" width="922" height="102" rx="9"/>
+  <rect class="plain" x="248" y="178" width="216.5" height="82" rx="6"/>
+  <line x1="248" y1="220" x2="464.5" y2="220"/>
+  <text class="head" x="356.25" y="199">nombre</text>
+  <text class="head" x="356.25" y="240">Luis</text>
+  <rect class="plain" x="476.5" y="178" width="216.5" height="82" rx="6"/>
+  <line x1="476.5" y1="220" x2="693" y2="220"/>
+  <text class="head" x="584.75" y="199">reputación</text>
+  <text class="head" x="584.75" y="240">80</text>
+  <rect class="plain" x="705" y="178" width="216.5" height="82" rx="6"/>
+  <line x1="705" y1="220" x2="921.5" y2="220"/>
+  <text class="head" x="813.25" y="199">respuestas</text>
+  <text class="head" x="813.25" y="240">1</text>
+  <rect class="new" x="933.5" y="178" width="216.5" height="82" rx="6"/>
+  <line class="new" x1="933.5" y1="220" x2="1150" y2="220"/>
+  <text class="head new" x="1041.75" y="199">web</text>
+  <text class="head" x="1041.75" y="240">luis.dev</text>
+  <rect class="strong" x="16" y="286" width="200" height="102" rx="9"/>
+  <text x="116" y="337">marta</text>
+  <rect x="238" y="286" width="236.5" height="102" rx="9"/>
+  <rect class="plain" x="248" y="296" width="216.5" height="82" rx="6"/>
+  <line x1="248" y1="338" x2="464.5" y2="338"/>
+  <text class="head" x="356.25" y="317">nombre</text>
+  <text class="head" x="356.25" y="358">Marta</text>
+  <text class="code left new" x="16" y="442">ALTER TABLE usuarios ADD web text;</text>
+  <text class="small left" x="862" y="442">no reescribe ninguna fila</text>
+  <text class="code left new" x="16" y="482">UPDATE usuarios SET web = 'luis.dev' WHERE usuario = 'luis';</text>
+  <text class="small left" x="862" y="482">sólo esta fila guarda la celda</text>
+</svg>

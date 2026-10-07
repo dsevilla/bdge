@@ -15,7 +15,12 @@
     text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
     text.note { fill: #314554; font-size: 22px; font-weight: 400; }
     text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    text.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; font-size: 22px; font-weight: 400; }
     tspan.faint { fill: #5e6b74; font-weight: 400; }
+    tspan.strong { font-weight: 700; }
+    tspan.light { font-weight: 400; }
+    tspan.accent { fill: #a9251a; font-weight: 700; }
+    tspan.code { font-family: "Cascadia Code", "Liberation Mono", Consolas, monospace; }
     path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
     circle { fill: #a9251a; }
   </style>
