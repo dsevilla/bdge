@@ -192,6 +192,9 @@ section.figure-only p { margin: 0 auto; text-align: center; }
    padding-top (same specificity, figure-only comes later): restore it. */
 section.figure-only.long-title { padding-top: 126px; }
 section.figure-only img { display: block; margin: 0 auto; max-height: 510px; max-width: 100%; }
+/* Figura sin título que necesita más altura para que se lean sus detalles. */
+section.figure-only.full-height-figure { padding: 28px 52px 32px; }
+section.figure-only.full-height-figure img { max-height: 660px; }
 /* Página de cómic a diapositiva completa, sin título: la tira es más alta que
    ancha (unos 2:3), así que se limita por la altura y se centra. 660 px más
    el relleno (28 + 32) llenan los 720 px de la diapositiva sin que se salga. */
@@ -202,6 +205,38 @@ section.comic-page img { display: block; margin: 0 auto; max-height: 660px; max-
    «A vs B»). Cada imagen conserva el tamaño que se le fije en Markdown. */
 section.figure-only.figure-row p { align-items: center; display: flex; gap: 32px; justify-content: center; }
 section.figure-only.figure-row img { flex: none; margin: 0; }
+
+/* `<!-- _class: figure-only figure-overlay -->`: la figura queda de fondo y la
+   cita (`> ## Título` y `> - viñetas`) se dibuja encima como un bloque
+   semitransparente, con el título en una franja dorada. El bloque está fuera
+   del flujo, así que la figura no se mueve de una diapositiva a la siguiente
+   y varias seguidas parecen una sola en la que cambia el texto. Se centra en
+   la figura (de 128 a 638 px), algo más abajo para no tapar su parte alta. */
+section.figure-overlay blockquote {
+  background: rgba(255, 245, 204, 0.88);
+  border: 0;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(24, 35, 45, 0.3);
+  left: 100px;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  right: 100px;
+  text-align: left;
+  top: 398px;
+  transform: translateY(-50%);
+}
+section.figure-overlay blockquote h2 {
+  background: rgba(242, 183, 5, 0.94);
+  color: var(--bdge-ink);
+  font-size: 36px;
+  margin: 0;
+  padding: 8px 26px;
+}
+section.figure-overlay blockquote > ul { font-size: 31px; line-height: 1.22; margin: 14px 26px 16px 0; }
+section.figure-overlay blockquote > p { font-size: 31px; margin: 14px 26px 0; text-align: left; }
+section.figure-overlay blockquote li { margin: 3px 0; }
 
 section.section-divider {
   align-items: center;

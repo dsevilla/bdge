@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Clúster: 24 nodos (6 × 4) conectados a un switch.
+     Generado por teoria/figures/cluster.py: no editar a mano. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
+  <style>
+    rect { fill: #fff5cc; stroke: #c98b00; stroke-width: 3; }
+    rect.strong { fill: #f2b705; }
+    rect.plain { fill: #fffefa; }
+    rect.empty { fill: #fffefa; stroke-dasharray: 7 6; stroke-width: 2; }
+    line { stroke: #c98b00; stroke-width: 2; }
+    text { fill: #18232d; font-family: "Atkinson Hyperlegible", Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 700;
+           text-anchor: middle; dominant-baseline: central; }
+    text.left { text-anchor: start; }
+    text.head { fill: #314554; font-size: 24px; }
+    text.label { fill: #5e6b74; font-size: 24px; font-weight: 400; }
+    text.note { fill: #314554; font-size: 22px; font-weight: 400; }
+    text.small { fill: #314554; font-size: 19px; font-weight: 400; }
+    tspan.faint { fill: #5e6b74; font-weight: 400; }
+    path.arrow { fill: none; stroke: #314554; stroke-width: 2.5; marker-end: url(#arrow); }
+    circle { fill: #a9251a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
+    </marker>
+  </defs>
+  <style>
+    line.cable { stroke: #a9a79b; stroke-width: 1.6; }
+    rect.case { fill: #18232d; stroke: #314554; stroke-width: 1.5; }
+    rect.bay { fill: #314554; stroke: #5e6b74; stroke-width: 1; }
+    rect.foot { fill: #314554; stroke: none; }
+    rect.switch { fill: #314554; stroke: #18232d; stroke-width: 2; }
+    rect.port { fill: #18232d; stroke: #5e6b74; stroke-width: 1; }
+    rect.port.used { fill: #fff5cc; stroke: #f2b705; }
+    line.vent { stroke: #5e6b74; stroke-width: 1.5; }
+    circle.led { fill: #f2b705; }
+  </style>
+  <line class="cable" x1="450" y1="29.5" x2="163" y2="125"/>
+  <line class="cable" x1="462" y1="29.5" x2="333" y2="125"/>
+  <line class="cable" x1="474" y1="29.5" x2="163" y2="232"/>
+  <line class="cable" x1="486" y1="29.5" x2="163" y2="339"/>
+  <line class="cable" x1="498" y1="29.5" x2="333" y2="232"/>
+  <line class="cable" x1="510" y1="29.5" x2="163" y2="446"/>
+  <line class="cable" x1="522" y1="29.5" x2="503" y2="125"/>
+  <line class="cable" x1="534" y1="29.5" x2="333" y2="339"/>
+  <line class="cable" x1="546" y1="29.5" x2="333" y2="446"/>
+  <line class="cable" x1="558" y1="29.5" x2="503" y2="232"/>
+  <line class="cable" x1="570" y1="29.5" x2="503" y2="339"/>
+  <line class="cable" x1="582" y1="29.5" x2="503" y2="446"/>
+  <line class="cable" x1="594" y1="29.5" x2="673" y2="446"/>
+  <line class="cable" x1="606" y1="29.5" x2="673" y2="339"/>
+  <line class="cable" x1="618" y1="29.5" x2="673" y2="232"/>
+  <line class="cable" x1="630" y1="29.5" x2="843" y2="446"/>
+  <line class="cable" x1="642" y1="29.5" x2="843" y2="339"/>
+  <line class="cable" x1="654" y1="29.5" x2="673" y2="125"/>
+  <line class="cable" x1="666" y1="29.5" x2="1013" y2="446"/>
+  <line class="cable" x1="678" y1="29.5" x2="843" y2="232"/>
+  <line class="cable" x1="690" y1="29.5" x2="1013" y2="339"/>
+  <line class="cable" x1="702" y1="29.5" x2="1013" y2="232"/>
+  <line class="cable" x1="714" y1="29.5" x2="843" y2="125"/>
+  <line class="cable" x1="726" y1="29.5" x2="1013" y2="125"/>
+  <rect class="switch" x="418" y="4" width="340" height="38" rx="5"/>
+  <rect class="port" x="446" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="446" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="458" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="458" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="470" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="470" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="482" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="482" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="494" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="494" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="506" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="506" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="518" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="518" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="530" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="530" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="542" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="542" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="554" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="554" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="566" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="566" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="578" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="578" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="590" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="590" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="602" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="602" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="614" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="614" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="626" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="626" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="638" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="638" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="650" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="650" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="662" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="662" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="674" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="674" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="686" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="686" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="698" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="698" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="710" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="710" y="25.5" width="8" height="8" rx="1"/>
+  <rect class="port" x="722" y="12.5" width="8" height="8" rx="1"/>
+  <rect class="port used" x="722" y="25.5" width="8" height="8" rx="1"/>
+  <circle class="led" cx="429" cy="23" r="2.6"/>
+  <circle class="led" cx="747" cy="23" r="2.6"/>
+  <rect class="foot" x="144" y="167" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="139" y="82" width="48" height="86" rx="5"/>
+  <rect class="bay" x="146" y="90" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="146" y="102" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="176" cy="121" r="2.6"/>
+  <line class="vent" x1="146" y1="134" x2="180" y2="134"/>
+  <line class="vent" x1="146" y1="140" x2="180" y2="140"/>
+  <line class="vent" x1="146" y1="146" x2="180" y2="146"/>
+  <line class="vent" x1="146" y1="152" x2="180" y2="152"/>
+  <line class="vent" x1="146" y1="158" x2="180" y2="158"/>
+  <rect class="foot" x="314" y="167" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="309" y="82" width="48" height="86" rx="5"/>
+  <rect class="bay" x="316" y="90" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="316" y="102" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="346" cy="121" r="2.6"/>
+  <line class="vent" x1="316" y1="134" x2="350" y2="134"/>
+  <line class="vent" x1="316" y1="140" x2="350" y2="140"/>
+  <line class="vent" x1="316" y1="146" x2="350" y2="146"/>
+  <line class="vent" x1="316" y1="152" x2="350" y2="152"/>
+  <line class="vent" x1="316" y1="158" x2="350" y2="158"/>
+  <rect class="foot" x="144" y="274" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="139" y="189" width="48" height="86" rx="5"/>
+  <rect class="bay" x="146" y="197" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="146" y="209" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="176" cy="228" r="2.6"/>
+  <line class="vent" x1="146" y1="241" x2="180" y2="241"/>
+  <line class="vent" x1="146" y1="247" x2="180" y2="247"/>
+  <line class="vent" x1="146" y1="253" x2="180" y2="253"/>
+  <line class="vent" x1="146" y1="259" x2="180" y2="259"/>
+  <line class="vent" x1="146" y1="265" x2="180" y2="265"/>
+  <rect class="foot" x="144" y="381" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="139" y="296" width="48" height="86" rx="5"/>
+  <rect class="bay" x="146" y="304" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="146" y="316" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="176" cy="335" r="2.6"/>
+  <line class="vent" x1="146" y1="348" x2="180" y2="348"/>
+  <line class="vent" x1="146" y1="354" x2="180" y2="354"/>
+  <line class="vent" x1="146" y1="360" x2="180" y2="360"/>
+  <line class="vent" x1="146" y1="366" x2="180" y2="366"/>
+  <line class="vent" x1="146" y1="372" x2="180" y2="372"/>
+  <rect class="foot" x="314" y="274" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="309" y="189" width="48" height="86" rx="5"/>
+  <rect class="bay" x="316" y="197" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="316" y="209" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="346" cy="228" r="2.6"/>
+  <line class="vent" x1="316" y1="241" x2="350" y2="241"/>
+  <line class="vent" x1="316" y1="247" x2="350" y2="247"/>
+  <line class="vent" x1="316" y1="253" x2="350" y2="253"/>
+  <line class="vent" x1="316" y1="259" x2="350" y2="259"/>
+  <line class="vent" x1="316" y1="265" x2="350" y2="265"/>
+  <rect class="foot" x="144" y="488" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="139" y="403" width="48" height="86" rx="5"/>
+  <rect class="bay" x="146" y="411" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="146" y="423" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="176" cy="442" r="2.6"/>
+  <line class="vent" x1="146" y1="455" x2="180" y2="455"/>
+  <line class="vent" x1="146" y1="461" x2="180" y2="461"/>
+  <line class="vent" x1="146" y1="467" x2="180" y2="467"/>
+  <line class="vent" x1="146" y1="473" x2="180" y2="473"/>
+  <line class="vent" x1="146" y1="479" x2="180" y2="479"/>
+  <rect class="foot" x="484" y="167" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="479" y="82" width="48" height="86" rx="5"/>
+  <rect class="bay" x="486" y="90" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="486" y="102" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="516" cy="121" r="2.6"/>
+  <line class="vent" x1="486" y1="134" x2="520" y2="134"/>
+  <line class="vent" x1="486" y1="140" x2="520" y2="140"/>
+  <line class="vent" x1="486" y1="146" x2="520" y2="146"/>
+  <line class="vent" x1="486" y1="152" x2="520" y2="152"/>
+  <line class="vent" x1="486" y1="158" x2="520" y2="158"/>
+  <rect class="foot" x="314" y="381" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="309" y="296" width="48" height="86" rx="5"/>
+  <rect class="bay" x="316" y="304" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="316" y="316" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="346" cy="335" r="2.6"/>
+  <line class="vent" x1="316" y1="348" x2="350" y2="348"/>
+  <line class="vent" x1="316" y1="354" x2="350" y2="354"/>
+  <line class="vent" x1="316" y1="360" x2="350" y2="360"/>
+  <line class="vent" x1="316" y1="366" x2="350" y2="366"/>
+  <line class="vent" x1="316" y1="372" x2="350" y2="372"/>
+  <rect class="foot" x="314" y="488" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="309" y="403" width="48" height="86" rx="5"/>
+  <rect class="bay" x="316" y="411" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="316" y="423" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="346" cy="442" r="2.6"/>
+  <line class="vent" x1="316" y1="455" x2="350" y2="455"/>
+  <line class="vent" x1="316" y1="461" x2="350" y2="461"/>
+  <line class="vent" x1="316" y1="467" x2="350" y2="467"/>
+  <line class="vent" x1="316" y1="473" x2="350" y2="473"/>
+  <line class="vent" x1="316" y1="479" x2="350" y2="479"/>
+  <rect class="foot" x="484" y="274" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="479" y="189" width="48" height="86" rx="5"/>
+  <rect class="bay" x="486" y="197" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="486" y="209" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="516" cy="228" r="2.6"/>
+  <line class="vent" x1="486" y1="241" x2="520" y2="241"/>
+  <line class="vent" x1="486" y1="247" x2="520" y2="247"/>
+  <line class="vent" x1="486" y1="253" x2="520" y2="253"/>
+  <line class="vent" x1="486" y1="259" x2="520" y2="259"/>
+  <line class="vent" x1="486" y1="265" x2="520" y2="265"/>
+  <rect class="foot" x="484" y="381" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="479" y="296" width="48" height="86" rx="5"/>
+  <rect class="bay" x="486" y="304" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="486" y="316" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="516" cy="335" r="2.6"/>
+  <line class="vent" x1="486" y1="348" x2="520" y2="348"/>
+  <line class="vent" x1="486" y1="354" x2="520" y2="354"/>
+  <line class="vent" x1="486" y1="360" x2="520" y2="360"/>
+  <line class="vent" x1="486" y1="366" x2="520" y2="366"/>
+  <line class="vent" x1="486" y1="372" x2="520" y2="372"/>
+  <rect class="foot" x="484" y="488" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="479" y="403" width="48" height="86" rx="5"/>
+  <rect class="bay" x="486" y="411" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="486" y="423" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="516" cy="442" r="2.6"/>
+  <line class="vent" x1="486" y1="455" x2="520" y2="455"/>
+  <line class="vent" x1="486" y1="461" x2="520" y2="461"/>
+  <line class="vent" x1="486" y1="467" x2="520" y2="467"/>
+  <line class="vent" x1="486" y1="473" x2="520" y2="473"/>
+  <line class="vent" x1="486" y1="479" x2="520" y2="479"/>
+  <rect class="foot" x="654" y="488" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="649" y="403" width="48" height="86" rx="5"/>
+  <rect class="bay" x="656" y="411" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="656" y="423" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="686" cy="442" r="2.6"/>
+  <line class="vent" x1="656" y1="455" x2="690" y2="455"/>
+  <line class="vent" x1="656" y1="461" x2="690" y2="461"/>
+  <line class="vent" x1="656" y1="467" x2="690" y2="467"/>
+  <line class="vent" x1="656" y1="473" x2="690" y2="473"/>
+  <line class="vent" x1="656" y1="479" x2="690" y2="479"/>
+  <rect class="foot" x="654" y="381" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="649" y="296" width="48" height="86" rx="5"/>
+  <rect class="bay" x="656" y="304" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="656" y="316" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="686" cy="335" r="2.6"/>
+  <line class="vent" x1="656" y1="348" x2="690" y2="348"/>
+  <line class="vent" x1="656" y1="354" x2="690" y2="354"/>
+  <line class="vent" x1="656" y1="360" x2="690" y2="360"/>
+  <line class="vent" x1="656" y1="366" x2="690" y2="366"/>
+  <line class="vent" x1="656" y1="372" x2="690" y2="372"/>
+  <rect class="foot" x="654" y="274" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="649" y="189" width="48" height="86" rx="5"/>
+  <rect class="bay" x="656" y="197" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="656" y="209" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="686" cy="228" r="2.6"/>
+  <line class="vent" x1="656" y1="241" x2="690" y2="241"/>
+  <line class="vent" x1="656" y1="247" x2="690" y2="247"/>
+  <line class="vent" x1="656" y1="253" x2="690" y2="253"/>
+  <line class="vent" x1="656" y1="259" x2="690" y2="259"/>
+  <line class="vent" x1="656" y1="265" x2="690" y2="265"/>
+  <rect class="foot" x="824" y="488" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="819" y="403" width="48" height="86" rx="5"/>
+  <rect class="bay" x="826" y="411" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="826" y="423" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="856" cy="442" r="2.6"/>
+  <line class="vent" x1="826" y1="455" x2="860" y2="455"/>
+  <line class="vent" x1="826" y1="461" x2="860" y2="461"/>
+  <line class="vent" x1="826" y1="467" x2="860" y2="467"/>
+  <line class="vent" x1="826" y1="473" x2="860" y2="473"/>
+  <line class="vent" x1="826" y1="479" x2="860" y2="479"/>
+  <rect class="foot" x="824" y="381" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="819" y="296" width="48" height="86" rx="5"/>
+  <rect class="bay" x="826" y="304" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="826" y="316" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="856" cy="335" r="2.6"/>
+  <line class="vent" x1="826" y1="348" x2="860" y2="348"/>
+  <line class="vent" x1="826" y1="354" x2="860" y2="354"/>
+  <line class="vent" x1="826" y1="360" x2="860" y2="360"/>
+  <line class="vent" x1="826" y1="366" x2="860" y2="366"/>
+  <line class="vent" x1="826" y1="372" x2="860" y2="372"/>
+  <rect class="foot" x="654" y="167" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="649" y="82" width="48" height="86" rx="5"/>
+  <rect class="bay" x="656" y="90" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="656" y="102" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="686" cy="121" r="2.6"/>
+  <line class="vent" x1="656" y1="134" x2="690" y2="134"/>
+  <line class="vent" x1="656" y1="140" x2="690" y2="140"/>
+  <line class="vent" x1="656" y1="146" x2="690" y2="146"/>
+  <line class="vent" x1="656" y1="152" x2="690" y2="152"/>
+  <line class="vent" x1="656" y1="158" x2="690" y2="158"/>
+  <rect class="foot" x="994" y="488" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="989" y="403" width="48" height="86" rx="5"/>
+  <rect class="bay" x="996" y="411" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="996" y="423" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="1026" cy="442" r="2.6"/>
+  <line class="vent" x1="996" y1="455" x2="1030" y2="455"/>
+  <line class="vent" x1="996" y1="461" x2="1030" y2="461"/>
+  <line class="vent" x1="996" y1="467" x2="1030" y2="467"/>
+  <line class="vent" x1="996" y1="473" x2="1030" y2="473"/>
+  <line class="vent" x1="996" y1="479" x2="1030" y2="479"/>
+  <rect class="foot" x="824" y="274" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="819" y="189" width="48" height="86" rx="5"/>
+  <rect class="bay" x="826" y="197" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="826" y="209" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="856" cy="228" r="2.6"/>
+  <line class="vent" x1="826" y1="241" x2="860" y2="241"/>
+  <line class="vent" x1="826" y1="247" x2="860" y2="247"/>
+  <line class="vent" x1="826" y1="253" x2="860" y2="253"/>
+  <line class="vent" x1="826" y1="259" x2="860" y2="259"/>
+  <line class="vent" x1="826" y1="265" x2="860" y2="265"/>
+  <rect class="foot" x="994" y="381" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="989" y="296" width="48" height="86" rx="5"/>
+  <rect class="bay" x="996" y="304" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="996" y="316" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="1026" cy="335" r="2.6"/>
+  <line class="vent" x1="996" y1="348" x2="1030" y2="348"/>
+  <line class="vent" x1="996" y1="354" x2="1030" y2="354"/>
+  <line class="vent" x1="996" y1="360" x2="1030" y2="360"/>
+  <line class="vent" x1="996" y1="366" x2="1030" y2="366"/>
+  <line class="vent" x1="996" y1="372" x2="1030" y2="372"/>
+  <rect class="foot" x="994" y="274" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="989" y="189" width="48" height="86" rx="5"/>
+  <rect class="bay" x="996" y="197" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="996" y="209" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="1026" cy="228" r="2.6"/>
+  <line class="vent" x1="996" y1="241" x2="1030" y2="241"/>
+  <line class="vent" x1="996" y1="247" x2="1030" y2="247"/>
+  <line class="vent" x1="996" y1="253" x2="1030" y2="253"/>
+  <line class="vent" x1="996" y1="259" x2="1030" y2="259"/>
+  <line class="vent" x1="996" y1="265" x2="1030" y2="265"/>
+  <rect class="foot" x="824" y="167" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="819" y="82" width="48" height="86" rx="5"/>
+  <rect class="bay" x="826" y="90" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="826" y="102" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="856" cy="121" r="2.6"/>
+  <line class="vent" x1="826" y1="134" x2="860" y2="134"/>
+  <line class="vent" x1="826" y1="140" x2="860" y2="140"/>
+  <line class="vent" x1="826" y1="146" x2="860" y2="146"/>
+  <line class="vent" x1="826" y1="152" x2="860" y2="152"/>
+  <line class="vent" x1="826" y1="158" x2="860" y2="158"/>
+  <rect class="foot" x="994" y="167" width="38" height="5" rx="1.5"/>
+  <rect class="case" x="989" y="82" width="48" height="86" rx="5"/>
+  <rect class="bay" x="996" y="90" width="34" height="8" rx="1.5"/>
+  <rect class="bay" x="996" y="102" width="34" height="8" rx="1.5"/>
+  <circle class="led" cx="1026" cy="121" r="2.6"/>
+  <line class="vent" x1="996" y1="134" x2="1030" y2="134"/>
+  <line class="vent" x1="996" y1="140" x2="1030" y2="140"/>
+  <line class="vent" x1="996" y1="146" x2="1030" y2="146"/>
+  <line class="vent" x1="996" y1="152" x2="1030" y2="152"/>
+  <line class="vent" x1="996" y1="158" x2="1030" y2="158"/>
+</svg>
