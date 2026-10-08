@@ -10,6 +10,8 @@ const DATA_FILES = {
   Comments: ["Comments.parquet"],
   Votes: ["Votes.parquet"]
 };
+const SANDBOX_EDITOR_ID = "sql-sandbox";
+const SANDBOX_RESULT_ID = "result-sandbox";
 const RESULT_PAGE_SIZE = 100;
 // Tope de filas que se leen de cada lado al comprobar. La base completa puede
 // devolver millones de filas y la comprobación no debe materializarlas.
@@ -22,6 +24,7 @@ const pageTitleEl = document.getElementById("practice-page-title");
 const pageDescriptionEl = document.getElementById("practice-page-description");
 const editorModeNoteEl = document.getElementById("editor-mode-note");
 const exerciseListEl = document.getElementById("exercise-list");
+const sandboxEl = document.getElementById("sandbox");
 const loadRealButton = document.getElementById("load-real");
 const loadDemoButton = document.getElementById("load-demo");
 const localFileInput = document.getElementById("local-file");
@@ -50,7 +53,10 @@ async function renderPracticePage(pageId) {
   if (loading || queryRunning) return;
   const page = PRACTICE_PAGES.find(function (candidate) { return candidate.id === pageId; });
   if (!page || page.id === currentPageId) return;
-  for (const resultId of activeResultStatements.keys()) await clearResultStatement(resultId);
+  for (const [resultId, state] of activeResultStatements) {
+    await clearResultStatement(resultId);
+    state.container.innerHTML = '<p class="empty">Resultado liberado al cambiar de página.</p>';
+  }
   currentPageId = page.id;
   pageTitleEl.textContent = page.title;
   pageDescriptionEl.textContent = page.description || "";
@@ -65,8 +71,12 @@ async function renderPracticePage(pageId) {
     pageNavigationEl.append(tab);
   });
 
-  editorInstances.forEach(function (editor) { editor.toTextArea(); });
-  editorInstances.clear();
+  // El editor de la zona de pruebas sobrevive al cambio de página.
+  editorInstances.forEach(function (editor, editorId) {
+    if (editorId === SANDBOX_EDITOR_ID) return;
+    editor.toTextArea();
+    editorInstances.delete(editorId);
+  });
   exercisesByEditor.clear();
   exerciseListEl.replaceChildren();
   page.exercises.forEach(function (exercise, index) {
@@ -93,116 +103,157 @@ async function renderPracticePage(pageId) {
     headingText.append(title, prompt);
     heading.append(number, headingText);
 
-    const editorArea = document.createElement("div");
-    editorArea.className = "editor-area";
-    const label = document.createElement("label");
-    label.className = "editor-label";
-    label.htmlFor = editorId;
-    const labelText = document.createElement("span");
-    labelText.textContent = "Consulta SQL";
-    const shortcut = document.createElement("span");
-    shortcut.textContent = "Atajo: ";
-    const controlKey = document.createElement("kbd");
-    controlKey.textContent = "Ctrl/Cmd";
-    const plus = document.createTextNode(" + ");
-    const enterKey = document.createElement("kbd");
-    enterKey.textContent = "Intro";
-    shortcut.append(controlKey, plus, enterKey);
-    label.append(labelText, shortcut);
-
-    const editor = document.createElement("textarea");
-    editor.id = editorId;
-    editor.spellcheck = false;
-    editor.setAttribute("aria-label", "Consulta SQL · " + exercise.title);
-    editor.value = editorDrafts.get(editorId) || "";
-
-    const actions = document.createElement("div");
-    actions.className = "editor-actions";
-    const runButton = document.createElement("button");
-    runButton.type = "button";
-    runButton.className = "button small run-query";
-    runButton.dataset.editor = editorId;
-    runButton.dataset.result = resultId;
-    runButton.textContent = "Ejecutar consulta";
-    actions.append(runButton);
-    if (exercise.solution) {
-      const checkButton = document.createElement("button");
-      checkButton.type = "button";
-      checkButton.className = "button small check-query";
-      checkButton.dataset.editor = editorId;
-      checkButton.dataset.result = resultId;
-      checkButton.textContent = "Comprobar";
-      actions.append(checkButton);
-      if (!canCheckExercise(exercise)) {
-        // Ejecutar la solución de referencia crearía la tabla por segunda vez
-        // o repetiría la inserción: el botón queda visible pero inactivo.
-        checkButton.disabled = true;
-        checkButton.dataset.locked = "true";
-        checkButton.title = STATE_CHANGE_NOTE;
-        const note = document.createElement("span");
-        note.className = "check-note";
-        note.textContent = STATE_CHANGE_NOTE;
-        actions.append(note);
-      }
-      const solutionButton = document.createElement("button");
-      solutionButton.type = "button";
-      solutionButton.className = "button small show-solution";
-      solutionButton.dataset.editor = editorId;
-      solutionButton.textContent = "Mostrar solución";
-      actions.append(solutionButton);
-    }
-
-    const result = document.createElement("div");
-    result.id = resultId;
-    result.className = "result";
-    result.setAttribute("aria-live", "polite");
-    const empty = document.createElement("p");
-    empty.className = "empty";
-    empty.textContent = "Ejecuta la consulta para ver el resultado.";
-    result.append(empty);
-
-    editorArea.append(label, editor, actions);
+    const { editorArea, result, editor } = buildEditorBlock(editorId, resultId, exercise.title, exercise);
     section.append(heading, editorArea, result);
     exerciseListEl.append(section);
-    if (hasSqlCodeMirror()) {
-      const codeEditor = window.CodeMirror.fromTextArea(editor, {
-        mode: "text/x-sql",
-        theme: "material-darker",
-        lineNumbers: true,
-        lineWrapping: true,
-        indentUnit: 2,
-        tabSize: 2,
-        indentWithTabs: false,
-        extraKeys: {
-          "Ctrl-Enter": function () { section.querySelector(".run-query").click(); },
-          "Cmd-Enter": function () { section.querySelector(".run-query").click(); }
-        }
-      });
-      codeEditor.getInputField().setAttribute("aria-label", editor.getAttribute("aria-label"));
-      label.addEventListener("click", function (event) {
-        event.preventDefault();
-        codeEditor.focus();
-      });
-      codeEditor.on("change", function (instance) {
-        editorDrafts.set(editorId, instance.getValue());
-      });
-      editorInstances.set(editorId, codeEditor);
-      codeEditor.refresh();
-    } else {
-      editor.addEventListener("input", function () { editorDrafts.set(editorId, editor.value); });
-      editor.addEventListener("keydown", function (event) {
-        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-          event.preventDefault();
-          section.querySelector(".run-query").click();
-        }
-        if (event.key === "Tab") {
-          event.preventDefault();
-          editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
-          editorDrafts.set(editorId, editor.value);
-        }
-      });
-    }
+    mountEditor(editorId, editor, section);
   });
+}
+
+// Zona de prueba: un editor suelto, sin enunciado ni solución, para lanzar
+// cualquier consulta sobre la base. Se crea una sola vez y no depende de la
+// página de ejercicios que se esté viendo.
+function renderSandbox() {
+  const section = document.createElement("section");
+  section.className = "exercise sandbox";
+  section.setAttribute("aria-labelledby", SANDBOX_EDITOR_ID + "-title");
+
+  const heading = document.createElement("div");
+  heading.className = "exercise-heading";
+  const headingText = document.createElement("div");
+  const title = document.createElement("h2");
+  title.id = SANDBOX_EDITOR_ID + "-title";
+  title.textContent = "Zona de pruebas";
+  const prompt = document.createElement("p");
+  prompt.textContent = "Escribe aquí cualquier consulta para explorar las tablas, sin que dependa de ningún ejercicio. "
+    + "Por ejemplo, SHOW TABLES o DESCRIBE Posts. Lo que cambies (CREATE, INSERT...) sigue en la base hasta que la recargues.";
+  headingText.append(title, prompt);
+  heading.append(headingText);
+
+  const { editorArea, result, editor } = buildEditorBlock(SANDBOX_EDITOR_ID, SANDBOX_RESULT_ID, "zona de pruebas", null);
+  section.append(heading, editorArea, result);
+  sandboxEl.replaceChildren(section);
+  mountEditor(SANDBOX_EDITOR_ID, editor, section);
+}
+
+// Etiqueta, editor, botones y zona de resultado, comunes a los ejercicios y a
+// la zona de pruebas. Sin `exercise` (o sin `solution`) no hay botones de
+// comprobar ni de mostrar la solución.
+function buildEditorBlock(editorId, resultId, name, exercise) {
+  const editorArea = document.createElement("div");
+  editorArea.className = "editor-area";
+  const label = document.createElement("label");
+  label.className = "editor-label";
+  label.htmlFor = editorId;
+  const labelText = document.createElement("span");
+  labelText.textContent = "Consulta SQL";
+  const shortcut = document.createElement("span");
+  shortcut.textContent = "Atajo: ";
+  const controlKey = document.createElement("kbd");
+  controlKey.textContent = "Ctrl/Cmd";
+  const plus = document.createTextNode(" + ");
+  const enterKey = document.createElement("kbd");
+  enterKey.textContent = "Intro";
+  shortcut.append(controlKey, plus, enterKey);
+  label.append(labelText, shortcut);
+
+  const editor = document.createElement("textarea");
+  editor.id = editorId;
+  editor.spellcheck = false;
+  editor.setAttribute("aria-label", "Consulta SQL · " + name);
+  editor.value = editorDrafts.get(editorId) || "";
+
+  const actions = document.createElement("div");
+  actions.className = "editor-actions";
+  const runButton = document.createElement("button");
+  runButton.type = "button";
+  runButton.className = "button small run-query";
+  runButton.dataset.editor = editorId;
+  runButton.dataset.result = resultId;
+  runButton.textContent = "Ejecutar consulta";
+  actions.append(runButton);
+  if (exercise && exercise.solution) {
+    const checkButton = document.createElement("button");
+    checkButton.type = "button";
+    checkButton.className = "button small check-query";
+    checkButton.dataset.editor = editorId;
+    checkButton.dataset.result = resultId;
+    checkButton.textContent = "Comprobar";
+    actions.append(checkButton);
+    if (!canCheckExercise(exercise)) {
+      // Ejecutar la solución de referencia crearía la tabla por segunda vez
+      // o repetiría la inserción: el botón queda visible pero inactivo.
+      checkButton.disabled = true;
+      checkButton.dataset.locked = "true";
+      checkButton.title = STATE_CHANGE_NOTE;
+      const note = document.createElement("span");
+      note.className = "check-note";
+      note.textContent = STATE_CHANGE_NOTE;
+      actions.append(note);
+    }
+    const solutionButton = document.createElement("button");
+    solutionButton.type = "button";
+    solutionButton.className = "button small show-solution";
+    solutionButton.dataset.editor = editorId;
+    solutionButton.textContent = "Mostrar solución";
+    actions.append(solutionButton);
+  }
+
+  const result = document.createElement("div");
+  result.id = resultId;
+  result.className = "result";
+  result.setAttribute("aria-live", "polite");
+  const empty = document.createElement("p");
+  empty.className = "empty";
+  empty.textContent = "Ejecuta la consulta para ver el resultado.";
+  result.append(empty);
+
+  editorArea.append(label, editor, actions);
+  return { editorArea, result, editor };
+}
+
+// Convierte el <textarea> en un editor CodeMirror (si está disponible) una vez
+// que ya está en el documento. `scope` es el elemento que contiene su botón de
+// ejecutar, al que llama el atajo Ctrl/Cmd + Intro.
+function mountEditor(editorId, editor, scope) {
+  if (hasSqlCodeMirror()) {
+    const codeEditor = window.CodeMirror.fromTextArea(editor, {
+      mode: "text/x-sql",
+      theme: "material-darker",
+      lineNumbers: true,
+      lineWrapping: true,
+      indentUnit: 2,
+      tabSize: 2,
+      indentWithTabs: false,
+      extraKeys: {
+        "Ctrl-Enter": function () { scope.querySelector(".run-query").click(); },
+        "Cmd-Enter": function () { scope.querySelector(".run-query").click(); }
+      }
+    });
+    codeEditor.getInputField().setAttribute("aria-label", editor.getAttribute("aria-label"));
+    scope.querySelector(".editor-label").addEventListener("click", function (event) {
+      event.preventDefault();
+      codeEditor.focus();
+    });
+    codeEditor.on("change", function (instance) {
+      editorDrafts.set(editorId, instance.getValue());
+    });
+    editorInstances.set(editorId, codeEditor);
+    codeEditor.refresh();
+  } else {
+    editor.addEventListener("input", function () { editorDrafts.set(editorId, editor.value); });
+    editor.addEventListener("keydown", function (event) {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        scope.querySelector(".run-query").click();
+      }
+      if (event.key === "Tab") {
+        event.preventDefault();
+        editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
+        editorDrafts.set(editorId, editor.value);
+      }
+    });
+  }
 }
 
 function pageIdFromLocation() {
@@ -725,7 +776,7 @@ pageNavigationEl.addEventListener("click", function (event) {
   const tab = event.target.closest(".page-tab");
   if (tab) navigateToPage(tab.dataset.pageId);
 });
-exerciseListEl.addEventListener("click", function (event) {
+function handleEditorClick(event) {
   const runButton = event.target.closest(".run-query");
   if (runButton) {
     runQuery(runButton.dataset.editor, runButton.dataset.result);
@@ -738,9 +789,12 @@ exerciseListEl.addEventListener("click", function (event) {
   }
   const solutionButton = event.target.closest(".show-solution");
   if (solutionButton) showSolution(solutionButton.dataset.editor);
-});
+}
+exerciseListEl.addEventListener("click", handleEditorClick);
+sandboxEl.addEventListener("click", handleEditorClick);
 window.addEventListener("popstate", showPageFromLocation);
 window.addEventListener("hashchange", showPageFromLocation);
+renderSandbox();
 showPageFromLocation();
 editorModeNoteEl.textContent = hasSqlCodeMirror()
   ? "Resaltado SQL activo · consultas ejecutadas con DuckDB. Ctrl/Cmd + Intro ejecuta la consulta."

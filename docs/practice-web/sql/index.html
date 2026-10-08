@@ -161,6 +161,8 @@
     .practice-page-heading h2 { margin: 0; font-size: 1.4rem; }
     .practice-page-heading p { margin: 4px 0 0; color: var(--muted); }
     .exercise-list { display: grid; gap: 16px; margin-top: 16px; }
+    .sandbox-wrap { margin-top: 20px; }
+    .sandbox { border-color: #cdb55f; border-left: 6px solid var(--gold); }
     .exercise {
       min-width: 0;
       overflow: hidden;
@@ -324,6 +326,8 @@ SELECT * FROM read_parquet([
       <p class="connection-result">Los resultados se muestran en bloques de 100 filas; ejecuta una sentencia cada vez. Puedes retroceder en consultas SELECT. Los ejercicios DML crean una tabla temporal aparte.</p>
       <p class="connection-result"><strong>Compatibilidad:</strong> los ejercicios usan el dialecto de DuckDB. MySQL 8 sigue siendo el motor de los cuadernos de la asignatura; sus opciones de particionado, índices y JSON pueden tener otra sintaxis y comportamiento.</p>
     </section>
+
+    <div id="sandbox" class="sandbox-wrap"></div>
 
     <nav id="page-navigation" class="page-navigation" aria-label="Páginas de ejercicios"></nav>
     <section class="practice-page" aria-labelledby="practice-page-title">
