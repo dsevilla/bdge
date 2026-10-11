@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Dos posts, dos tags y tres formas de almacenar las mismas asociaciones N:M
+<!-- Dos colecciones de documentos para representar las mismas asociaciones entre posts y tags
      Generado por teoria/figures/posttags.py: no editar a mano. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
   <style>
@@ -32,40 +32,25 @@
       <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
     </marker>
   </defs>
-  <text class="head" x="203" y="30">Tags de un post</text>
-  <text class="head" x="588" y="30">Posts de un tag</text>
-  <text class="head" x="973" y="30">Ambos sentidos</text>
-  <text class="label" x="203" y="63">post → tags</text>
-  <text class="label" x="588" y="63">tag → posts</text>
-  <text class="label" x="973" y="63">post ↔ tag</text>
-  <rect class="plain" x="17" y="90" width="372" height="324" rx="9"/>
-  <rect class="plain" x="402" y="90" width="372" height="324" rx="9"/>
-  <rect class="plain" x="787" y="90" width="372" height="324" rx="9"/>
-  <rect x="32" y="108" width="342" height="112" rx="9"/>
-  <text class="code left" x="47" y="131">posts[10]</text>
-  <text class="note left" x="47" y="163">Ordenar por fecha</text>
-  <text class="code left" x="47" y="195">tags: ["sql", "fechas"]</text>
-  <rect x="32" y="254" width="342" height="112" rx="9"/>
-  <text class="code left" x="47" y="277">posts[11]</text>
-  <text class="note left" x="47" y="309">Contar filas</text>
-  <text class="code left" x="47" y="341">tags: ["sql"]</text>
-  <rect x="417" y="108" width="342" height="112" rx="9"/>
-  <text class="code left" x="432" y="136">tags["sql"]</text>
-  <text class="code left" x="432" y="181">posts: [10, 11]</text>
-  <rect x="417" y="254" width="342" height="112" rx="9"/>
-  <text class="code left" x="432" y="282">tags["fechas"]</text>
-  <text class="code left" x="432" y="327">posts: [10]</text>
-  <text class="code left" x="809" y="122">posts[10].tags</text>
-  <text class="code left" x="809" y="154">["sql", "fechas"]</text>
-  <text class="code left" x="809" y="195">posts[11].tags</text>
-  <text class="code left" x="809" y="227">["sql"]</text>
-  <line x1="804" y1="249" x2="1142" y2="249"/>
-  <text class="code left" x="809" y="273">tags["sql"].posts</text>
-  <text class="code left" x="809" y="305">[10, 11]</text>
-  <text class="code left" x="809" y="346">tags["fechas"].posts</text>
-  <text class="code left" x="809" y="378">[10]</text>
-  <text class="note" x="203" y="440">¿Qué tags tiene el post 10?</text>
-  <text class="note" x="588" y="440">¿Qué posts tienen el tag sql?</text>
-  <text class="note" x="973" y="440">Dos lecturas; dos escrituras</text>
-  <text class="note" x="588" y="482">Cada array se lee como 1:N desde su clave · Las tres asociaciones forman una relación N:M</text>
+  <text x="288" y="30">posts</text>
+  <text x="888" y="30">tags</text>
+  <text class="label" x="288" y="68">Leer los tags de un post</text>
+  <text class="label" x="888" y="68">Leer los posts de un tag</text>
+  <rect x="24" y="103" width="528" height="137" rx="9"/>
+  <text class="code left" x="48" y="132">_id: 10</text>
+  <text class="code left" x="48" y="172">title: "Ordenar por fecha"</text>
+  <text class="code left" x="48" y="212">tags: ["sql", "fechas"]</text>
+  <rect x="24" y="261" width="528" height="137" rx="9"/>
+  <text class="code left" x="48" y="290">_id: 11</text>
+  <text class="code left" x="48" y="330">title: "Contar filas"</text>
+  <text class="code left" x="48" y="370">tags: ["sql"]</text>
+  <rect x="624" y="103" width="528" height="137" rx="9"/>
+  <text class="code left" x="648" y="149">_id: "sql"</text>
+  <text class="code left" x="648" y="197">posts: [10, 11]</text>
+  <rect x="624" y="261" width="528" height="137" rx="9"/>
+  <text class="code left" x="648" y="307">_id: "fechas"</text>
+  <text class="code left" x="648" y="355">posts: [10]</text>
+  <text class="note" x="588" y="430">Mantener ambas construcciones permite dos lecturas: post → tags y tag → posts</text>
+  <text class="note" x="588" y="461">Si se mantienen las dos, añadir o quitar una asociación exige dos escrituras</text>
+  <text class="small" x="588" y="491">Cada documento parte de una clave y contiene un array 1:N; la relación completa es N:M</text>
 </svg>

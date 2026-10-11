@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Comparación conceptual del almacenamiento por filas y por columnas sobre las mismas tres medidas
+<!-- Filas y columnas como franjas horizontales contiguas con los mismos valores
      Generado por teoria/figures/columnstorage.py: no editar a mano. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176 510" width="1176" height="510">
   <style>
@@ -32,51 +32,63 @@
       <path d="M0 0 L10 5 L0 10 z" fill="#314554"/>
     </marker>
   </defs>
-  <text x="287" y="28">Almacenamiento por filas</text>
-  <text x="888" y="28">Almacenamiento por columnas</text>
-  <rect class="plain" x="27" y="85" width="160" height="82" rx="9"/>
-  <text class="label" x="107" y="107">id</text>
-  <text x="107" y="140">1</text>
-  <rect class="plain" x="199" y="85" width="160" height="82" rx="9"/>
-  <text class="label" x="279" y="107">lugar</text>
-  <text x="279" y="140">10</text>
-  <rect class="strong" x="371" y="85" width="160" height="82" rx="9"/>
-  <text class="label" x="451" y="107">lectura</text>
-  <text x="451" y="140">18</text>
-  <rect class="plain" x="27" y="190" width="160" height="82" rx="9"/>
-  <text class="label" x="107" y="212">id</text>
-  <text x="107" y="245">2</text>
-  <rect class="plain" x="199" y="190" width="160" height="82" rx="9"/>
-  <text class="label" x="279" y="212">lugar</text>
-  <text x="279" y="245">20</text>
-  <rect class="strong" x="371" y="190" width="160" height="82" rx="9"/>
-  <text class="label" x="451" y="212">lectura</text>
-  <text x="451" y="245">25</text>
-  <rect class="plain" x="27" y="295" width="160" height="82" rx="9"/>
-  <text class="label" x="107" y="317">id</text>
-  <text x="107" y="350">3</text>
-  <rect class="plain" x="199" y="295" width="160" height="82" rx="9"/>
-  <text class="label" x="279" y="317">lugar</text>
-  <text x="279" y="350">10</text>
-  <rect class="strong" x="371" y="295" width="160" height="82" rx="9"/>
-  <text class="label" x="451" y="317">lectura</text>
-  <text x="451" y="350">21</text>
-  <rect class="plain" x="626" y="85" width="160" height="292" rx="9"/>
-  <text class="label" x="706" y="110">id</text>
-  <text x="706" y="154">1</text>
-  <text x="706" y="241">2</text>
-  <text x="706" y="328">3</text>
-  <rect class="plain" x="800" y="85" width="160" height="292" rx="9"/>
-  <text class="label" x="880" y="110">lugar</text>
-  <text x="880" y="154">10</text>
-  <text x="880" y="241">20</text>
-  <text x="880" y="328">10</text>
-  <rect class="strong" x="974" y="85" width="160" height="292" rx="9"/>
-  <text class="label" x="1054" y="110">lectura</text>
-  <text x="1054" y="154">18</text>
-  <text x="1054" y="241">25</text>
-  <text x="1054" y="328">21</text>
-  <text class="label" x="287" y="411">Los campos de cada fila viajan juntos</text>
-  <text class="label" x="888" y="411">Cada columna se puede leer por separado</text>
-  <text class="note" x="588" y="473">SUM(lectura) = 64 · Sólo necesitamos los valores resaltados</text>
+  <text x="287" y="27">Almacenamiento por filas</text>
+  <text x="888" y="27">Almacenamiento por columnas</text>
+  <text class="label" x="287" y="61">Una franja por fila</text>
+  <text class="label" x="888" y="61">Una franja por columna</text>
+  <text class="label" x="175" y="101">id</text>
+  <text class="label" x="325" y="101">lugar</text>
+  <text class="label" x="475" y="101">lectura</text>
+  <text class="note" x="50" y="158">fila 1</text>
+  <rect class="plain" x="100" y="124" width="150" height="68" rx="0"/>
+  <text x="175" y="158">1</text>
+  <rect x="250" y="124" width="150" height="68" rx="0"/>
+  <text x="325" y="158">10</text>
+  <rect class="strong" x="400" y="124" width="150" height="68" rx="0"/>
+  <text x="475" y="158">18</text>
+  <text class="note" x="50" y="259">fila 2</text>
+  <rect class="plain" x="100" y="225" width="150" height="68" rx="0"/>
+  <text x="175" y="259">2</text>
+  <rect x="250" y="225" width="150" height="68" rx="0"/>
+  <text x="325" y="259">20</text>
+  <rect class="strong" x="400" y="225" width="150" height="68" rx="0"/>
+  <text x="475" y="259">25</text>
+  <text class="note" x="50" y="360">fila 3</text>
+  <rect class="plain" x="100" y="326" width="150" height="68" rx="0"/>
+  <text x="175" y="360">3</text>
+  <rect x="250" y="326" width="150" height="68" rx="0"/>
+  <text x="325" y="360">10</text>
+  <rect class="strong" x="400" y="326" width="150" height="68" rx="0"/>
+  <text x="475" y="360">21</text>
+  <text class="label" x="659" y="158">id</text>
+  <rect class="plain" x="721" y="124" width="106" height="68" rx="0"/>
+  <text x="774" y="158">1</text>
+  <rect class="plain" x="827" y="124" width="106" height="68" rx="0"/>
+  <text x="880" y="158">2</text>
+  <rect class="plain" x="933" y="124" width="106" height="68" rx="0"/>
+  <text x="986" y="158">3</text>
+  <rect class="plain" x="1039" y="124" width="106" height="68" rx="0"/>
+  <text x="1092" y="158">…</text>
+  <text class="label" x="659" y="259">lugar</text>
+  <rect x="721" y="225" width="106" height="68" rx="0"/>
+  <text x="774" y="259">10</text>
+  <rect x="827" y="225" width="106" height="68" rx="0"/>
+  <text x="880" y="259">20</text>
+  <rect x="933" y="225" width="106" height="68" rx="0"/>
+  <text x="986" y="259">10</text>
+  <rect x="1039" y="225" width="106" height="68" rx="0"/>
+  <text x="1092" y="259">…</text>
+  <text class="label" x="659" y="360">lectura</text>
+  <rect class="strong" x="721" y="326" width="106" height="68" rx="0"/>
+  <text x="774" y="360">18</text>
+  <rect class="strong" x="827" y="326" width="106" height="68" rx="0"/>
+  <text x="880" y="360">25</text>
+  <rect class="strong" x="933" y="326" width="106" height="68" rx="0"/>
+  <text x="986" y="360">21</text>
+  <rect class="strong" x="1039" y="326" width="106" height="68" rx="0"/>
+  <text x="1092" y="360">…</text>
+  <text class="note" x="287" y="426">Cada fila queda contigua en disco</text>
+  <text class="note" x="888" y="426">Cada columna queda contigua en disco</text>
+  <text class="note" x="588" y="463">SUM(lectura) = 64 · Se necesitan sólo los valores de lectura</text>
+  <text class="note" x="588" y="494">La BD conoce dónde empieza cada columna y puede leer varias en paralelo</text>
 </svg>
