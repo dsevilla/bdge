@@ -252,6 +252,10 @@ section.section-divider p { color: #ffe89a; font-size: 35px; margin-top: 22px; }
 section.section-divider h2 { color: #ffe89a; font-size: 39px; margin: 22px 0 0; }
 section.section-divider footer { display: none; }
 
+/* Imagen al final de una diapositiva de texto, centrada bajo las viñetas. */
+section.text-figure > p:last-of-type { margin: 8px 0 0; text-align: center; }
+section.text-figure > p:last-of-type img { display: block; margin: 0 auto; }
+
 .columns { align-items: center; display: flex; gap: 28px; width: 100%; }
 .column { flex: 1; }
 /* `<div class="columns top">`: alinea las columnas por arriba (p. ej. tablas de
@@ -261,6 +265,16 @@ section.section-divider footer { display: none; }
 /* `<!-- _class: column-figure -->`: la figura de la columna es el contenido
    principal (p. ej. un diagrama de tablas) y puede ocupar casi toda la altura. */
 section.column-figure .column img { max-height: 480px; }
+
+/* Cierre de sesión 3: lista de criterios y «Choose wisely» lado a lado. */
+section.choose-wisely-final { font-size: 27px; line-height: 1.13; padding: 130px 72px 74px; }
+section.choose-wisely-final .columns { gap: 22px; }
+section.choose-wisely-final .column:first-child { flex: 1.3; }
+section.choose-wisely-final .column:last-child { flex: 0.8; }
+section.choose-wisely-final ul { margin: 0; padding-left: 30px; }
+section.choose-wisely-final li { margin: 0 0 5px; }
+section.choose-wisely-final blockquote { font-size: 26px; margin: 14px 0 0; padding: 9px 16px; }
+section.choose-wisely-final .column img { max-height: 420px; }
 
 /* Rejilla de figuras con pie, escrita como lista Markdown sin HTML:
    `- ![alt](img/a.png) Pie`. Todas las imágenes ocupan una caja de la misma
