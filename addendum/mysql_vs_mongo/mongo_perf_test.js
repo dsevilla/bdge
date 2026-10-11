@@ -1,92 +1,36 @@
-// http://bonesmoses.org/2016/07/15/pg-phriday-a-postgres-persepctive-on-mongodb/
-use db
-
-var timing = new Array()
-
-var currentDate = new Date();
-currentDate.setHours(0,0,0,0)
-var batch = new Array()
-
-var start = new Date()
-for (var i = 1; i <= 1000000; i++) {
-  batch[i] = {
-        _id: i,
-        location: i % 1000,
-        reading: i % 100,
-        readingDate: new Date(currentDate - i * 10000)
-    }
+// Referencia ejecutable en mongosh de las operaciones usadas por benchmark.py
+// La medición comparable se realiza con el cliente Python común
+// Esta colección es exclusiva de la referencia; no se borran otras bases
+const reference = db.getSiblingDB("benchmark_reference").sensor_log;
+const count = Number(process.env.BENCHMARK_ROWS || 1000000);
+const base = new Date("2026-01-01T00:00:00Z");
+const days = value => new Date(base.getTime() - value * 86400000);
+const durable = { writeConcern: { w: 1, j: true } };
+const checkEqual = (expected, actual) => {
+  if (expected !== actual) {
+    throw new Error(`Esperado ${expected}; obtenido ${actual}`);
+  }
+};
+reference.drop();
+for (let first = 1; first <= count; first += 5000) {
+  const batch = [];
+  for (let id = first; id <= Math.min(first + 4999, count); id++) {
+    batch.push({ _id: id, location: id % 1000, reading: id % 100,
+                 reading_date: new Date(base.getTime() - id * 10000) });
+  }
+  reference.insertMany(batch, durable);
 }
-
-db.sensorLog.insert(batch)
-
-// We start at 1 to match the ID of the MySQL query performance data
-timing[1] = (new Date() - start) / 1000
-
-// 13.638
-
-start = new Date()
-db.sensorLog.ensureIndex( { readingDate: 1 } )
-timing[2] = (new Date() - start) / 1000
-
-// 3.013
-
-var currentDate = new Date()
-currentDate.setHours(0,0,0,0)
-
-start = new Date()
-db.sensorLog.update({
-    readingDate: {
-        $gte: new Date(currentDate.getTime() - 8*86400000),
-        $lt: new Date(currentDate.getTime() - 7*86400000)
-    }
-  },
-  { $inc: { reading: 1 } },
-  { multi: true }
-)
-timing[3] = (new Date() - start) / 1000
-
-//WriteResult({ "nMatched" : 8640, "nUpserted" : 0, "nModified" : 8640 })
-// 77
-
-start = new Date()
-db.sensorLog.remove({
-    readingDate: {
-        $gte: new Date(currentDate.getTime() - 9*86400000),
-        $lt: new Date(currentDate.getTime() - 8*86400000)
-    }
-  }
-)
-timing[4] = (new Date() - start) / 1000
-
-// WriteResult({ "nRemoved" : 8640 })
-
-// 154
-
-start = new Date()
-db.sensorLog.count()
-timing[5] = (new Date() - start) / 1000
-
-// 4
-
-start = new Date()
-db.sensorLog.find({
-    readingDate: {
-        $lt: new Date(currentDate.getTime() - 14*86400000)
-    }
-  }
-).sort({readingDate: 1}).skip(20).limit(5)
-timing[6] = (new Date() - start) / 1000
-
-// 14
-
-timing.shift(); // Remove the 0th position
-
-// 
-var output = {};
-var v = 1;
-timing.forEach(function(e) { this.output[this.v++] = e;});
-
-// Produce the series (data frame)
-q = { "mongo"  : output }
-
-db.dropDatabase()
+checkEqual(count, reference.countDocuments({}));
+reference.createIndex({ reading_date: 1 }, { name: "idx_date" });
+const changed = reference.updateMany(
+  { reading_date: { $gte: days(8), $lt: days(7) } },
+  { $inc: { reading: 1 } }, durable);
+const removed = reference.deleteMany(
+  { reading_date: { $gte: days(9), $lt: days(8) } }, durable);
+const remaining = reference.countDocuments({});
+const interval = reference.find({ reading_date: { $lt: days(14) } })
+  .sort({ reading_date: 1 }).skip(20).limit(5).toArray();
+checkEqual(count - removed.deletedCount, remaining);
+checkEqual(5, interval.length);
+printjson({ initial: count, updated: changed.modifiedCount,
+            deleted: removed.deletedCount, remaining, interval });
