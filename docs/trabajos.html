@@ -7889,7 +7889,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <ol start="4">
 <li>Si te equivocas al elegir, contacta con el profesor para el cambio. No es posible reasignarse directamente si ya tienes un trabajo asignado.</li>
 </ol>
-<p>Notas sobre consultas RQ: en cada trabajo se pide reproducir (cuando aplique) las consultas RQ1–RQ4 de la sesión 2 usando el stack de la tecnología elegida (conectores/engines adecuados). Asegúrate de documentar los supuestos, índices/configuración y límites de cada motor al ejecutar dichas consultas.</p>
+<p>Notas sobre las estadísticas: en cada trabajo se pide calcular (cuando aplique) unas estadísticas sobre Stackoverflow, como las de las sesiones de SQL y MongoDB, que <strong>incluyan la consulta de reciprocidad entre usuarios vista en clase</strong> (si quienes tienen preguntas respondidas por otras personas responden a su vez preguntas de esas personas), usando el stack de la tecnología elegida (conectores/engines adecuados). Asegúrate de documentar los supuestos, índices/configuración y límites de cada motor al ejecutar dichas consultas.</p>
 </div>
 </div>
 </div>
@@ -7907,7 +7907,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Modelado y características: replicación, particionamiento por rangos, índices, transacciones, funciones.</li>
 <li>Importar los datos de Stackoverflow (CSV/Parquet vía <code>IMPORT INTO</code> o ingestión por <code>cockroach sql</code>/<code>COPY</code>)</li>
 <li>Redistribución óptima (particionado por rangos/geografía, índices compuestos)</li>
-<li>Reproducir RQ1–RQ4 de sesión 2</li>
+<li>Calcular estadísticas sobre Stackoverflow que incluyan la consulta de reciprocidad vista en clase</li>
 <li>Benchmarks comparativos con una BD de la asignatura</li>
 <li>Artículo/whitepaper: <a href="https://www.cockroachlabs.com/blog/consistent-replication/">https://www.cockroachlabs.com/blog/consistent-replication/</a> (Raft)</li>
 </ul>
@@ -7927,7 +7927,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Descripción: almacén clave-valor en memoria con estructuras de datos (cadenas, <em>hashes</em>, listas, conjuntos, conjuntos ordenados, <em>streams</em>); persistencia con RDB y AOF; replicación y clúster con 16384 <em>slots</em></li>
 <li>Historia de licencias como parte del análisis: Redis pasa de BSD a RSAL/SSPL en 2024, la Linux Foundation bifurca Valkey desde la 7.2.4 y Redis 8 vuelve al código abierto con AGPLv3 en 2025. Qué implica cada licencia para quien lo ofrece como servicio</li>
 <li>Importar Stackoverflow eligiendo la estructura según la consulta: <code>HASH</code> por post, conjuntos por etiqueta, conjuntos ordenados para rankings por puntuación o fecha</li>
-<li>Implementar RQ1–RQ4 construyendo a mano los índices que haría falta mantener, y comparar el diseño con las tablas dirigidas por consultas de Cassandra</li>
+<li>Implementar unas estadísticas sobre Stackoverflow que incluyan la consulta de reciprocidad, construyendo a mano los índices que haría falta mantener, y comparar el diseño con las tablas dirigidas por consultas de Cassandra</li>
 <li>Medir el coste de la persistencia (sin ella, RDB, AOF con <code>everysec</code> y con <code>always</code>) y el de la replicación</li>
 <li>Explicar la migración atómica de <em>slots</em> de Valkey 9 frente a la migración clave a clave anterior</li>
 <li>Artículos: Nishtala et al., «Scaling Memcache at Facebook», NSDI 2013; Ousterhout et al., «The RAMCloud Storage System», ACM TOCS 33(3), 2015</li>
@@ -7950,7 +7950,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Descripción de ParadeDB: búsqueda BM25 dentro de PostgreSQL con Tantivy (alternativa a Lucene en Rust), sin sincronizar un segundo sistema; licencia AGPLv3</li>
 <li>Importar Stackoverflow en los dos: <code>Title</code> y <code>Body</code> con analizador de español, <code>Tags</code> como palabras clave</li>
 <li>Búsquedas de texto: frases, <em>fuzzy</em>, resaltado y facetas por etiqueta; comparar resultados y tiempos entre los dos y con el <code>FULLTEXT</code> de MySQL de la sesión 2</li>
-<li>Ejecutar RQ1–RQ4 con agregaciones de Elasticsearch y con SQL en ParadeDB; discutir qué pasa con las reuniones (RQ4) cuando los datos no están desnormalizados</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, con agregaciones de Elasticsearch y con SQL en ParadeDB; discutir qué pasa con las reuniones entre usuarios cuando los datos no están desnormalizados</li>
 <li>Discutir la decisión de fondo: un motor de búsqueda aparte frente a la búsqueda dentro de la base de datos transaccional (consistencia, operación, rendimiento)</li>
 <li>Artículos: Zobel y Moffat, «Inverted Files for Text Search Engines», ACM Computing Surveys 38(2), 2006; Robertson y Zaragoza, «The Probabilistic Relevance Framework: BM25 and Beyond», Foundations and Trends in Information Retrieval 3(4), 2009</li>
 <li>Fuentes: <a href="https://www.elastic.co/blog/elasticsearch-is-open-source-again">Elasticsearch vuelve a ser código abierto</a>; <a href="https://github.com/paradedb/paradedb">repositorio de ParadeDB</a>; <a href="https://hub.docker.com/r/paradedb/paradedb">imagen Docker de ParadeDB</a></li>
@@ -7970,8 +7970,8 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (contenedor único y clúster de 3 nodos); servicios de datos, índices, consultas, búsqueda y analítica, que se pueden colocar en nodos distintos</li>
 <li>Descripción: base de datos documental con caché clave-valor integrada; <em>buckets</em>, <em>scopes</em> y colecciones; vBuckets para repartir los datos; lenguaje SQL++ (antes N1QL) sobre JSON; índices secundarios globales; índices vectoriales desde la versión 8.0</li>
 <li>Importar Stackoverflow con <code>cbimport</code>, decidiendo qué se agrega y qué se referencia (como en la sesión de MongoDB)</li>
-<li>Ejecutar RQ1–RQ4 en SQL++ con <code>JOIN</code>, <code>NEST</code> y <code>UNNEST</code>; mostrar con <code>EXPLAIN</code> qué índices se usan y crear los que falten</li>
-<li>Comparar con MongoDB: SQL++ frente al pipeline de agregación, y acceso por clave desde la caché frente a consulta</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, en SQL++ con <code>JOIN</code>, <code>NEST</code> y <code>UNNEST</code>; mostrar con <code>EXPLAIN</code> qué índices se usan y crear los que falten</li>
+<li>Comparar con MongoDB: SQL++ frente al <em>pipeline</em> de agregación, y acceso por clave desde la caché frente a consulta</li>
 <li>Explicar la separación de servicios (escalado multidimensional) y cuándo compensa</li>
 <li>Artículos: Ong, Papakonstantinou y Vernoux, «The SQL++ Query Language: Configurable, Unifying and Semi-structured», arXiv:1405.3631, 2014; Borkar et al., «Have Your Data and Query It Too: From Key-Value Caching to Big Data Management», SIGMOD 2016</li>
 <li>Fuentes: <a href="https://docs.couchbase.com/server/current/introduction/editions.html">ediciones de Couchbase Server</a>; <a href="https://docs.couchbase.com/server/current/introduction/whats-new.html">novedades de la versión 8.0</a></li>
@@ -7992,7 +7992,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Descripción: base de datos clave-valor distribuida con transacciones ACID y capas (SQL, Document, Graph) sobre un KV ordenado.</li>
 <li>Modelo y características: transacciones multi-clave, MVCC, consistencia fuerte, punto de control, replicación automática.</li>
 <li>Cargar Stackoverflow en una capa adecuada (p. ej., Record Layer o capa Document); diseño de esquemas/índices sobre la capa elegida</li>
-<li>Consultas RQ1–RQ4 usando la capa seleccionada (p. ej., Record Layer + consultas con índices)</li>
+<li>Estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, usando la capa seleccionada (p. ej., Record Layer + consultas con índices)</li>
 <li>Benchmarks/latencias frente a otras soluciones NoSQL de la lista</li>
 <li>Research/tech: FoundationDB Record Layer (Apple) <a href="https://github.com/FoundationDB/fdb-record-layer">https://github.com/FoundationDB/fdb-record-layer</a> | Arquitectura FDB <a href="https://www.foundationdb.org/files/fdb-paper.pdf">https://www.foundationdb.org/files/fdb-paper.pdf</a></li>
 </ul>
@@ -8012,7 +8012,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Descripción: base de datos de series temporales reescrita sobre la pila FDAP (Flight, DataFusion, Arrow, Parquet); separación entre ingesta en memoria y ficheros Parquet persistidos; qué cambia respecto a InfluxDB 1 y 2 (TSM, Flux)</li>
 <li>Modelar Stackoverflow como eventos en el tiempo: publicación de preguntas y respuestas, votos y comentarios, con etiquetas y usuario como <em>tags</em></li>
 <li>Consultas propias de series temporales: actividad por etiqueta y hora, tiempo hasta la primera respuesta, ventanas y submuestreo</li>
-<li>Discutir qué parte de RQ1–RQ4 encaja en una base de datos de series temporales y cuál no (reuniones entre usuarios y posts)</li>
+<li>Discutir qué parte de unas estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, encaja en una base de datos de series temporales y cuál no (reuniones entre usuarios y posts)</li>
 <li>Explicar la cardinalidad de las series y por qué era el límite de las versiones anteriores</li>
 <li>Comparar con MongoDB (colecciones de series temporales) o con ClickHouse sobre las mismas consultas</li>
 <li>Artículos: Pelkonen et al., «Gorilla: A Fast, Scalable, In-Memory Time Series Database», PVLDB 8(12), 2015; Lamb et al., «Apache Arrow DataFusion: A Fast, Embeddable, Modular Analytic Query Engine», SIGMOD 2024</li>
@@ -8033,7 +8033,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (contenedor único y clúster con coordinadores, <em>DB-servers</em> y <em>agents</em>)</li>
 <li>Descripción: base de datos multimodelo con documentos JSON, grafos y clave-valor sobre el mismo motor (RocksDB); lenguaje AQL; <em>SmartGraphs</em> y fragmentación</li>
 <li>Importar Stackoverflow con <code>arangoimport</code>: colecciones de documentos para usuarios y posts, colecciones de aristas para autoría, respuesta y etiquetado</li>
-<li>Ejecutar RQ1–RQ4 en AQL, mezclando consultas documentales y recorridos, y comparar con MongoDB (parte documental) y con Neo4j (parte de grafo)</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, en AQL, mezclando consultas documentales y recorridos, y comparar con MongoDB (parte documental) y con Neo4j (parte de grafo)</li>
 <li>Discutir qué se gana y qué se pierde con un único motor multimodelo frente a la persistencia políglota</li>
 <li>Explicar el efecto de la licencia BSL y del límite de la Community Edition sobre su adopción</li>
 <li>Artículos: Angles et al., «Foundations of Modern Query Languages for Graph Databases», ACM Computing Surveys 50(5), 2017; Lu y Holubová, «Multi-model Databases: A New Journey to Handle the Variety of Data», ACM Computing Surveys 52(3), 2019</li>
@@ -8055,7 +8055,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Descripción: almacén analítico columnar orientado a eventos con marca de tiempo; segmentos inmutables particionados por tiempo, <em>rollup</em> en la ingesta, índices de mapas de bits, almacenamiento profundo</li>
 <li>Importar Stackoverflow por lotes (ingesta nativa desde CSV o Parquet), eligiendo la columna de tiempo y la granularidad de los segmentos</li>
 <li>Medir el efecto del <em>rollup</em> en tamaño y en precisión de las consultas</li>
-<li>Ejecutar con Druid SQL las consultas de RQ1–RQ4 que encajen; justificar por qué las reuniones grandes (RQ4) no son su caso de uso</li>
+<li>Calcular con Druid SQL las estadísticas sobre Stackoverflow que encajen; justificar por qué la consulta de reciprocidad, que necesita reuniones grandes, no es su caso de uso</li>
 <li>Comparar con ClickHouse sobre las mismas agregaciones</li>
 <li>Artículos: Yang et al., «Druid: A Real-time Analytical Data Store», SIGMOD 2014</li>
 </ul>
@@ -8074,8 +8074,8 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (contenedor único o <code>clickhouse local</code> sobre ficheros)</li>
 <li>Descripción: base de datos columnar; motores de tabla de la familia MergeTree, clave de ordenación e índice disperso, <em>data skipping indexes</em>, compresión por columna, ejecución vectorizada</li>
 <li>Importar Stackoverflow directamente desde los Parquet del curso</li>
-<li>Ejecutar RQ1–RQ4 y optimizarlas: elegir <code>ORDER BY</code> y <code>PARTITION BY</code>, proyecciones y vistas materializadas incrementales; mostrar con <code>EXPLAIN</code> qué gránulos se leen</li>
-<li>Analizar el coste de las reuniones (RQ4) y los algoritmos de reunión disponibles</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, y optimizarlas: elegir <code>ORDER BY</code> y <code>PARTITION BY</code>, proyecciones y vistas materializadas incrementales; mostrar con <code>EXPLAIN</code> qué gránulos se leen</li>
+<li>Analizar el coste de las reuniones de la consulta de reciprocidad y los algoritmos de reunión disponibles</li>
 <li>Comparar con DuckDB y MySQL en tiempo y en espacio en disco</li>
 <li>Artículos: Schulze et al., «ClickHouse - Lightning Fast Analytics for Everyone», PVLDB 17(12), 2024; O'Neil et al., «The Log-Structured Merge-Tree (LSM-Tree)», Acta Informatica 33(4), 1996</li>
 </ul>
@@ -8094,7 +8094,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (binario o contenedor); modo en memoria, con RocksDB/SurrealKV y distribuido sobre TiKV</li>
 <li>Descripción: base de datos multimodelo (documentos, grafos, clave-valor, series temporales, vectores y búsqueda de texto) con el lenguaje SurrealQL; registros con identificadores enlazables y aristas con <code>RELATE</code>; novedades de la versión 3.0</li>
 <li>Importar Stackoverflow modelando usuarios, preguntas y respuestas como registros y las relaciones como aristas</li>
-<li>Ejecutar RQ1–RQ4 en SurrealQL combinando consultas de documentos y recorridos, y mostrar qué índices se usan</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, en SurrealQL combinando consultas de documentos y recorridos, y mostrar qué índices se usan</li>
 <li>Comparar con ArangoDB o con la pareja MongoDB + Neo4j: qué ahorra un único lenguaje y a qué precio en rendimiento</li>
 <li>Artículos: Lu y Holubová, «Multi-model Databases: A New Journey to Handle the Variety of Data», ACM Computing Surveys 52(3), 2019</li>
 <li>Fuentes: <a href="https://surrealdb.com/releases/3.0">SurrealDB 3.0</a></li>
@@ -8114,8 +8114,8 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (contenedor único y clúster de 3 nodos)</li>
 <li>Descripción: base de datos documental transaccional (ACID); índices <em>map</em> y <em>map-reduce</em> que se actualizan de forma asíncrona, índices automáticos creados por el optimizador, lenguaje RQL, replicación maestro-maestro</li>
 <li>Importar Stackoverflow como documentos, decidiendo qué se agrega y qué se referencia (como en la sesión de MongoDB)</li>
-<li>Implementar RQ1–RQ4 con índices <em>map-reduce</em>; explicar las consultas «obsoletas» (<em>stale</em>) y cómo esperar a que el índice esté al día</li>
-<li>Comparar con MongoDB: índices síncronos frente a asíncronos, pipeline de agregación frente a <em>map-reduce</em> materializado</li>
+<li>Implementar unas estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, con índices <em>map-reduce</em>; explicar las consultas «obsoletas» (<em>stale</em>) y cómo esperar a que el índice esté al día</li>
+<li>Comparar con MongoDB: índices síncronos frente a asíncronos, <em>pipeline</em> de agregación frente a <em>map-reduce</em> materializado</li>
 <li>Artículos: Eini, «Inside RavenDB» (libro, disponible gratuitamente en la web de RavenDB); Dean y Ghemawat, «MapReduce: Simplified Data Processing on Large Clusters», OSDI 2004</li>
 </ul>
 </div>
@@ -8132,7 +8132,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li><a href="https://www.scylladb.com/">https://www.scylladb.com/</a> (desde 2025, licencia <em>source-available</em> con nivel gratuito)</li>
 <li>Pasos de instalación (contenedor único y clúster de 3 nodos)</li>
 <li>Descripción: base de datos compatible con Cassandra (CQL) escrita en C++ sobre Seastar; arquitectura <em>shard-per-core</em> sin memoria compartida; <em>tablets</em> gestionadas con Raft en lugar de los <em>vnodes</em> del anillo</li>
-<li>Reutilizar el modelo dirigido por consultas de la sesión de Cassandra para cargar Stackoverflow e implementar RQ1–RQ4</li>
+<li>Reutilizar el modelo dirigido por consultas de la sesión de Cassandra para cargar Stackoverflow e implementar unas estadísticas que incluyan la consulta de reciprocidad</li>
 <li>Comparar con Cassandra con la misma carga: latencias de cola (p99), rendimiento y tiempo de añadir un nodo</li>
 <li>Explicar las <em>tablets</em> frente a los <em>vnodes</em> y medir el reequilibrado al crecer el clúster</li>
 <li>Discutir el cambio de licencia de 2024 y el fin de la versión AGPL</li>
@@ -8154,7 +8154,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación con <code>gfsh</code>: localizador, servidores y regiones replicadas y particionadas</li>
 <li>Descripción: rejilla de datos en memoria (origen: GemFire); regiones, particionado con copias redundantes, persistencia opcional, consultas OQL, funciones ejecutadas junto a los datos, notificación continua de cambios</li>
 <li>Importar Stackoverflow en regiones particionadas y colocar juntos los datos que se consultan juntos (<em>colocation</em>)</li>
-<li>Implementar RQ1–RQ4 con OQL y con funciones distribuidas; comparar los tiempos</li>
+<li>Implementar unas estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, con OQL y con funciones distribuidas; comparar los tiempos</li>
 <li>Construir un API REST sobre los datos</li>
 <li>Medir la recuperación ante la caída de un servidor y el efecto del número de copias redundantes</li>
 <li>Artículos: Ousterhout et al., «The RAMCloud Storage System», ACM TOCS 33(3), 2015; Stonebraker et al., «The End of an Architectural Era (It's Time for a Complete Rewrite)», VLDB 2007</li>
@@ -8178,7 +8178,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Cargar Stackoverflow como tablas DuckLake, hacer altas y modificaciones y consultar versiones anteriores</li>
 <li>Comparar el diseño con el catálogo por ficheros de Iceberg y Delta Lake: cuántas lecturas hacen falta para planificar una consulta y cómo se resuelven las escrituras concurrentes</li>
 <li>Descripción de MotherDuck: ejecución híbrida, con parte del plan en el cliente y parte en la nube; bases de datos compartidas</li>
-<li>Ejecutar RQ1–RQ4 en local, en MotherDuck y en modo híbrido; explicar con <code>EXPLAIN</code> qué operadores se ejecutan en cada lado y cuánto se transfiere</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, en local, en MotherDuck y en modo híbrido; explicar con <code>EXPLAIN</code> qué operadores se ejecutan en cada lado y cuánto se transfiere</li>
 <li>Artículos: Atwal et al., «MotherDuck: DuckDB in the Cloud and in the Client», CIDR 2024; Raasveldt y Mühleisen, «DuckDB: an Embeddable Analytical Database», SIGMOD 2019; Armbrust et al., «Lakehouse: A New Generation of Open Platforms that Unify Data Warehousing and Advanced Analytics», CIDR 2021</li>
 <li>Fuentes: <a href="https://ducklake.select/2026/04/13/ducklake-10/">DuckLake 1.0</a>; <a href="https://motherduck.com/product/pricing/">precios de MotherDuck</a>; <a href="https://www.cidrdb.org/cidr2024/papers/p46-atwal.pdf">artículo de MotherDuck en CIDR 2024</a></li>
 </ul>
@@ -8196,7 +8196,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li><a href="https://materialize.com/">https://materialize.com/</a></li>
 <li>Pasos de instalación (Docker o cloud trial); creación de fuentes, vistas materializadas, y sinks.</li>
 <li>Descripción: base de datos de streaming SQL con vistas materializadas incrementales (arriba de Kafka, Postgres, HTTP, etc.).</li>
-<li>Ingesta de Stackoverflow como streams o batch; creación de vistas para RQ1–RQ4 con actualizaciones en tiempo real.</li>
+<li>Ingesta de Stackoverflow como streams o batch; creación de vistas con estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, con actualizaciones en tiempo real.</li>
 <li>Explicar consistencia, “reclustering”, índices, TTL; diferenciar de Flink/Spark streaming.</li>
 <li>Comparativa con motores de streaming SQL (Flink SQL, ksqlDB).</li>
 <li>Research/Tech: Differential Dataflow/Timely Dataflow (papers), docs <a href="https://materialize.com/docs/">https://materialize.com/docs/</a>.</li>
@@ -8216,8 +8216,8 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (<code>docker pull cedardb/cedardb</code>); acceso con <code>psql</code> o SQLAlchemy por el protocolo de PostgreSQL</li>
 <li>Descripción: sistema relacional en disco con rendimiento de sistema en memoria; compilación de consultas a código máquina, procesamiento por <em>morsels</em>, índices basados en Adaptive Radix Tree, almacenamiento híbrido por filas y columnas</li>
 <li>Cargar Stackoverflow desde los Parquet o CSV del curso, con claves, restricciones y estadísticas</li>
-<li>Ejecutar RQ1–RQ4 con el SQL de la sesión 2 y comparar planes y tiempos con MySQL y DuckDB; explicar de dónde sale la diferencia, no sólo medirla</li>
-<li>Centrar el análisis en RQ4 (autorreuniones de <code>Posts</code>), donde se nota la generación de código y el paralelismo por <em>morsels</em></li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, con el SQL de la sesión 2 y comparar planes y tiempos con MySQL y DuckDB; explicar de dónde sale la diferencia, no sólo medirla</li>
+<li>Centrar el análisis en la consulta de reciprocidad (autorreuniones de <code>Posts</code>), donde se nota la generación de código y el paralelismo por <em>morsels</em></li>
 <li>El binario es cerrado: contrastar lo que prometen los artículos con lo que se mide</li>
 <li>Artículos: Neumann, «Efficiently Compiling Efficient Query Plans for Modern Hardware», PVLDB 4(9), 2011; Leis, Boncz, Kemper y Neumann, «Morsel-Driven Parallelism: A NUMA-Aware Query Evaluation Framework for the Many-Core Age», SIGMOD 2014; Neumann y Freitag, «Umbra: A Disk-Based System with In-Memory Performance», CIDR 2020</li>
 <li>Fuentes: <a href="https://cedardb.com/docs/community_edition/">CedarDB Community Edition</a></li>
@@ -8237,8 +8237,8 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (<code>docker run falkordb/falkordb</code>); acceso con <code>redis-cli</code> o los clientes de Python</li>
 <li>Descripción: base de datos de grafos de propiedades, sucesora de RedisGraph, que representa la adyacencia como matrices dispersas y traduce los patrones Cypher a álgebra lineal con GraphBLAS</li>
 <li>Modelar Stackoverflow como grafo (usuarios, preguntas, respuestas, etiquetas y sus relaciones) y cargarlo desde los CSV o Parquet del curso</li>
-<li>Ejecutar RQ1–RQ4 en Cypher y comparar con Neo4j sobre el mismo grafo: planes, tiempos y memoria</li>
-<li>Analizar RQ4 (usuarios que se responden mutuamente) como producto de matrices: qué operación de GraphBLAS ejecuta el patrón y cuánto ocupan los resultados intermedios</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, en Cypher y comparar con Neo4j sobre el mismo grafo: planes, tiempos y memoria</li>
+<li>Analizar la consulta de reciprocidad (usuarios que se responden mutuamente) como producto de matrices: qué operación de GraphBLAS ejecuta el patrón y cuánto ocupan los resultados intermedios</li>
 <li>Discutir cuándo gana la representación matricial frente a las listas de adyacencia de Neo4j y cuándo no (recorridos profundos, grafos muy cambiantes, propiedades en las aristas)</li>
 <li>Artículos: Davis, «Algorithm 1000: SuiteSparse:GraphBLAS: Graph Algorithms in the Language of Sparse Linear Algebra», ACM TOMS 45(4), 2019; Kepner et al., «Mathematical Foundations of the GraphBLAS», IEEE HPEC 2016; Cailliau et al., «RedisGraph GraphBLAS Enabled Graph Database», IEEE IPDPSW 2019</li>
 </ul>
@@ -8257,7 +8257,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (<code>tiup playground</code> o Docker Compose) con TiDB, TiKV, PD y TiFlash</li>
 <li>Descripción: base de datos SQL distribuida compatible con MySQL; almacenamiento clave-valor replicado con Raft (TiKV), transacciones al estilo Percolator y réplicas columnares (TiFlash) para consultas analíticas sobre los mismos datos</li>
 <li>Cargar Stackoverflow con el mismo esquema MySQL de la sesión 2 (<code>LOAD DATA</code> o TiDB Lightning)</li>
-<li>Ejecutar RQ1–RQ4 con y sin réplica en TiFlash; mostrar con <code>EXPLAIN ANALYZE</code> cuándo el optimizador elige cada almacenamiento</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, con y sin réplica en TiFlash; mostrar con <code>EXPLAIN ANALYZE</code> cuándo el optimizador elige cada almacenamiento</li>
 <li>Mezclar carga transaccional (altas de posts y votos) con las consultas analíticas y medir la interferencia entre ambas, que es el problema que HTAP intenta resolver</li>
 <li>Comparar con MySQL y con CockroachDB en particionado por rangos, consistencia y coste de las transacciones distribuidas</li>
 <li>Artículos: Huang et al., «TiDB: A Raft-based HTAP Database», PVLDB 13(12), 2020; Ongaro y Ousterhout, «In Search of an Understandable Consensus Algorithm», USENIX ATC 2014; Peng y Dabek, «Large-scale Incremental Processing Using Distributed Transactions and Notifications», OSDI 2010</li>
@@ -8283,7 +8283,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Compromisos del índice: <code>m</code>, <code>ef_construct</code> y <code>ef</code> frente a <em>recall</em>, latencia y memoria, midiendo contra la búsqueda exacta; cuantización escalar, binaria y por producto; búsqueda híbrida (vectores densos + dispersos)</li>
 <li>Búsqueda filtrada: medir cómo cambia el <em>recall</em> al filtrar por etiqueta o fecha cada vez más selectivas, y explicar cómo lo resuelve Qdrant sobre el grafo HNSW</li>
 <li>Comparar con los índices vectoriales de MongoDB y Neo4j de los boletines: base de datos específica frente a capacidad añadida a una base de datos general</li>
-<li>Sobre RQ1–RQ4: son agregaciones y reuniones, no búsquedas por similitud. Discutir qué parte se puede hacer con filtros sobre el <em>payload</em> y por qué esta base de datos no es la herramienta adecuada para esas consultas</li>
+<li>Sobre unas estadísticas de Stackoverflow que incluyan la consulta de reciprocidad: son agregaciones y reuniones, no búsquedas por similitud. Discutir qué parte se puede hacer con filtros sobre el <em>payload</em> y por qué esta base de datos no es la herramienta adecuada para esas consultas</li>
 <li>Artículos: Malkov y Yashunin, «Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs», IEEE TPAMI 42(4), 2020; Jégou, Douze y Schmid, «Product Quantization for Nearest Neighbor Search», IEEE TPAMI 33(1), 2011; Gollapudi et al., «Filtered-DiskANN: Graph Algorithms for Approximate Nearest Neighbor Search with Filters», WWW 2023</li>
 </ul>
 </div>
@@ -8305,7 +8305,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Comparar tipos de índice sobre los mismos datos: <code>FLAT</code> (exacto), <code>IVF_FLAT</code>, <code>IVF_PQ</code>, <code>HNSW</code> y <code>DISKANN</code>; tiempo de construcción, memoria, latencia y <em>recall</em> frente a la búsqueda exacta</li>
 <li>Explicar cómo la arquitectura afecta a la frescura de los datos: cuándo es visible un vector recién insertado según el nivel de consistencia elegido</li>
 <li>Comparar con los índices vectoriales de MongoDB y Neo4j de los boletines, y con un índice léxico (<code>FULLTEXT</code> de MySQL sobre <code>Title</code> y <code>Body</code>) como línea base</li>
-<li>Sobre RQ1–RQ4: discutir qué parte se puede expresar con filtros escalares y por qué no es la herramienta adecuada para esas consultas</li>
+<li>Sobre unas estadísticas de Stackoverflow que incluyan la consulta de reciprocidad: discutir qué parte se puede expresar con filtros escalares y por qué no es la herramienta adecuada para esas consultas</li>
 <li>Artículos: Wang et al., «Milvus: A Purpose-Built Vector Data Management System», SIGMOD 2021; Guo et al., «Manu: A Cloud Native Vector Database Management System», PVLDB 15(12), 2022; Subramanya et al., «DiskANN: Fast Accurate Billion-point Nearest Neighbor Search on a Single Node», NeurIPS 2019; Pan, Wang y Li, «Survey of Vector Database Management Systems», VLDB Journal 33, 2024</li>
 </ul>
 </div>
@@ -8322,7 +8322,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li><a href="https://www.ferretdb.com/">https://www.ferretdb.com/</a> | <a href="https://github.com/FerretDB/documentdb">https://github.com/FerretDB/documentdb</a></li>
 <li>Pasos de instalación (contenedor de FerretDB con PostgreSQL y la extensión DocumentDB); acceso con <code>mongosh</code> y con los clientes de MongoDB</li>
 <li>Descripción: FerretDB traduce el protocolo de MongoDB a SQL; DocumentDB (de Microsoft, ahora en la Linux Foundation) es la extensión de PostgreSQL que almacena y consulta BSON</li>
-<li>Importar Stackoverflow con <code>mongoimport</code>, igual que en la sesión de MongoDB, y ejecutar sin cambios las consultas de la sesión y RQ1–RQ4 con el pipeline de agregación</li>
+<li>Importar Stackoverflow con <code>mongoimport</code>, igual que en la sesión de MongoDB, y ejecutar sin cambios las consultas de la sesión y unas estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, con el <em>pipeline</em> de agregación</li>
 <li>Mirar por debajo: cómo se guardan los documentos en las tablas de PostgreSQL, qué índices se crean y qué plan de PostgreSQL ejecuta cada consulta (<code>EXPLAIN</code>)</li>
 <li>Documentar las incompatibilidades encontradas y medir el rendimiento frente a MongoDB</li>
 <li>Discutir qué aporta tener los documentos en PostgreSQL (transacciones, reuniones con tablas relacionales, operación conocida) y el contexto de la demanda de MongoDB contra FerretDB en 2025</li>
@@ -8344,7 +8344,7 @@ pass: (se enviará aparte en un mensaje en el aula virtual)</p>
 <li>Pasos de instalación (Docker Compose con un coordinador y varios <em>workers</em>)</li>
 <li>Descripción: extensión de PostgreSQL que fragmenta tablas entre nodos; tablas distribuidas, tablas de referencia replicadas en todos los nodos, colocación de tablas por la misma clave, fragmentación por esquema, ejecución paralela en los <em>workers</em></li>
 <li>Cargar Stackoverflow eligiendo la columna de distribución (p. ej. <code>OwnerUserId</code> o el <code>Id</code> de la pregunta) y qué tablas son de referencia; justificar la elección con las consultas, como en la sesión de Cassandra</li>
-<li>Ejecutar RQ1–RQ4 y mostrar con <code>EXPLAIN</code> qué se ejecuta en cada <em>worker</em> y qué se reparte por la red; comparar una distribución en la que RQ4 se resuelve localmente con otra en la que no</li>
+<li>Calcular estadísticas sobre Stackoverflow, incluida la consulta de reciprocidad, y mostrar con <code>EXPLAIN</code> qué se ejecuta en cada <em>worker</em> y qué se reparte por la red; comparar una distribución en la que la consulta de reciprocidad se resuelve localmente con otra en la que no</li>
 <li>Añadir un nodo y rebalancear los fragmentos</li>
 <li>Comparar con CockroachDB y TiDB: fragmentación añadida a PostgreSQL frente a un motor distribuido desde cero (transacciones entre fragmentos, consistencia, compatibilidad con PostgreSQL)</li>
 <li>Artículos: Cubukcu et al., «Citus: Distributed PostgreSQL for Data-Intensive Applications», SIGMOD 2021</li>
