@@ -542,6 +542,13 @@ export function initialDatabase(exercise, questions) {
   return database;
 }
 
+/** Base independiente de la zona libre, con preguntas cargadas en una tabla consultable. */
+export function initialSandboxDatabase(questions) {
+  const database = createDatabase();
+  runLab(database, SCHEMAS.porAutor, questions);
+  return database;
+}
+
 export function checkExercise(exercise, ctx, source) {
   const database = initialDatabase(exercise, ctx.questions);
   const results = runLab(database, source, ctx.questions);

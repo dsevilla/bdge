@@ -164,6 +164,7 @@
       white-space: pre-wrap;
     }
     .page-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .sandbox-wrap { margin-top: 16px; }
     .page-tab[aria-current="page"] { color: #fffdf8; background: #302a1d; border-color: #302a1d; }
     .practice-page-heading { margin-top: 20px; }
     .practice-page-heading h2 { margin: 0; font-size: 1.4rem; }
@@ -376,6 +377,8 @@
         <pre id="schema-source" class="cypher-block">…</pre>
       </details>
     </section>
+
+    <div id="sandbox" class="sandbox-wrap"></div>
 
     <nav id="page-navigation" class="page-navigation" aria-label="Páginas de ejercicios"></nav>
     <section class="practice-page" aria-labelledby="practice-page-title">

@@ -80,6 +80,18 @@
       </details>
     </section>
 
+    <section class="panel sandbox-panel" aria-labelledby="sandbox-title">
+      <h2 id="sandbox-title">Zona de pruebas</h2>
+      <p class="help">Escribe cualquier sentencia del CQL que admite este simulador. Esta zona usa una base propia con preguntas cargadas en <code>preguntas_por_autor</code>; sus cambios persisten al cambiar de ejercicio y se pierden al cambiar la muestra. El resultado y el dibujo del clúster aparecen en los paneles inferiores.</p>
+      <label for="sandbox-editor" class="editor-label"><span>Sentencias CQL</span><span>Ejecutar: <kbd>Ctrl/Cmd</kbd> + <kbd>Intro</kbd></span></label>
+      <textarea id="sandbox-editor" spellcheck="false" rows="8" aria-describedby="sandbox-help"></textarea>
+      <p id="sandbox-help" class="help">Puedes escribir varias sentencias separadas por <code>;</code> y comentarios con <code>--</code>.</p>
+      <div class="button-row">
+        <button id="sandbox-run" class="button primary" type="button">Ejecutar consulta</button>
+      </div>
+      <p id="sandbox-message" class="message" aria-live="polite"></p>
+    </section>
+
     <nav id="exercise-nav" class="exercise-nav" aria-label="Ejercicios"></nav>
 
     <div class="workspace">

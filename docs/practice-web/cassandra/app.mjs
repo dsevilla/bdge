@@ -1,7 +1,7 @@
 import { CqlExecutionError, NODE_COUNT, databaseView, partitionLayout } from "./cql-engine.mjs";
 import { CqlParseError } from "./cql-parser.mjs";
 import { loadRemoteQuestions, SAMPLE_YEAR, SOURCE_COLUMNS } from "./dataset.mjs";
-import { checkExercise, EXERCISES, exerciseContext, formatNumber, initialDatabase, runLab } from "./exercises.mjs";
+import { checkExercise, EXERCISES, exerciseContext, formatNumber, initialDatabase, initialSandboxDatabase, runLab } from "./exercises.mjs";
 import { FIXTURE_QUESTIONS } from "./sample-fixture.mjs";
 
 const RESULT_PAGE_SIZE = 100;
@@ -13,6 +13,8 @@ const LEGEND_SIZE = 8;
 
 const $ = (selector) => document.querySelector(selector);
 const editorElement = $("#editor");
+const sandboxEditorElement = $("#sandbox-editor");
+const sandboxMessage = $("#sandbox-message");
 const nav = $("#exercise-nav");
 const message = $("#message");
 const dataStatus = $("#data-status");
@@ -35,6 +37,8 @@ const state = {
   ctx: exerciseContext(FIXTURE_QUESTIONS),
   exercise: EXERCISES[0],
   database: null,
+  exerciseDatabase: null,
+  sandboxDatabase: null,
   results: [],
   selectedTable: null,
   highlight: null,
@@ -54,6 +58,33 @@ const codeEditor = typeof window.CodeMirror === "function"
     extraKeys: { "Ctrl-Enter": run, "Cmd-Enter": run },
   })
   : null;
+const sandboxCodeEditor = typeof window.CodeMirror === "function"
+  ? window.CodeMirror.fromTextArea(sandboxEditorElement, {
+    mode: "text/x-bdge-cassandra",
+    theme: "material-darker",
+    lineNumbers: true,
+    lineWrapping: true,
+    indentUnit: 2,
+    tabSize: 2,
+    indentWithTabs: false,
+    extraKeys: { "Ctrl-Enter": runSandbox, "Cmd-Enter": runSandbox },
+  })
+  : null;
+
+if (sandboxCodeEditor) {
+  sandboxCodeEditor.getInputField().setAttribute("aria-label", "Consulta libre CQL");
+  document.querySelector('label[for="sandbox-editor"]').addEventListener("click", (event) => {
+    event.preventDefault();
+    sandboxCodeEditor.focus();
+  });
+} else {
+  sandboxEditorElement.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      runSandbox();
+    }
+  });
+}
 
 if (codeEditor) {
   codeEditor.getInputField().setAttribute("aria-label", "Sentencias CQL");
@@ -101,9 +132,9 @@ function withCode(target, text) {
   return target;
 }
 
-function setMessage(text = "", kind = "") {
-  message.textContent = text;
-  message.className = `message ${kind}`.trim();
+function setMessage(text = "", kind = "", target = message) {
+  target.textContent = text;
+  target.className = `message ${kind}`.trim();
 }
 
 function setDataStatus(text, kind = "") {
@@ -139,7 +170,8 @@ function renderBrief() {
 }
 
 function resetExerciseState() {
-  state.database = initialDatabase(state.exercise, state.questions);
+  state.exerciseDatabase = initialDatabase(state.exercise, state.questions);
+  state.database = state.exerciseDatabase;
   state.results = [];
   state.highlight = null;
   state.page = 0;
@@ -154,6 +186,7 @@ function selectExercise(exercise, { keepDraft = true } = {}) {
   const draft = keepDraft ? state.drafts.get(exercise.id) : null;
   setSource(draft ?? exercise.starter(state.ctx));
   setMessage();
+  setMessage("", "", sandboxMessage);
   renderNav();
   renderBrief();
   renderAll();
@@ -399,20 +432,41 @@ function describeError(error) {
   return `Error inesperado: ${error.message ?? error}`;
 }
 
-function run() {
+function runSource(source, targetMessage = message) {
+  if (!source.trim()) {
+    state.results = [];
+    state.page = 0;
+    state.highlight = null;
+    setMessage("Escribe una consulta antes de ejecutarla.", "error", targetMessage);
+    renderAll();
+    return;
+  }
   try {
-    state.results = runLab(state.database, getSource(), state.questions);
+    state.results = runLab(state.database, source, state.questions);
     state.page = 0;
     focusAfterRun(state.results);
-    setMessage(`${state.results.length} sentencia${state.results.length === 1 ? "" : "s"} ejecutada${state.results.length === 1 ? "" : "s"}.`, "success");
+    setMessage(`${state.results.length} sentencia${state.results.length === 1 ? "" : "s"} ejecutada${state.results.length === 1 ? "" : "s"}.`, "success", targetMessage);
   } catch (error) {
     const applied = error.appliedResults ?? [];
     state.results = applied;
     focusAfterRun(applied);
     const note = applied.length ? ` Antes del error se aplicaron ${applied.length} sentencia${applied.length === 1 ? "" : "s"}.` : "";
-    setMessage(`${describeError(error)}${note}`, "error");
+    setMessage(`${describeError(error)}${note}`, "error", targetMessage);
   }
   renderAll();
+}
+
+function run() {
+  state.database = state.exerciseDatabase;
+  setMessage("", "", sandboxMessage);
+  runSource(getSource());
+}
+
+function runSandbox() {
+  state.database = state.sandboxDatabase;
+  setMessage();
+  const source = sandboxCodeEditor ? sandboxCodeEditor.getValue() : sandboxEditorElement.value;
+  runSource(source, sandboxMessage);
 }
 
 function check() {
@@ -429,6 +483,7 @@ function useQuestions(questions, label) {
   state.questions = questions;
   state.dataLabel = label;
   state.ctx = exerciseContext(questions);
+  state.sandboxDatabase = initialSandboxDatabase(questions);
   // Los enunciados cambian con los datos. Un editor que el alumno no había
   // tocado recibe el esqueleto nuevo; uno modificado se conserva.
   for (const exercise of EXERCISES) {
@@ -471,6 +526,7 @@ function renderSourceColumns() {
 }
 
 $("#run").addEventListener("click", run);
+$("#sandbox-run").addEventListener("click", runSandbox);
 $("#check").addEventListener("click", check);
 $("#reset").addEventListener("click", () => {
   state.drafts.delete(state.exercise.id);
@@ -488,6 +544,7 @@ $("#load-mini").addEventListener("click", useMini);
 
 renderSourceColumns();
 setDataStatus(`Muestra mínima: ${formatNumber(FIXTURE_QUESTIONS.length)} preguntas`);
+state.sandboxDatabase = initialSandboxDatabase(state.questions);
 selectExercise(EXERCISES[0]);
 codeEditor?.refresh();
 loadRemote();

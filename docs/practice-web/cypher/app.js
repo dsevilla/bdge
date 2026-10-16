@@ -33,6 +33,8 @@ const DATA_VARIANTS = {
 const SOURCE_FILES = ["Users", "Posts", "Tags"];
 const RESULT_PAGE_SIZE = 25;
 const GRAPH_NODE_LIMIT = 300;
+const SANDBOX_EDITOR_ID = "cypher-sandbox";
+const SANDBOX_RESULT_ID = "result-cypher-sandbox";
 const MAX_TEXT_LENGTH = 400;
 const WRITE_CLAUSES = /\b(CREATE|MERGE|SET|DELETE|DETACH|REMOVE|COPY|DROP|ALTER|INSTALL|LOAD|ATTACH|EXPORT|IMPORT)\b/i;
 const STATE_CHANGE_NOTE = "No se puede comprobar: la consulta cambia el grafo.";
@@ -91,6 +93,7 @@ const pageTitleEl = document.getElementById("practice-page-title");
 const pageDescriptionEl = document.getElementById("practice-page-description");
 const editorModeNoteEl = document.getElementById("editor-mode-note");
 const exerciseListEl = document.getElementById("exercise-list");
+const sandboxEl = document.getElementById("sandbox");
 const loadRemoteButton = document.getElementById("load-remote");
 const toggleDatasetButton = document.getElementById("toggle-dataset");
 
@@ -136,11 +139,50 @@ function canCheckExercise(exercise) {
     && isReadOnlyCypher(exercise.solution);
 }
 
+function mountCypherEditor(editor, editorId, scope) {
+  if (hasCypherCodeMirror()) {
+    const codeEditor = window.CodeMirror.fromTextArea(editor, {
+      mode: "application/x-cypher-query",
+      theme: "material-darker",
+      lineNumbers: true,
+      lineWrapping: true,
+      indentUnit: 2,
+      tabSize: 2,
+      indentWithTabs: false,
+      extraKeys: {
+        "Ctrl-Enter": function () { scope.querySelector(".run-query").click(); },
+        "Cmd-Enter": function () { scope.querySelector(".run-query").click(); }
+      }
+    });
+    codeEditor.getInputField().setAttribute("aria-label", editor.getAttribute("aria-label"));
+    codeEditor.on("change", function (instance) {
+      editorDrafts.set(editorId, instance.getValue());
+    });
+    editorInstances.set(editorId, codeEditor);
+    codeEditor.refresh();
+    return;
+  }
+  editor.addEventListener("input", function () { editorDrafts.set(editorId, editor.value); });
+  editor.addEventListener("keydown", function (event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      scope.querySelector(".run-query").click();
+    }
+    if (event.key === "Tab") {
+      event.preventDefault();
+      editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
+      editorDrafts.set(editorId, editor.value);
+    }
+  });
+}
+
 function renderPracticePage(pageId) {
   const page = PRACTICE_PAGES.find(function (candidate) { return candidate.id === pageId; });
   if (!page || page.id === currentPageId) return;
+  const sandboxState = resultStates.get(SANDBOX_RESULT_ID);
   destroyGraphs();
   resultStates.clear();
+  if (sandboxState) resultStates.set(SANDBOX_RESULT_ID, sandboxState);
   currentPageId = page.id;
   pageTitleEl.textContent = page.title;
   pageDescriptionEl.textContent = page.description || "";
@@ -155,8 +197,11 @@ function renderPracticePage(pageId) {
     pageNavigationEl.append(tab);
   });
 
-  editorInstances.forEach(function (editor) { editor.toTextArea(); });
-  editorInstances.clear();
+  editorInstances.forEach(function (editor, editorId) {
+    if (editorId === SANDBOX_EDITOR_ID) return;
+    editor.toTextArea();
+    editorInstances.delete(editorId);
+  });
   exercisesByEditor.clear();
   exerciseListEl.replaceChildren();
   page.exercises.forEach(function (exercise, index) {
@@ -256,41 +301,73 @@ function renderPracticePage(pageId) {
     editorArea.append(label, editor, actions);
     section.append(heading, editorArea, result);
     exerciseListEl.append(section);
-    if (hasCypherCodeMirror()) {
-      const codeEditor = window.CodeMirror.fromTextArea(editor, {
-        mode: "application/x-cypher-query",
-        theme: "material-darker",
-        lineNumbers: true,
-        lineWrapping: true,
-        indentUnit: 2,
-        tabSize: 2,
-        indentWithTabs: false,
-        extraKeys: {
-          "Ctrl-Enter": function () { section.querySelector(".run-query").click(); },
-          "Cmd-Enter": function () { section.querySelector(".run-query").click(); }
-        }
-      });
-      codeEditor.getInputField().setAttribute("aria-label", editor.getAttribute("aria-label"));
-      codeEditor.on("change", function (instance) {
-        editorDrafts.set(editorId, instance.getValue());
-      });
-      editorInstances.set(editorId, codeEditor);
-      codeEditor.refresh();
-    } else {
-      editor.addEventListener("input", function () { editorDrafts.set(editorId, editor.value); });
-      editor.addEventListener("keydown", function (event) {
-        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-          event.preventDefault();
-          section.querySelector(".run-query").click();
-        }
-        if (event.key === "Tab") {
-          event.preventDefault();
-          editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
-          editorDrafts.set(editorId, editor.value);
-        }
-      });
-    }
+    mountCypherEditor(editor, editorId, section);
   });
+  if (sandboxState) renderResult(sandboxState);
+}
+
+function renderSandbox() {
+  const section = document.createElement("section");
+  section.className = "exercise sandbox";
+  section.setAttribute("aria-labelledby", SANDBOX_EDITOR_ID + "-title");
+
+  const heading = document.createElement("div");
+  heading.className = "exercise-heading";
+  const headingText = document.createElement("div");
+  const title = document.createElement("h2");
+  title.id = SANDBOX_EDITOR_ID + "-title";
+  title.textContent = "Zona de pruebas";
+  const prompt = document.createElement("p");
+  prompt.textContent = "Escribe cualquier consulta Cypher sobre el grafo cargado. También puedes modificarlo; esos cambios permanecen hasta que pulses «Reconstruir el grafo».";
+  headingText.append(title, prompt);
+  heading.append(headingText);
+
+  const editorArea = document.createElement("div");
+  editorArea.className = "editor-area";
+  const label = document.createElement("label");
+  label.className = "editor-label";
+  label.htmlFor = SANDBOX_EDITOR_ID;
+  const labelText = document.createElement("span");
+  labelText.textContent = "Consulta Cypher";
+  const shortcut = document.createElement("span");
+  shortcut.textContent = "Atajo: ";
+  const controlKey = document.createElement("kbd");
+  controlKey.textContent = "Ctrl/Cmd";
+  const plus = document.createTextNode(" + ");
+  const enterKey = document.createElement("kbd");
+  enterKey.textContent = "Intro";
+  shortcut.append(controlKey, plus, enterKey);
+  label.append(labelText, shortcut);
+
+  const editor = document.createElement("textarea");
+  editor.id = SANDBOX_EDITOR_ID;
+  editor.spellcheck = false;
+  editor.setAttribute("aria-label", "Consulta libre de Cypher");
+  editor.value = editorDrafts.get(SANDBOX_EDITOR_ID) || "";
+
+  const actions = document.createElement("div");
+  actions.className = "editor-actions";
+  const runButton = document.createElement("button");
+  runButton.type = "button";
+  runButton.className = "button small run-query";
+  runButton.dataset.editor = SANDBOX_EDITOR_ID;
+  runButton.dataset.result = SANDBOX_RESULT_ID;
+  runButton.textContent = "Ejecutar consulta";
+  actions.append(runButton);
+
+  const result = document.createElement("div");
+  result.id = SANDBOX_RESULT_ID;
+  result.className = "result";
+  result.setAttribute("aria-live", "polite");
+  const empty = document.createElement("p");
+  empty.className = "empty";
+  empty.textContent = "Ejecuta una consulta para ver el resultado.";
+  result.append(empty);
+
+  editorArea.append(label, editor, actions);
+  section.append(heading, editorArea, result);
+  sandboxEl.replaceChildren(section);
+  mountCypherEditor(editor, SANDBOX_EDITOR_ID, section);
 }
 
 function pageIdFromLocation() {
@@ -929,6 +1006,7 @@ function exerciseButtons(editorId) {
 function runExercise(editorId, resultId, compare) {
   const container = document.getElementById(resultId);
   if (!container) return;
+  resultStates.delete(resultId);
   if (!connection) {
     showError(container, "El grafo todavía no está cargado.");
     return;
@@ -986,7 +1064,7 @@ pageNavigationEl.addEventListener("click", function (event) {
   const tab = event.target.closest(".page-tab");
   if (tab) navigateToPage(tab.dataset.pageId);
 });
-exerciseListEl.addEventListener("click", function (event) {
+function handleEditorClick(event) {
   const runButton = event.target.closest(".run-query");
   if (runButton) {
     runExercise(runButton.dataset.editor, runButton.dataset.result, false);
@@ -999,10 +1077,13 @@ exerciseListEl.addEventListener("click", function (event) {
   }
   const solutionButton = event.target.closest(".show-solution");
   if (solutionButton) showSolution(solutionButton.dataset.editor);
-});
+}
+exerciseListEl.addEventListener("click", handleEditorClick);
+sandboxEl.addEventListener("click", handleEditorClick);
 window.addEventListener("popstate", showPageFromLocation);
 window.addEventListener("hashchange", showPageFromLocation);
 renderSchemaSource();
+renderSandbox();
 showPageFromLocation();
 editorModeNoteEl.textContent = hasCypherCodeMirror()
   ? "Resaltado Cypher activo. Ctrl/Cmd + Intro ejecuta la consulta."
