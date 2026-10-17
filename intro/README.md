@@ -96,30 +96,3 @@ guardan en el repositorio del equipo, que está montado en el contenedor, así q
 siguen ahí aunque elimines Jupyter con `docker compose down`. Ese comando elimina
 el contenedor y la red; `docker compose down -v` elimina además los volúmenes
 asociados.
-
-## Usar Podman
-
-Instala [Podman](https://podman.io/docs/installation) y un proveedor de Compose,
-como `podman-compose`; `podman compose` delega en ese proveedor ([documentación
-de Podman Compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html)).
-En Linux inicia Podman en modo rootless. En macOS y Windows, Podman necesita una
-máquina Linux: tras instalarlo, inicialízala y arráncala con:
-
-```console
-podman machine init  # sólo la primera vez
-podman machine start
-```
-
-En Windows, instala WSL 2 siguiendo los pasos anteriores; Podman usa WSL 2 para
-su máquina Linux. Desde este directorio combina el Compose base con el ajuste
-para los permisos del volumen montado:
-
-```console
-podman compose -f docker-compose.yml -f docker-compose.podman.yml up -d
-podman compose -f docker-compose.yml -f docker-compose.podman.yml ps
-podman compose -f docker-compose.yml -f docker-compose.podman.yml logs -f notebook
-```
-
-Para pausar y continuar con Podman, usa los mismos dos ficheros `-f` con
-`stop` y después con `start`. El ajuste `docker-compose.podman.yml` sólo se usa
-con Podman.
