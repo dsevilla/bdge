@@ -99,29 +99,3 @@ declaran un volumen con nombre para la base: usa `stop`/`start` para conservar
 el estado de esta ejecución. `docker compose down` elimina los contenedores y
 `docker compose down -v` elimina además los volúmenes; no uses esos comandos si
 quieres retomar los datos al siguiente inicio.
-
-## Usar Podman
-
-Instala [Podman](https://podman.io/docs/installation) y un proveedor de Compose,
-como `podman-compose`; `podman compose` delega en ese proveedor ([documentación
-de Podman Compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html)).
-En Linux inicia Podman en modo rootless. En macOS y Windows, Podman necesita una
-máquina Linux: tras instalarlo, inicialízala y arráncala con:
-
-```console
-podman machine init  # sólo la primera vez
-podman machine start
-```
-
-En Windows, instala WSL 2 siguiendo los pasos de requisitos; Podman usa WSL 2
-para su máquina Linux. Desde este directorio usa el Compose base y el ajuste
-rootless para el volumen del cuaderno:
-
-```console
-podman compose -f docker-compose.yml -f docker-compose.podman.yml up -d
-podman compose -f docker-compose.yml -f docker-compose.podman.yml ps
-podman compose -f docker-compose.yml -f docker-compose.podman.yml logs -f
-```
-
-Para detener y continuar, repite los dos ficheros `-f` con `stop` y `start`.
-El archivo `docker-compose.podman.yml` es específico de Podman.
