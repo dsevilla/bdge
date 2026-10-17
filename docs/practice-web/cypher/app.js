@@ -66,7 +66,11 @@ const SCHEMA_STATEMENTS = [
 )`,
   `CREATE REL TABLE WROTE(FROM User TO Post)`,
   `CREATE REL TABLE ANSWERS(FROM Post TO Post)`,
-  `CREATE REL TABLE TAGGED_WITH(FROM Post TO Tag)`
+  `CREATE REL TABLE TAGGED_WITH(FROM Post TO Tag)`,
+  // Vacía al cargar: la llena con MERGE la página «Escritura y modelado». Se declara
+  // aquí porque Ladybug exige el esquema y en el curso se trabaja con Neo4j, donde
+  // basta el MERGE: así ningún ejercicio pide DDL propio de este motor.
+  `CREATE REL TABLE INTERESTED_IN(FROM User TO Tag, preguntas INT64)`
 ];
 
 const COPY_STATEMENTS = [
@@ -116,6 +120,47 @@ function hasCypherCodeMirror() {
     && typeof window.CodeMirror.modes.cypher === "function";
 }
 
+// El modo `cypher` de CodeMirror es el de Neo4j y arrastra algunos tropiezos que
+// en este grafo despistan: no conoce el DDL de Ladybug (`TABLE`, `PRIMARY KEY`,
+// los tipos de columna), toma `User` por la orden de administración de usuarios
+// y `Id` por la función `id()`, y deja como nombres corrientes `[:WROTE]` y los
+// números. Este modo delega en él y sólo reclasifica esos casos.
+const CYPHER_MODE = "ladybug-cypher";
+const LADYBUG_KEYWORDS = /^(node|rel|table|primary|key)$/i;
+const LADYBUG_TYPES = /^(string|int64|int32|int16|int8|double|float|boolean|date|timestamp|interval|serial)$/i;
+
+function defineLadybugCypherMode() {
+  if (!hasCypherCodeMirror() || window.CodeMirror.modes[CYPHER_MODE]) return;
+  // Las tablas del esquema (etiquetas y tipos de relación) se colorean como etiquetas
+  // también fuera de un patrón: en `CREATE NODE TABLE User` o en `COPY WROTE`.
+  const schemaNames = new Set(SCHEMA_STATEMENTS.map(function (statement) {
+    return /TABLE\s+(\w+)/i.exec(statement)[1].toLowerCase();
+  }));
+  window.CodeMirror.defineMode(CYPHER_MODE, function (config) {
+    const cypher = window.CodeMirror.getMode(config, "cypher");
+    return Object.assign({}, cypher, {
+      name: CYPHER_MODE,
+      token: function (stream, state) {
+        const style = cypher.token(stream, state);
+        const word = stream.current();
+        const afterDot = state.ladybugAfterDot;
+        state.ladybugAfterDot = style === "node" && word === ".";
+        if (style === null || style === "node" || style === "string" || style === "comment") {
+          return style;
+        }
+        if (afterDot) return "property";
+        if (word.charAt(0) === ":" || schemaNames.has(word.toLowerCase())) return "atom";
+        if (/^\d/.test(word)) return "number";
+        if (LADYBUG_KEYWORDS.test(word)) return "keyword";
+        if (LADYBUG_TYPES.test(word)) return "type";
+        // Una función sólo lo es si la sigue un paréntesis: `Id INT64` es una columna.
+        if (style === "builtin" && !stream.match(/^\s*\(/, false)) return "variable";
+        return style;
+      }
+    });
+  });
+}
+
 function setStatus(message, kind) {
   statusEl.textContent = message;
   statusEl.className = "status " + kind;
@@ -142,7 +187,7 @@ function canCheckExercise(exercise) {
 function mountCypherEditor(editor, editorId, scope) {
   if (hasCypherCodeMirror()) {
     const codeEditor = window.CodeMirror.fromTextArea(editor, {
-      mode: "application/x-cypher-query",
+      mode: CYPHER_MODE,
       theme: "material-darker",
       lineNumbers: true,
       lineWrapping: true,
@@ -513,11 +558,20 @@ function copyStatement(entry) {
 }
 
 function renderSchemaSource() {
-  schemaSourceEl.textContent = SCHEMA_STATEMENTS.map(function (statement) {
+  const source = SCHEMA_STATEMENTS.map(function (statement) {
     return statement + ";";
   }).join("\n\n") + "\n\n" + COPY_STATEMENTS.map(function (entry) {
     return copyStatement(entry) + ";";
   }).join("\n");
+  // Con CodeMirror y su addon runmode, el bloque se colorea con el mismo modo y
+  // tema que los editores; si no cargaron, queda como texto plano.
+  if (hasCypherCodeMirror() && typeof window.CodeMirror.runMode === "function") {
+    schemaSourceEl.textContent = "";
+    schemaSourceEl.classList.add("cm-s-material-darker");
+    window.CodeMirror.runMode(source, CYPHER_MODE, schemaSourceEl);
+    return;
+  }
+  schemaSourceEl.textContent = source;
 }
 
 async function buildGraph(documents) {
@@ -1082,6 +1136,7 @@ exerciseListEl.addEventListener("click", handleEditorClick);
 sandboxEl.addEventListener("click", handleEditorClick);
 window.addEventListener("popstate", showPageFromLocation);
 window.addEventListener("hashchange", showPageFromLocation);
+defineLadybugCypherMode();
 renderSchemaSource();
 renderSandbox();
 showPageFromLocation();

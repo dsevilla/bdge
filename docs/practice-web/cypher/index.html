@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/theme/material-darker.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/mode/cypher/cypher.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.20/addon/runmode/runmode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/10.1.2/standalone/umd/vis-network.min.js"></script>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap");
@@ -373,7 +374,7 @@
       </table>
       <details class="schema-details">
         <summary>Ver las sentencias que se acaban de ejecutar</summary>
-        <p class="connection-result">Esto es literalmente lo que corre la página al cargar: primero el esquema, luego la carga masiva con <code>COPY</code>. Puedes copiar cualquier parte en un editor de abajo y ejecutarla.</p>
+        <p class="connection-result">Esto es literalmente lo que corre la página al cargar: primero el esquema, luego la carga masiva con <code>COPY</code>. Puedes copiar cualquier parte en un editor de abajo y ejecutarla. La última relación, <code>INTERESTED_IN</code>, empieza vacía: la llenan con <code>MERGE</code> los ejercicios de «Escritura y modelado», que en Neo4j no necesitarían declararla.</p>
         <pre id="schema-source" class="cypher-block">…</pre>
       </details>
     </section>

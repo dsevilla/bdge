@@ -10,7 +10,7 @@ export const page = {
     {
       id: "contar-usuarios",
       title: "Cuenta los nodos de un tipo",
-      prompt: "Cuenta cuántos nodos :User hay en el grafo. Fíjate en que aquí :User no es una etiqueta suelta como en Neo4j, sino una tabla declarada en el esquema.",
+      prompt: "Cuenta cuántos nodos :User hay en el grafo.",
       solution: `MATCH (u:User)
 RETURN count(*) AS usuarios`
     },

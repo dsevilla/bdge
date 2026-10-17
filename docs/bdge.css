@@ -126,6 +126,37 @@ pre .hljs-subst { color: #f8fafc; }
 pre .hljs-string,
 pre .hljs-regexp,
 pre .hljs-meta .hljs-string { color: var(--bdge-code-string); }
+/* El resto de la paleta de ese tema (GitHub claro) tampoco se lee sobre la tinta:
+   `NULL`, los números o `avg` salían en azul y naranja oscuros. Se usan los
+   colores equivalentes de GitHub oscuro, que es el tema pensado para este fondo. */
+pre .hljs-keyword,
+pre .hljs-doctag,
+pre .hljs-template-tag,
+pre .hljs-template-variable,
+pre .hljs-type,
+pre .hljs-variable.language_ { color: #ff7b72; }
+pre .hljs-title,
+pre .hljs-title.class_,
+pre .hljs-title.function_ { color: #d2a8ff; }
+pre .hljs-attr,
+pre .hljs-attribute,
+pre .hljs-literal,
+pre .hljs-meta,
+pre .hljs-number,
+pre .hljs-operator,
+pre .hljs-variable,
+pre .hljs-selector-attr,
+pre .hljs-selector-class,
+pre .hljs-selector-id { color: #79c0ff; }
+pre .hljs-built_in,
+pre .hljs-symbol { color: #ffa657; }
+pre .hljs-comment,
+pre .hljs-code,
+pre .hljs-formula { color: #8b949e; }
+pre .hljs-name,
+pre .hljs-quote,
+pre .hljs-selector-tag,
+pre .hljs-selector-pseudo { color: #7ee787; }
 
 section.lead {
   background: radial-gradient(circle at 84% 18%, rgba(255, 255, 255, 0.14), transparent 23%), linear-gradient(135deg, var(--bdge-ink), var(--bdge-ink-soft) 62%, var(--bdge-gold-dark));
