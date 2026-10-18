@@ -64,26 +64,26 @@
   <text class="doc left dropped" x="34" y="427.5">{"cliente": "A123",</text>
   <text class="doc left dropped" x="34" y="448.5"> "importe": 300,</text>
   <text class="doc left dropped" x="34" y="469.5"> "estado": "D"}</text>
-  <text class="head" x="588" y="140">tras $match</text>
-  <rect class="plain" x="458" y="158" width="260" height="249" rx="9"/>
-  <text class="doc left" x="472" y="178.5" xml:space="preserve"><tspan>{</tspan><tspan class="group0">"cliente": "A123"</tspan><tspan>,</tspan></text>
-  <text class="doc left" x="472" y="199.5"> "importe": 500,</text>
-  <text class="doc left" x="472" y="220.5"> "estado": "A"}</text>
-  <line x1="458" y1="241" x2="718" y2="241"/>
-  <text class="doc left" x="472" y="261.5" xml:space="preserve"><tspan>{</tspan><tspan class="group0">"cliente": "A123"</tspan><tspan>,</tspan></text>
-  <text class="doc left" x="472" y="282.5"> "importe": 250,</text>
-  <text class="doc left" x="472" y="303.5"> "estado": "A"}</text>
-  <line x1="458" y1="324" x2="718" y2="324"/>
-  <text class="doc left" x="472" y="344.5" xml:space="preserve"><tspan>{</tspan><tspan class="group1">"cliente": "B212"</tspan><tspan>,</tspan></text>
-  <text class="doc left" x="472" y="365.5"> "importe": 200,</text>
-  <text class="doc left" x="472" y="386.5"> "estado": "A"}</text>
-  <text class="head" x="1026" y="140">tras $group: resultado</text>
-  <rect class="plain" x="896" y="158" width="260" height="124" rx="9"/>
-  <text class="doc left" x="910" y="178.5" xml:space="preserve"><tspan>{</tspan><tspan class="group0">"_id": "A123"</tspan><tspan>,</tspan></text>
-  <text class="doc left" x="910" y="199.5"> "total": 750}</text>
-  <line x1="896" y1="220" x2="1156" y2="220"/>
-  <text class="doc left" x="910" y="240.5" xml:space="preserve"><tspan>{</tspan><tspan class="group1">"_id": "B212"</tspan><tspan>,</tspan></text>
-  <text class="doc left" x="910" y="261.5"> "total": 200}</text>
+  <text class="head" x="588" y="181.5">tras $match</text>
+  <rect class="plain" x="458" y="199.5" width="260" height="249" rx="9"/>
+  <text class="doc left" x="472" y="220" xml:space="preserve"><tspan>{</tspan><tspan class="group0">"cliente": "A123"</tspan><tspan>,</tspan></text>
+  <text class="doc left" x="472" y="241"> "importe": 500,</text>
+  <text class="doc left" x="472" y="262"> "estado": "A"}</text>
+  <line x1="458" y1="282.5" x2="718" y2="282.5"/>
+  <text class="doc left" x="472" y="303" xml:space="preserve"><tspan>{</tspan><tspan class="group0">"cliente": "A123"</tspan><tspan>,</tspan></text>
+  <text class="doc left" x="472" y="324"> "importe": 250,</text>
+  <text class="doc left" x="472" y="345"> "estado": "A"}</text>
+  <line x1="458" y1="365.5" x2="718" y2="365.5"/>
+  <text class="doc left" x="472" y="386" xml:space="preserve"><tspan>{</tspan><tspan class="group1">"cliente": "B212"</tspan><tspan>,</tspan></text>
+  <text class="doc left" x="472" y="407"> "importe": 200,</text>
+  <text class="doc left" x="472" y="428"> "estado": "A"}</text>
+  <text class="head" x="1026" y="244">tras $group: resultado</text>
+  <rect class="plain" x="896" y="262" width="260" height="124" rx="9"/>
+  <text class="doc left" x="910" y="282.5" xml:space="preserve"><tspan>{</tspan><tspan class="group0">"_id": "A123"</tspan><tspan>,</tspan></text>
+  <text class="doc left" x="910" y="303.5"> "total": 750}</text>
+  <line x1="896" y1="324" x2="1156" y2="324"/>
+  <text class="doc left" x="910" y="344.5" xml:space="preserve"><tspan>{</tspan><tspan class="group1">"_id": "B212"</tspan><tspan>,</tspan></text>
+  <text class="doc left" x="910" y="365.5"> "total": 200}</text>
   <path class="arrow" d="M294 324 L444 324"/>
   <text class="code" x="369" y="302">$match</text>
   <path class="arrow" d="M732 324 L882 324"/>
