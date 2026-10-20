@@ -37,56 +37,57 @@
     path.range { fill: none; stroke: #f2b705; stroke-width: 10; }
     rect.coordinator { fill: #fffefa; stroke: #a9251a; stroke-width: 4; }
     circle.token { fill: #a9251a; }
-    text.right { text-anchor: end; }
+    text.range { font-size: 19px; }
     text.accent { fill: #a9251a; }
     text.badge { fill: #fffefa; font-size: 20px; }
   </style>
   <circle class="ring" cx="430" cy="256" r="168"/>
   <path class="range" d="M267.28 214.22 A168 168 0 0 1 378.09 96.22"/>
-  <text class="code" x="476.25" y="49.11">(95, 12]</text>
-  <text class="code left" x="633.58" y="196.85">(12, 29]</text>
-  <text class="code left" x="584.54" y="401.12">(29, 45]</text>
-  <text class="code" x="383.75" y="462.89">(45, 62]</text>
-  <text class="code right" x="226.42" y="315.15">(62, 79]</text>
-  <text class="code right" x="275.46" y="110.88">(79, 95]</text>
-  <rect class="plain" x="495" y="111.53" width="100" height="44" rx="9"/>
-  <text class="small" x="545" y="133.53">nodo 1</text>
-  <rect class="plain" x="542.72" y="275.78" width="100" height="44" rx="9"/>
-  <text class="small" x="592.72" y="297.78">nodo 2</text>
-  <rect class="plain" x="431.91" y="393.78" width="100" height="44" rx="9"/>
-  <text class="small" x="481.91" y="415.78">nodo 3</text>
-  <rect class="coordinator" x="265" y="356.47" width="100" height="44" rx="9"/>
-  <text class="small" x="315" y="378.47">nodo 4</text>
-  <text class="small accent" x="315" y="416.47">coordinador</text>
-  <rect class="plain" x="217.28" y="192.22" width="100" height="44" rx="9"/>
-  <text class="small" x="267.28" y="214.22">nodo 5</text>
-  <rect class="strong" x="328.09" y="74.22" width="100" height="44" rx="9"/>
-  <text class="small" x="378.09" y="96.22">nodo 6</text>
+  <rect class="plain" x="485" y="101.53" width="120" height="64" rx="9"/>
+  <text class="small" x="545" y="120.53">nodo 1</text>
+  <text class="code range" x="545" y="149.53">(95, 12]</text>
+  <rect class="plain" x="532.72" y="265.78" width="120" height="64" rx="9"/>
+  <text class="small" x="592.72" y="284.78">nodo 2</text>
+  <text class="code range" x="592.72" y="313.78">(12, 29]</text>
+  <rect class="plain" x="421.91" y="383.78" width="120" height="64" rx="9"/>
+  <text class="small" x="481.91" y="402.78">nodo 3</text>
+  <text class="code range" x="481.91" y="431.78">(29, 45]</text>
+  <rect class="coordinator" x="255" y="346.47" width="120" height="64" rx="9"/>
+  <text class="small" x="315" y="365.47">nodo 4</text>
+  <text class="code range" x="315" y="394.47">(45, 62]</text>
+  <text class="small accent" x="315" y="426.47">coordinador</text>
+  <rect class="plain" x="207.28" y="182.22" width="120" height="64" rx="9"/>
+  <text class="small" x="267.28" y="201.22">nodo 5</text>
+  <text class="code range" x="267.28" y="230.22">(62, 79]</text>
+  <rect class="strong" x="318.09" y="64.22" width="120" height="64" rx="9"/>
+  <text class="small" x="378.09" y="83.22">nodo 6</text>
+  <text class="code range" x="378.09" y="112.22">(79, 95]</text>
   <circle class="token" cx="307.53" cy="141" r="7"/>
   <text class="small accent" x="326.49" y="158.79">87</text>
   <rect class="plain" x="20" y="354.47" width="150" height="48" rx="9"/>
   <text class="small" x="95" y="378.47">cliente</text>
-  <path class="arrow" d="M174 378.47 L260 378.47"/>
-  <path class="arrow" d="M321 351.59 L372.08 123.1"/>
-  <circle cx="217.5" cy="352.47" r="15"/>
-  <text class="badge" x="217.5" y="353.47">1</text>
-  <circle cx="318.49" cy="192.79" r="15"/>
-  <text class="badge" x="318.49" y="193.79">2</text>
+  <path class="arrow" d="M174 378.47 L250 378.47"/>
+  <path class="arrow" d="M323.24 341.59 L369.84 133.1"/>
+  <circle cx="212.5" cy="352.47" r="15"/>
+  <text class="badge" x="212.5" y="353.47">1</text>
+  <circle cx="399" cy="378.47" r="15"/>
+  <text class="badge" x="399" y="379.47">2</text>
   <circle cx="370.54" cy="237.34" r="15"/>
   <text class="badge" x="370.54" y="238.34">3</text>
   <circle cx="785" cy="110" r="15"/>
   <text class="badge" x="785" y="111">1</text>
-  <text class="note left" x="812" y="110" xml:space="preserve"><tspan class="light">El cliente envía la fila a un</tspan></text>
-  <text class="note left" x="812" y="138" xml:space="preserve"><tspan class="light">nodo cualquiera, que la </tspan><tspan class="strong">coordina</tspan></text>
-  <circle cx="785" cy="178" r="15"/>
-  <text class="badge" x="785" y="179">2</text>
-  <text class="note left" x="812" y="178" xml:space="preserve"><tspan class="light">Calcula el token de la clave:</tspan></text>
-  <text class="note left" x="812" y="206" xml:space="preserve"><tspan class="code">token('Ana') = 87</tspan><tspan class="light">, que cae</tspan></text>
-  <text class="note left" x="812" y="234" xml:space="preserve"><tspan class="light">en el rango </tspan><tspan class="code">(79, 95]</tspan></text>
-  <circle cx="785" cy="274" r="15"/>
-  <text class="badge" x="785" y="275">3</text>
-  <text class="note left" x="812" y="274" xml:space="preserve"><tspan class="light">La reenvía a </tspan><tspan class="strong">nodo 6</tspan><tspan class="light">, dueño</tspan></text>
-  <text class="note left" x="812" y="302" xml:space="preserve"><tspan class="light">de ese rango: el coordinador</tspan></text>
-  <text class="note left" x="812" y="330" xml:space="preserve"><tspan class="light">no tiene por qué guardarla</tspan></text>
+  <text class="note left" x="812" y="110" xml:space="preserve"><tspan class="light">El cliente envía la fila, con su</tspan></text>
+  <text class="note left" x="812" y="138" xml:space="preserve"><tspan class="light">clave </tspan><tspan class="code">'Ana'</tspan><tspan class="light">, a un nodo cualquiera,</tspan></text>
+  <text class="note left" x="812" y="166" xml:space="preserve"><tspan class="light">que la </tspan><tspan class="strong">coordina</tspan><tspan class="light">: aquí, nodo 4</tspan></text>
+  <circle cx="785" cy="206" r="15"/>
+  <text class="badge" x="785" y="207">2</text>
+  <text class="note left" x="812" y="206" xml:space="preserve"><tspan class="light">El </tspan><tspan class="strong">coordinador</tspan><tspan class="light"> calcula el token:</tspan></text>
+  <text class="note left" x="812" y="234" xml:space="preserve"><tspan class="code">token('Ana') = 87</tspan><tspan class="light">, que cae</tspan></text>
+  <text class="note left" x="812" y="262" xml:space="preserve"><tspan class="light">en el rango </tspan><tspan class="code">(79, 95]</tspan></text>
+  <circle cx="785" cy="302" r="15"/>
+  <text class="badge" x="785" y="303">3</text>
+  <text class="note left" x="812" y="302" xml:space="preserve"><tspan class="light">La reenvía a </tspan><tspan class="strong">nodo 6</tspan><tspan class="light">, dueño</tspan></text>
+  <text class="note left" x="812" y="330" xml:space="preserve"><tspan class="light">de ese rango: el coordinador</tspan></text>
+  <text class="note left" x="812" y="358" xml:space="preserve"><tspan class="light">no tiene por qué guardarla</tspan></text>
   <text class="small" x="588" y="498" xml:space="preserve"><tspan class="light">Cada nodo guarda el rango que termina en su token · Tokens de 0 a </tspan><tspan class="light">99</tspan><tspan class="light"> (MD5 mod 100); Cassandra usa Murmur3, de −2⁶³ a 2⁶³ − 1</tspan></text>
 </svg>

@@ -43,146 +43,154 @@
   </style>
   <text class="head" x="732" y="18">Réplicas caídas (RF = 3)</text>
   <text class="head left" x="18" y="48">Nivel · necesita</text>
+  <text class="small left" x="18" y="18">Cada círculo, una réplica:</text>
+  <circle class="up" cx="280" cy="18" r="13"/>
+  <text class="small left" x="300" y="18">viva</text>
+  <circle class="down" cx="370" cy="18" r="13"/>
+  <line class="cross" x1="360.25" y1="8.25" x2="379.75" y2="27.75"/>
+  <line class="cross" x1="360.25" y1="27.75" x2="379.75" y2="8.25"/>
+  <text class="small left" x="390" y="18">caída</text>
   <text class="head" x="408" y="48">0</text>
   <text class="head" x="624" y="48">1</text>
   <text class="head" x="840" y="48">2</text>
   <text class="head" x="1056" y="48">3</text>
-  <text class="level left" x="18" y="95">ANY</text>
-  <text class="small left" x="18" y="127">una réplica o una pista</text>
-  <rect x="304" y="66" width="208" height="86" rx="9"/>
-  <circle class="up" cx="370" cy="94" r="13"/>
-  <circle class="up" cx="408" cy="94" r="13"/>
-  <circle class="up" cx="446" cy="94" r="13"/>
-  <text class="ok" x="408" y="130">responde</text>
-  <rect x="520" y="66" width="208" height="86" rx="9"/>
-  <circle class="up" cx="586" cy="94" r="13"/>
-  <circle class="up" cx="624" cy="94" r="13"/>
-  <circle class="down" cx="662" cy="94" r="13"/>
-  <line class="cross" x1="652.25" y1="84.25" x2="671.75" y2="103.75"/>
-  <line class="cross" x1="652.25" y1="103.75" x2="671.75" y2="84.25"/>
-  <text class="ok" x="624" y="130">responde</text>
-  <rect x="736" y="66" width="208" height="86" rx="9"/>
-  <circle class="up" cx="802" cy="94" r="13"/>
-  <circle class="down" cx="840" cy="94" r="13"/>
-  <line class="cross" x1="830.25" y1="84.25" x2="849.75" y2="103.75"/>
-  <line class="cross" x1="830.25" y1="103.75" x2="849.75" y2="84.25"/>
-  <circle class="down" cx="878" cy="94" r="13"/>
-  <line class="cross" x1="868.25" y1="84.25" x2="887.75" y2="103.75"/>
-  <line class="cross" x1="868.25" y1="103.75" x2="887.75" y2="84.25"/>
-  <text class="ok" x="840" y="130">responde</text>
-  <rect x="952" y="66" width="208" height="86" rx="9"/>
-  <circle class="down" cx="1018" cy="94" r="13"/>
-  <line class="cross" x1="1008.25" y1="84.25" x2="1027.75" y2="103.75"/>
-  <line class="cross" x1="1008.25" y1="103.75" x2="1027.75" y2="84.25"/>
-  <circle class="down" cx="1056" cy="94" r="13"/>
-  <line class="cross" x1="1046.25" y1="84.25" x2="1065.75" y2="103.75"/>
-  <line class="cross" x1="1046.25" y1="103.75" x2="1065.75" y2="84.25"/>
-  <circle class="down" cx="1094" cy="94" r="13"/>
-  <line class="cross" x1="1084.25" y1="84.25" x2="1103.75" y2="103.75"/>
-  <line class="cross" x1="1084.25" y1="103.75" x2="1103.75" y2="84.25"/>
-  <text class="ok" x="1056" y="130">responde (pista)</text>
-  <text class="level left" x="18" y="189">ONE</text>
-  <text class="small left" x="18" y="221">1 réplica</text>
-  <rect x="304" y="160" width="208" height="86" rx="9"/>
-  <circle class="up" cx="370" cy="188" r="13"/>
-  <circle class="up" cx="408" cy="188" r="13"/>
-  <circle class="up" cx="446" cy="188" r="13"/>
-  <text class="ok" x="408" y="224">responde</text>
-  <rect x="520" y="160" width="208" height="86" rx="9"/>
-  <circle class="up" cx="586" cy="188" r="13"/>
-  <circle class="up" cx="624" cy="188" r="13"/>
-  <circle class="down" cx="662" cy="188" r="13"/>
-  <line class="cross" x1="652.25" y1="178.25" x2="671.75" y2="197.75"/>
-  <line class="cross" x1="652.25" y1="197.75" x2="671.75" y2="178.25"/>
-  <text class="ok" x="624" y="224">responde</text>
-  <rect x="736" y="160" width="208" height="86" rx="9"/>
-  <circle class="up" cx="802" cy="188" r="13"/>
-  <circle class="down" cx="840" cy="188" r="13"/>
-  <line class="cross" x1="830.25" y1="178.25" x2="849.75" y2="197.75"/>
-  <line class="cross" x1="830.25" y1="197.75" x2="849.75" y2="178.25"/>
-  <circle class="down" cx="878" cy="188" r="13"/>
-  <line class="cross" x1="868.25" y1="178.25" x2="887.75" y2="197.75"/>
-  <line class="cross" x1="868.25" y1="197.75" x2="887.75" y2="178.25"/>
-  <text class="ok" x="840" y="224">responde</text>
-  <rect class="plain" x="952" y="160" width="208" height="86" rx="9"/>
-  <circle class="down" cx="1018" cy="188" r="13"/>
-  <line class="cross" x1="1008.25" y1="178.25" x2="1027.75" y2="197.75"/>
-  <line class="cross" x1="1008.25" y1="197.75" x2="1027.75" y2="178.25"/>
-  <circle class="down" cx="1056" cy="188" r="13"/>
-  <line class="cross" x1="1046.25" y1="178.25" x2="1065.75" y2="197.75"/>
-  <line class="cross" x1="1046.25" y1="197.75" x2="1065.75" y2="178.25"/>
-  <circle class="down" cx="1094" cy="188" r="13"/>
-  <line class="cross" x1="1084.25" y1="178.25" x2="1103.75" y2="197.75"/>
-  <line class="cross" x1="1084.25" y1="197.75" x2="1103.75" y2="178.25"/>
-  <text class="fail" x="1056" y="224">Unavailable</text>
-  <text class="level left" x="18" y="283">QUORUM</text>
-  <text class="small left" x="18" y="315">la mayoría: 2</text>
-  <rect x="304" y="254" width="208" height="86" rx="9"/>
-  <circle class="up" cx="370" cy="282" r="13"/>
-  <circle class="up" cx="408" cy="282" r="13"/>
-  <circle class="up" cx="446" cy="282" r="13"/>
-  <text class="ok" x="408" y="318">responde</text>
-  <rect x="520" y="254" width="208" height="86" rx="9"/>
-  <circle class="up" cx="586" cy="282" r="13"/>
-  <circle class="up" cx="624" cy="282" r="13"/>
-  <circle class="down" cx="662" cy="282" r="13"/>
-  <line class="cross" x1="652.25" y1="272.25" x2="671.75" y2="291.75"/>
-  <line class="cross" x1="652.25" y1="291.75" x2="671.75" y2="272.25"/>
-  <text class="ok" x="624" y="318">responde</text>
-  <rect class="plain" x="736" y="254" width="208" height="86" rx="9"/>
-  <circle class="up" cx="802" cy="282" r="13"/>
-  <circle class="down" cx="840" cy="282" r="13"/>
-  <line class="cross" x1="830.25" y1="272.25" x2="849.75" y2="291.75"/>
-  <line class="cross" x1="830.25" y1="291.75" x2="849.75" y2="272.25"/>
-  <circle class="down" cx="878" cy="282" r="13"/>
-  <line class="cross" x1="868.25" y1="272.25" x2="887.75" y2="291.75"/>
-  <line class="cross" x1="868.25" y1="291.75" x2="887.75" y2="272.25"/>
-  <text class="fail" x="840" y="318">Unavailable</text>
-  <rect class="plain" x="952" y="254" width="208" height="86" rx="9"/>
-  <circle class="down" cx="1018" cy="282" r="13"/>
-  <line class="cross" x1="1008.25" y1="272.25" x2="1027.75" y2="291.75"/>
-  <line class="cross" x1="1008.25" y1="291.75" x2="1027.75" y2="272.25"/>
-  <circle class="down" cx="1056" cy="282" r="13"/>
-  <line class="cross" x1="1046.25" y1="272.25" x2="1065.75" y2="291.75"/>
-  <line class="cross" x1="1046.25" y1="291.75" x2="1065.75" y2="272.25"/>
-  <circle class="down" cx="1094" cy="282" r="13"/>
-  <line class="cross" x1="1084.25" y1="272.25" x2="1103.75" y2="291.75"/>
-  <line class="cross" x1="1084.25" y1="291.75" x2="1103.75" y2="272.25"/>
-  <text class="fail" x="1056" y="318">Unavailable</text>
-  <text class="level left" x="18" y="377">ALL</text>
-  <text class="small left" x="18" y="409">las 3</text>
-  <rect x="304" y="348" width="208" height="86" rx="9"/>
-  <circle class="up" cx="370" cy="376" r="13"/>
-  <circle class="up" cx="408" cy="376" r="13"/>
-  <circle class="up" cx="446" cy="376" r="13"/>
-  <text class="ok" x="408" y="412">responde</text>
-  <rect class="plain" x="520" y="348" width="208" height="86" rx="9"/>
-  <circle class="up" cx="586" cy="376" r="13"/>
-  <circle class="up" cx="624" cy="376" r="13"/>
-  <circle class="down" cx="662" cy="376" r="13"/>
-  <line class="cross" x1="652.25" y1="366.25" x2="671.75" y2="385.75"/>
-  <line class="cross" x1="652.25" y1="385.75" x2="671.75" y2="366.25"/>
-  <text class="fail" x="624" y="412">Unavailable</text>
-  <rect class="plain" x="736" y="348" width="208" height="86" rx="9"/>
-  <circle class="up" cx="802" cy="376" r="13"/>
-  <circle class="down" cx="840" cy="376" r="13"/>
-  <line class="cross" x1="830.25" y1="366.25" x2="849.75" y2="385.75"/>
-  <line class="cross" x1="830.25" y1="385.75" x2="849.75" y2="366.25"/>
-  <circle class="down" cx="878" cy="376" r="13"/>
-  <line class="cross" x1="868.25" y1="366.25" x2="887.75" y2="385.75"/>
-  <line class="cross" x1="868.25" y1="385.75" x2="887.75" y2="366.25"/>
-  <text class="fail" x="840" y="412">Unavailable</text>
-  <rect class="plain" x="952" y="348" width="208" height="86" rx="9"/>
-  <circle class="down" cx="1018" cy="376" r="13"/>
-  <line class="cross" x1="1008.25" y1="366.25" x2="1027.75" y2="385.75"/>
-  <line class="cross" x1="1008.25" y1="385.75" x2="1027.75" y2="366.25"/>
-  <circle class="down" cx="1056" cy="376" r="13"/>
-  <line class="cross" x1="1046.25" y1="366.25" x2="1065.75" y2="385.75"/>
-  <line class="cross" x1="1046.25" y1="385.75" x2="1065.75" y2="366.25"/>
-  <circle class="down" cx="1094" cy="376" r="13"/>
-  <line class="cross" x1="1084.25" y1="366.25" x2="1103.75" y2="385.75"/>
-  <line class="cross" x1="1084.25" y1="385.75" x2="1103.75" y2="366.25"/>
-  <text class="fail" x="1056" y="412">Unavailable</text>
-  <text class="note" x="588" y="460" xml:space="preserve"><tspan class="light">Lectura: el mismo cálculo, salvo </tspan><tspan class="code">ANY</tspan><tspan class="light">, que sólo existe para escribir</tspan></text>
-  <text class="note" x="588" y="492" xml:space="preserve"><tspan class="light">Con RF = 2 (las prácticas) la mayoría es 2: </tspan><tspan class="code">QUORUM</tspan><tspan class="strong"> no tolera ninguna caída</tspan></text>
+  <text class="level left" x="18" y="92">ANY</text>
+  <text class="small left" x="18" y="124">una réplica o una pista</text>
+  <rect x="304" y="66" width="208" height="80" rx="9"/>
+  <circle class="up" cx="370" cy="92" r="13"/>
+  <circle class="up" cx="408" cy="92" r="13"/>
+  <circle class="up" cx="446" cy="92" r="13"/>
+  <text class="ok" x="408" y="126">escribe</text>
+  <rect x="520" y="66" width="208" height="80" rx="9"/>
+  <circle class="up" cx="586" cy="92" r="13"/>
+  <circle class="up" cx="624" cy="92" r="13"/>
+  <circle class="down" cx="662" cy="92" r="13"/>
+  <line class="cross" x1="652.25" y1="82.25" x2="671.75" y2="101.75"/>
+  <line class="cross" x1="652.25" y1="101.75" x2="671.75" y2="82.25"/>
+  <text class="ok" x="624" y="126">escribe</text>
+  <rect x="736" y="66" width="208" height="80" rx="9"/>
+  <circle class="up" cx="802" cy="92" r="13"/>
+  <circle class="down" cx="840" cy="92" r="13"/>
+  <line class="cross" x1="830.25" y1="82.25" x2="849.75" y2="101.75"/>
+  <line class="cross" x1="830.25" y1="101.75" x2="849.75" y2="82.25"/>
+  <circle class="down" cx="878" cy="92" r="13"/>
+  <line class="cross" x1="868.25" y1="82.25" x2="887.75" y2="101.75"/>
+  <line class="cross" x1="868.25" y1="101.75" x2="887.75" y2="82.25"/>
+  <text class="ok" x="840" y="126">escribe</text>
+  <rect x="952" y="66" width="208" height="80" rx="9"/>
+  <circle class="down" cx="1018" cy="92" r="13"/>
+  <line class="cross" x1="1008.25" y1="82.25" x2="1027.75" y2="101.75"/>
+  <line class="cross" x1="1008.25" y1="101.75" x2="1027.75" y2="82.25"/>
+  <circle class="down" cx="1056" cy="92" r="13"/>
+  <line class="cross" x1="1046.25" y1="82.25" x2="1065.75" y2="101.75"/>
+  <line class="cross" x1="1046.25" y1="101.75" x2="1065.75" y2="82.25"/>
+  <circle class="down" cx="1094" cy="92" r="13"/>
+  <line class="cross" x1="1084.25" y1="82.25" x2="1103.75" y2="101.75"/>
+  <line class="cross" x1="1084.25" y1="101.75" x2="1103.75" y2="82.25"/>
+  <text class="ok" x="1056" y="126">escribe (pista)</text>
+  <text class="level left" x="18" y="178">ONE</text>
+  <text class="small left" x="18" y="210">1 réplica</text>
+  <rect x="304" y="152" width="208" height="80" rx="9"/>
+  <circle class="up" cx="370" cy="178" r="13"/>
+  <circle class="up" cx="408" cy="178" r="13"/>
+  <circle class="up" cx="446" cy="178" r="13"/>
+  <text class="ok" x="408" y="212">escribe</text>
+  <rect x="520" y="152" width="208" height="80" rx="9"/>
+  <circle class="up" cx="586" cy="178" r="13"/>
+  <circle class="up" cx="624" cy="178" r="13"/>
+  <circle class="down" cx="662" cy="178" r="13"/>
+  <line class="cross" x1="652.25" y1="168.25" x2="671.75" y2="187.75"/>
+  <line class="cross" x1="652.25" y1="187.75" x2="671.75" y2="168.25"/>
+  <text class="ok" x="624" y="212">escribe</text>
+  <rect x="736" y="152" width="208" height="80" rx="9"/>
+  <circle class="up" cx="802" cy="178" r="13"/>
+  <circle class="down" cx="840" cy="178" r="13"/>
+  <line class="cross" x1="830.25" y1="168.25" x2="849.75" y2="187.75"/>
+  <line class="cross" x1="830.25" y1="187.75" x2="849.75" y2="168.25"/>
+  <circle class="down" cx="878" cy="178" r="13"/>
+  <line class="cross" x1="868.25" y1="168.25" x2="887.75" y2="187.75"/>
+  <line class="cross" x1="868.25" y1="187.75" x2="887.75" y2="168.25"/>
+  <text class="ok" x="840" y="212">escribe</text>
+  <rect class="plain" x="952" y="152" width="208" height="80" rx="9"/>
+  <circle class="down" cx="1018" cy="178" r="13"/>
+  <line class="cross" x1="1008.25" y1="168.25" x2="1027.75" y2="187.75"/>
+  <line class="cross" x1="1008.25" y1="187.75" x2="1027.75" y2="168.25"/>
+  <circle class="down" cx="1056" cy="178" r="13"/>
+  <line class="cross" x1="1046.25" y1="168.25" x2="1065.75" y2="187.75"/>
+  <line class="cross" x1="1046.25" y1="187.75" x2="1065.75" y2="168.25"/>
+  <circle class="down" cx="1094" cy="178" r="13"/>
+  <line class="cross" x1="1084.25" y1="168.25" x2="1103.75" y2="187.75"/>
+  <line class="cross" x1="1084.25" y1="187.75" x2="1103.75" y2="168.25"/>
+  <text class="fail" x="1056" y="212">Unavailable</text>
+  <text class="level left" x="18" y="264">QUORUM</text>
+  <text class="small left" x="18" y="296">la mayoría: 2</text>
+  <rect x="304" y="238" width="208" height="80" rx="9"/>
+  <circle class="up" cx="370" cy="264" r="13"/>
+  <circle class="up" cx="408" cy="264" r="13"/>
+  <circle class="up" cx="446" cy="264" r="13"/>
+  <text class="ok" x="408" y="298">escribe</text>
+  <rect x="520" y="238" width="208" height="80" rx="9"/>
+  <circle class="up" cx="586" cy="264" r="13"/>
+  <circle class="up" cx="624" cy="264" r="13"/>
+  <circle class="down" cx="662" cy="264" r="13"/>
+  <line class="cross" x1="652.25" y1="254.25" x2="671.75" y2="273.75"/>
+  <line class="cross" x1="652.25" y1="273.75" x2="671.75" y2="254.25"/>
+  <text class="ok" x="624" y="298">escribe</text>
+  <rect class="plain" x="736" y="238" width="208" height="80" rx="9"/>
+  <circle class="up" cx="802" cy="264" r="13"/>
+  <circle class="down" cx="840" cy="264" r="13"/>
+  <line class="cross" x1="830.25" y1="254.25" x2="849.75" y2="273.75"/>
+  <line class="cross" x1="830.25" y1="273.75" x2="849.75" y2="254.25"/>
+  <circle class="down" cx="878" cy="264" r="13"/>
+  <line class="cross" x1="868.25" y1="254.25" x2="887.75" y2="273.75"/>
+  <line class="cross" x1="868.25" y1="273.75" x2="887.75" y2="254.25"/>
+  <text class="fail" x="840" y="298">Unavailable</text>
+  <rect class="plain" x="952" y="238" width="208" height="80" rx="9"/>
+  <circle class="down" cx="1018" cy="264" r="13"/>
+  <line class="cross" x1="1008.25" y1="254.25" x2="1027.75" y2="273.75"/>
+  <line class="cross" x1="1008.25" y1="273.75" x2="1027.75" y2="254.25"/>
+  <circle class="down" cx="1056" cy="264" r="13"/>
+  <line class="cross" x1="1046.25" y1="254.25" x2="1065.75" y2="273.75"/>
+  <line class="cross" x1="1046.25" y1="273.75" x2="1065.75" y2="254.25"/>
+  <circle class="down" cx="1094" cy="264" r="13"/>
+  <line class="cross" x1="1084.25" y1="254.25" x2="1103.75" y2="273.75"/>
+  <line class="cross" x1="1084.25" y1="273.75" x2="1103.75" y2="254.25"/>
+  <text class="fail" x="1056" y="298">Unavailable</text>
+  <text class="level left" x="18" y="350">ALL</text>
+  <text class="small left" x="18" y="382">las 3</text>
+  <rect x="304" y="324" width="208" height="80" rx="9"/>
+  <circle class="up" cx="370" cy="350" r="13"/>
+  <circle class="up" cx="408" cy="350" r="13"/>
+  <circle class="up" cx="446" cy="350" r="13"/>
+  <text class="ok" x="408" y="384">escribe</text>
+  <rect class="plain" x="520" y="324" width="208" height="80" rx="9"/>
+  <circle class="up" cx="586" cy="350" r="13"/>
+  <circle class="up" cx="624" cy="350" r="13"/>
+  <circle class="down" cx="662" cy="350" r="13"/>
+  <line class="cross" x1="652.25" y1="340.25" x2="671.75" y2="359.75"/>
+  <line class="cross" x1="652.25" y1="359.75" x2="671.75" y2="340.25"/>
+  <text class="fail" x="624" y="384">Unavailable</text>
+  <rect class="plain" x="736" y="324" width="208" height="80" rx="9"/>
+  <circle class="up" cx="802" cy="350" r="13"/>
+  <circle class="down" cx="840" cy="350" r="13"/>
+  <line class="cross" x1="830.25" y1="340.25" x2="849.75" y2="359.75"/>
+  <line class="cross" x1="830.25" y1="359.75" x2="849.75" y2="340.25"/>
+  <circle class="down" cx="878" cy="350" r="13"/>
+  <line class="cross" x1="868.25" y1="340.25" x2="887.75" y2="359.75"/>
+  <line class="cross" x1="868.25" y1="359.75" x2="887.75" y2="340.25"/>
+  <text class="fail" x="840" y="384">Unavailable</text>
+  <rect class="plain" x="952" y="324" width="208" height="80" rx="9"/>
+  <circle class="down" cx="1018" cy="350" r="13"/>
+  <line class="cross" x1="1008.25" y1="340.25" x2="1027.75" y2="359.75"/>
+  <line class="cross" x1="1008.25" y1="359.75" x2="1027.75" y2="340.25"/>
+  <circle class="down" cx="1056" cy="350" r="13"/>
+  <line class="cross" x1="1046.25" y1="340.25" x2="1065.75" y2="359.75"/>
+  <line class="cross" x1="1046.25" y1="359.75" x2="1065.75" y2="340.25"/>
+  <circle class="down" cx="1094" cy="350" r="13"/>
+  <line class="cross" x1="1084.25" y1="340.25" x2="1103.75" y2="359.75"/>
+  <line class="cross" x1="1084.25" y1="359.75" x2="1103.75" y2="340.25"/>
+  <text class="fail" x="1056" y="384">Unavailable</text>
+  <text class="small" x="588" y="434" xml:space="preserve"><tspan class="strong">Unavailable</tspan><tspan class="light">: el coordinador ve que no quedan vivas las réplicas que exige el nivel y rechaza la escritura sin intentarla</tspan></text>
+  <text class="small" x="588" y="463" xml:space="preserve"><tspan class="light">Lectura: el mismo cálculo, salvo </tspan><tspan class="code">ANY</tspan><tspan class="light">, que sólo existe para escribir</tspan></text>
+  <text class="small" x="588" y="492" xml:space="preserve"><tspan class="light">Con RF = 2 (las prácticas) la mayoría es 2: </tspan><tspan class="code">QUORUM</tspan><tspan class="strong"> no tolera ninguna caída</tspan></text>
 </svg>
