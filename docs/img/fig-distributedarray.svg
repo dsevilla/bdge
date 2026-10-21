@@ -47,23 +47,23 @@
   <rect class="empty" x="413" y="62" width="348" height="391" rx="9"/>
   <text x="587" y="89">Partición B</text>
   <rect class="strong" x="433" y="123" width="308" height="138" rx="9"/>
-  <text class="head" x="587" y="146">Nodo 1</text>
+  <text class="head" x="587" y="146">Nodo 3</text>
   <text class="code" x="587" y="187">2 → Luis</text>
   <text class="code" x="587" y="223">5 → ...</text>
   <path class="arrow" d="M587 265 L587 294"/>
   <rect x="433" y="305" width="308" height="120" rx="9"/>
-  <text class="head" x="587" y="326">Nodo 2: copia</text>
+  <text class="head" x="587" y="326">Nodo 4: copia</text>
   <text class="code" x="587" y="362">2 → Luis</text>
   <text class="code" x="587" y="396">5 → ...</text>
   <rect class="empty" x="804" y="62" width="348" height="391" rx="9"/>
   <text x="978" y="89">Partición C</text>
   <rect class="strong" x="824" y="123" width="308" height="138" rx="9"/>
-  <text class="head" x="978" y="146">Nodo 1</text>
+  <text class="head" x="978" y="146">Nodo 5</text>
   <text class="code" x="978" y="187">3 → Marta</text>
   <text class="code" x="978" y="223">6 → ...</text>
   <path class="arrow" d="M978 265 L978 294"/>
   <rect x="824" y="305" width="308" height="120" rx="9"/>
-  <text class="head" x="978" y="326">Nodo 2: copia</text>
+  <text class="head" x="978" y="326">Nodo 6: copia</text>
   <text class="code" x="978" y="362">3 → Marta</text>
   <text class="code" x="978" y="396">6 → ...</text>
   <text class="note" x="588" y="483">Entre grupos se reparte · Dentro de cada grupo se replica</text>

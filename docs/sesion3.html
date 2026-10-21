@@ -242,8 +242,7 @@ Volumen generado al año · Incluye semiestructurados · 2024–2028: previsión
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="23" data-paginate="true" data-footer="BDGE · Sesión 3 · Curso 2026/2027" data-class="compact figure-only" data-theme="bdge" data-lang="es" lang="es" class="compact figure-only" data-marpit-pagination="23" style="--paginate:true;--footer:BDGE · Sesión 3 · Curso 2026/2027;--class:compact figure-only;--theme:bdge;--lang:es;" data-marpit-pagination-total="77" data-size="16:9">
 <h1 id="el-cv-como-unidad-de-informaci%C3%B3n">El CV como unidad de información</h1>
-<p>Perfil, empleos y estudios se suelen recuperar juntos</p>
-<p><img src="img/gates.png" alt="El CV de Bill Gates y su representación en varias tablas relacionadas" style="height:450px;" /></p>
+<p><img src="img/gates.png" alt="El CV de Bill Gates y su representación en varias tablas relacionadas" style="height:550px;" /></p>
 <p>Kleppmann, 2017. <em>Designing Data-Intensive Applications</em></p>
 <footer>BDGE · Sesión 3 · Curso 2026/2027</footer>
 </section>
@@ -382,8 +381,8 @@ preguntas[11] → { título: &quot;...&quot;, autor: 1 }
 </ul>
 <p>Sin embargo, en NoSQL:</p>
 <ul>
-<li>Se tiene que tener en cuenta el diseño <strong>distribuido</strong></li>
-<li><strong>Optimización guiada por las consultas</strong></li>
+<li>Siempre se tiene que tener en cuenta el diseño <strong>distribuido</strong></li>
+<li><strong>Optimización y organización guiada por las consultas</strong></li>
 </ul>
 <footer>BDGE · Sesión 3 · Curso 2026/2027</footer>
 </section>
@@ -426,7 +425,7 @@ preguntas[11] → { título: &quot;...&quot;, autor: 1 }
 <p>Si se leen juntos, un agregado evita recomponer el hilo</p>
 <p>Si crecen sin límite, se actualizan de forma independiente o se consultan por separado, las referencias pueden encajar mejor</p>
 <blockquote>
-<p>Son los conceptos de entidad y cardinalidad de SQL, con otra decisión sobre la unidad de almacenamiento</p>
+<p>Son los conceptos de entidad y cardinalidad de SQL, pero con otras restricciones de diseño</p>
 </blockquote>
 <footer>BDGE · Sesión 3 · Curso 2026/2027</footer>
 </section>
@@ -522,7 +521,7 @@ preguntas[11] → { título: &quot;...&quot;, autor: 1 }
 <li>Si el agregado crece sin límite, leerlo o actualizarlo puede resultar costoso</li>
 <li>Incrustar datos compartidos evita búsquedas, pero obliga a actualizar varias copias</li>
 <li>Referenciar mantiene una identidad común; seguir la referencia puede requerir otra petición</li>
-<li>Si dos agregados deben cambiar juntos, hace falta coordinación adicional</li>
+<li>Si dos agregados deben cambiar juntos, hace falta coordinación adicional (<strong>transacciones multidocumento</strong>)</li>
 </ul>
 <blockquote>
 <p>La decisión se toma con las cardinalidades y los accesos que conocemos, no sólo con el formato JSON</p>
