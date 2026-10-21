@@ -37,7 +37,6 @@
     tspan.value1 { fill: #c98b00; font-weight: 700; }
   </style>
   <text class="code left" x="20" y="34">db.pedidos.distinct("cliente")</text>
-  <text class="label left" x="453.2" y="34">Python, con pymongo</text>
   <text class="head" x="381" y="104">colección pedidos</text>
   <rect class="plain" x="20" y="124" width="722" height="256" rx="9"/>
   <text class="code left" x="40" y="156" xml:space="preserve"><tspan>{</tspan><tspan class="value0">"cliente": "A123"</tspan><tspan>, "importe": 500, "estado": "A"}</tspan></text>
