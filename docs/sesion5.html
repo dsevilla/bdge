@@ -903,7 +903,7 @@ session.row_factory = dict_factory                              <span class="hlj
 <li><code>RoundRobinPolicy</code>: reparte entre todos los nodos vivos</li>
 <li><code>DCAwareRoundRobinPolicy(local_dc=...)</code>: sólo usa los nodos del <em>datacenter</em> local</li>
 <li><code>TokenAwarePolicy(política_hija)</code>: con sentencias preparadas, envía la petición directamente a una <strong>réplica</strong> de la partición, ahorrando un salto de coordinación</li>
-<li><code>WhiteListRoundRobinPolicy</code> / <code>HostFilterPolicy</code>: restringen el conjunto de nodos utilizables — útiles para fijar consultas a un nodo (administración, depuración), <strong>no</strong> para producción: anulan el reparto de carga y el <em>token awareness</em></li>
+<li><code>WhiteListRoundRobinPolicy</code>/<code>HostFilterPolicy</code>: restringen el conjunto de nodos utilizables — útiles para fijar consultas a un nodo (administración, depuración), <strong>no</strong> para producción: anulan el reparto de carga y el <em>token awareness</em></li>
 </ul>
 <footer>BDGE · Sesión 5 · Curso 2026/2027</footer>
 </section>
