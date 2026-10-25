@@ -1,2 +1,2 @@
-pymongo==4.18.0
+pymongo==4.18.2
 PyMySQL==1.1.2
