@@ -1,0 +1,51 @@
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: benchmark-local
+      MYSQL_DATABASE: benchmark
+      MYSQL_USER: benchmark
+      MYSQL_PASSWORD: benchmark-local
+    command: ["--innodb-flush-log-at-trx-commit=1", "--sync-binlog=1"]
+    cpus: 2
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -ubenchmark -p$$MYSQL_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  mongo:
+    image: mongo:8.3
+    command: ["mongod", "--bind_ip_all", "--wiredTigerCacheSizeGB", "0.5"]
+    cpus: 2
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.runCommand({ping: 1}).ok ? 0 : 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  benchmark:
+    image: quay.io/jupyter/scipy-notebook:latest
+    user: "${BENCHMARK_UID:-1000}:${BENCHMARK_GID:-1000}"
+    working_dir: /work
+    volumes:
+      - .:/work
+    environment:
+      PYTHONPATH: /tmp/benchmark-deps
+      MPLCONFIGDIR: /tmp/matplotlib
+      MYSQL_HOST: mysql
+      MYSQL_PASSWORD: benchmark-local
+      MONGO_URI: mongodb://mongo:27017
+      BENCHMARK_ROWS: "${BENCHMARK_ROWS:-1000000}"
+      BENCHMARK_REPEATS: "${BENCHMARK_REPEATS:-3}"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-ec"]
+    command:
+      - >-
+        python -m pip install --disable-pip-version-check --no-cache-dir
+        --target /tmp/benchmark-deps -r requirements.txt
+        && python benchmark.py
