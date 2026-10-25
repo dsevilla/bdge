@@ -2,12 +2,16 @@
 Recursos para la asignatura BDGE del Máster de Big Data de la UM/USC,
 curso 2026-2027.
 
+Las transparencias de la asignatura y los enlaces a los boletines se publican
+en <https://dsevilla.github.io/bdge/>.
+
 ## Cómo trabajar con los boletines
 
 Cada boletín se puede abrir de dos formas:
 
 - **En Google Colab**, sin instalar nada: el enlace está en la sección
-  «Boletines prácticos» de la portada de las transparencias, o directamente en
+  «Boletines prácticos» de la [portada de las transparencias](https://dsevilla.github.io/bdge/),
+  o directamente en
   `https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/<ruta>`
   (p. ej. `sql/sesion1.ipynb`).
 - **En local**, con el `docker-compose.yml` del directorio del boletín, que
