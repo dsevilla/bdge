@@ -946,12 +946,14 @@ session = cluster.connect()
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="85" data-paginate="true" data-footer="BDGE · Sesión 5 · Curso 2026/2027" data-theme="bdge" data-lang="es" lang="es" data-marpit-pagination="85" style="--paginate:true;--footer:BDGE · Sesión 5 · Curso 2026/2027;--theme:bdge;--lang:es;" data-marpit-pagination-total="105" data-size="16:9">
 <h1 id="creaci%C3%B3n-de-keyspaces">Creación de <code>keyspaces</code></h1>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-python">session.execute(<span class="hljs-string">&quot;&quot;&quot;
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-python">factor = <span class="hljs-built_in">min</span>(<span class="hljs-built_in">len</span>(cluster.metadata.all_hosts()), <span class="hljs-number">3</span>)
+
+session.execute(<span class="hljs-string">f&quot;&quot;&quot;
     CREATE KEYSPACE IF NOT EXISTS mi_keyspace
-    WITH replication = {&#x27;class&#x27;: &#x27;SimpleStrategy&#x27;, &#x27;replication_factor&#x27;: 1}
+    WITH replication = {{&#x27;class&#x27;: &#x27;SimpleStrategy&#x27;, &#x27;replication_factor&#x27;: <span class="hljs-subst">{factor}</span>}}
 &quot;&quot;&quot;</span>)
 </code></pre>
-<p>Genera un <em>keyspace</em> con <code>SimpleStrategy</code>, replicando en un único nodo: válido para un clúster mínimo de desarrollo, pero <strong>ignora la topología</strong> del clúster</p>
+<p>Genera un <em>keyspace</em> con <code>SimpleStrategy</code>, con un factor de replicación igual al número de nodos (hasta 3): la opción más sencilla para un único <em>datacenter</em>, pero <strong>ignora la topología</strong> del clúster</p>
 <footer>BDGE · Sesión 5 · Curso 2026/2027</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="86" data-paginate="true" data-footer="BDGE · Sesión 5 · Curso 2026/2027" data-class="code" data-theme="bdge" data-lang="es" lang="es" class="code" data-marpit-pagination="86" style="--paginate:true;--footer:BDGE · Sesión 5 · Curso 2026/2027;--class:code;--theme:bdge;--lang:es;" data-marpit-pagination-total="105" data-size="16:9">
@@ -1032,7 +1034,7 @@ rows = session.execute(select_query)
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="91" data-paginate="true" data-footer="BDGE · Sesión 5 · Curso 2026/2027" data-class="compact" data-theme="bdge" data-lang="es" lang="es" class="compact" data-marpit-pagination="91" style="--paginate:true;--footer:BDGE · Sesión 5 · Curso 2026/2027;--class:compact;--theme:bdge;--lang:es;" data-marpit-pagination-total="105" data-size="16:9">
 <h1 id="construcci%C3%B3n-de-%C3%ADndices-en-segundo-plano">Construcción de índices en segundo plano</h1>
 <ul>
-<li><code>execute_async()</code> sobre un <code>CREATE INDEX</code> sólo confirma que el cambio de esquema <strong>se propagó</strong> por el clúster, no que el índice ya esté construido</li>
+<li><code>execute()</code> sobre un <code>CREATE INDEX</code> sólo confirma que el cambio de esquema <strong>se propagó</strong> por el clúster, no que el índice ya esté construido</li>
 <li>El <em>build</em> —recorrer las SSTables existentes y poblar el índice— es un proceso aparte, en segundo plano</li>
 <li>Con varios índices construyéndose a la vez sobre tablas de tamaños distintos, un <code>time.sleep(N)</code> fijo puede terminar antes de que estén disponibles: una consulta que use el índice fallaría con <code>IndexNotAvailableException</code></li>
 <li>Mejor: sondear <code>system_views.sstable_tasks</code> (equivalente CQL de <code>nodetool compactionstats</code>, desde Cassandra 4.0) hasta que no queden tareas de tipo <em>Secondary index build</em>, y confirmar con una consulta real de bajo coste</li>
