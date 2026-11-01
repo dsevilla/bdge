@@ -798,7 +798,7 @@ foo<span class="hljs-variable">@bar</span>.com <span class="hljs-operator">|</sp
 <ul>
 <li>Se guarda junto a cada SSTable y a la <em>memtable</em>, así que se construye y se compacta con los datos</li>
 <li>Permite búsquedas eficientes en columnas no clave</li>
-<li>Soporta igualdad, rangos numéricos, varias condiciones con <code>AND</code> y <code>CONTAINS</code> en colecciones, pero no <code>LIKE</code></li>
+<li>Soporta igualdad, rangos numéricos y <code>CONTAINS</code> en colecciones, pero no <code>LIKE</code></li>
 </ul>
 <p><strong>Ventajas</strong>:</p>
 <ul>
@@ -1242,7 +1242,7 @@ IF <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">EXISTS</span
 <tbody>
 <tr>
 <td>Índice SAI</td>
-<td>Igualdad, rangos y varias condiciones sobre una tabla</td>
+<td>Igualdad y rangos en columnas fuera de la clave</td>
 <td>Local: pregunta a muchos nodos; escritura y compactación más lentas</td>
 </tr>
 <tr>
