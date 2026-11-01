@@ -300,7 +300,7 @@ hour                | event_type | time                | data      | id
 
 <p>Varias opciones:</p>
 <ul>
-<li>Crear un índice secundario sobre <code>id</code>
+<li>Crear un índice SAI sobre <code>id</code>
 <ul>
 <li>No recomendable, porque los valores están dispersos por todo el clúster,</li>
 <li>Y, ¿el índice dónde vive?</li>
@@ -784,27 +784,27 @@ foo<span class="hljs-variable">@bar</span>.com <span class="hljs-operator">|</sp
 <footer>BDGE · Sesión 5 · Curso 2026/2027</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="73" data-paginate="true" data-footer="BDGE · Sesión 5 · Curso 2026/2027" data-theme="bdge" data-lang="es" lang="es" data-marpit-pagination="73" style="--paginate:true;--footer:BDGE · Sesión 5 · Curso 2026/2027;--theme:bdge;--lang:es;" data-marpit-pagination-total="105" data-size="16:9">
-<h1 id="creaci%C3%B3n-de-%C3%ADndices">Creación de índices</h1>
+<h1 id="%C3%ADndices-en-cassandra">Índices en Cassandra</h1>
 <ul>
-<li>En Cassandra los índices secundarios son complicados de usar y pueden afectar mucho al rendimiento</li>
-<li>La tabla de índices se almacena en cada nodo del clúster: una consulta con un índice secundario puede convertirse en una pesadilla de rendimiento si accede a varios nodos</li>
-<li>Regla general: indexar una columna con <strong>baja cardinalidad</strong> de pocos valores</li>
-<li>Actualmente este tipo de índices sufre de bajo rendimiento y alta latencia</li>
+<li>Como en SQL, un índice permite buscar por una columna que no es de la clave sin recorrer la tabla</li>
+<li>Los índices actuales son los <strong>SAI</strong> (<em>Storage-Attached Indexing</em>), desde Cassandra 5.0</li>
+<li>Los anteriores, los índices secundarios clásicos, ya no se usan en los diseños nuevos</li>
+<li>Se piden con <code>USING 'sai'</code>: con la configuración por omisión de la 5.0, sin esa cláusula se crea uno clásico (con <code>cassandra_latest.yaml</code>, la del curso, ya no)</li>
 </ul>
 <footer>BDGE · Sesión 5 · Curso 2026/2027</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="74" data-paginate="true" data-footer="BDGE · Sesión 5 · Curso 2026/2027" data-class="compact" data-theme="bdge" data-lang="es" lang="es" class="compact" data-marpit-pagination="74" style="--paginate:true;--footer:BDGE · Sesión 5 · Curso 2026/2027;--class:compact;--theme:bdge;--lang:es;" data-marpit-pagination-total="105" data-size="16:9">
 <h1 id="sai-storage-attached-index">SAI (<em>Storage-Attached Index</em>)</h1>
 <ul>
-<li>Nuevo tipo de índice en Apache Cassandra (desde 5.0), con mejor rendimiento que los índices secundarios tradicionales</li>
+<li>Se guarda junto a cada SSTable y a la <em>memtable</em>, así que se construye y se compacta con los datos</li>
 <li>Permite búsquedas eficientes en columnas no clave</li>
-<li>Soporta igualdad, rangos y <code>CONTAINS</code> en colecciones, pero no <code>LIKE</code></li>
+<li>Soporta igualdad, rangos numéricos, varias condiciones con <code>AND</code> y <code>CONTAINS</code> en colecciones, pero no <code>LIKE</code></li>
 </ul>
 <p><strong>Ventajas</strong>:</p>
 <ul>
 <li>Menor consumo de almacenamiento</li>
 <li>Soporte para múltiples tipos de datos</li>
-<li>Consultas más eficientes que con índices tradicionales</li>
+<li>Varios índices sobre una tabla comparten parte de sus estructuras</li>
 </ul>
 <p><strong>Consideraciones</strong>:</p>
 <ul>
@@ -872,7 +872,7 @@ foo<span class="hljs-variable">@bar</span>.com <span class="hljs-operator">|</sp
 <h1 id="conexi%C3%B3n-al-cl%C3%BAster-puntos-de-contacto-y-perfiles">Conexión al clúster: puntos de contacto y perfiles</h1>
 <p>Conectarse a Cassandra no se parece a abrir una conexión a un servidor SQL: el <em>driver</em> mantiene un <em>pool</em> de conexiones <strong>con todos los nodos que considera accesibles</strong>, y decide, consulta a consulta, a cuál se la envía</p>
 <ul>
-<li><strong>Puntos de contacto</strong> (<code>contact_points</code>): sólo se usan en el arranque. El <em>driver</em> abre la <em>control connection</em> contra uno de ellos y descubre el resto por <em>gossip</em> (<code>system.local</code>/<code>system.peers</code>)</li>
+<li><strong>Puntos de contacto</strong> (<code>contact_points</code>): sólo se usan en el arranque. El <em>driver</em> abre la <em>control connection</em> contra uno de ellos y lee sus tablas <code>system.local</code> (ese nodo) y <code>system.peers</code> (los demás, que conoce por <em>gossip</em>)</li>
 <li><strong>Hosts</strong> (<code>cluster.metadata.all_hosts()</code>): cada nodo descubierto, con dirección, <em>datacenter</em>, <em>rack</em> y estado. El <em>driver</em> se conecta a la dirección que <strong>cada nodo publica</strong> (<code>rpc_address</code>/<code>broadcast_rpc_address</code>), no a la de <code>contact_points</code></li>
 <li><strong>Perfiles de ejecución</strong> (<code>ExecutionProfile</code>): agrupan política de balanceo, consistencia, reintentos, <em>timeout</em> y <code>row_factory</code>; cada consulta elige uno con <code>execution_profile=</code></li>
 </ul>
@@ -1241,14 +1241,9 @@ IF <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">EXISTS</span
 </thead>
 <tbody>
 <tr>
-<td>Índice secundario clásico</td>
-<td>Igualdad con baja cardinalidad</td>
-<td>Local: pregunta a muchos nodos</td>
-</tr>
-<tr>
 <td>Índice SAI</td>
-<td>Rangos y varias condiciones sobre una tabla</td>
-<td>Local; escritura y compactación más lentas</td>
+<td>Igualdad, rangos y varias condiciones sobre una tabla</td>
+<td>Local: pregunta a muchos nodos; escritura y compactación más lentas</td>
 </tr>
 <tr>
 <td>Vista materializada</td>
@@ -1262,7 +1257,7 @@ IF <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">EXISTS</span
 </tr>
 <tr>
 <td><code>ALLOW FILTERING</code></td>
-<td>Pruebas y tablas pequeñas</td>
+<td>Filtrar dentro de una partición, pruebas y tablas pequeñas</td>
 <td>Recorre filas para descartarlas</td>
 </tr>
 </tbody>
