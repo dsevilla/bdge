@@ -573,7 +573,7 @@ solución y una comprobación automática (<code>assert</code>) justo después d
 <h1 id="cassandra-uno-o-dos-nodos">Cassandra: uno o dos nodos</h1>
 <ul>
 <li><code>docker-compose-cassandra.yml</code>: <strong>un nodo</strong>, la más ligera y la habitual</li>
-<li><code>docker-compose-cassandra-2.yml</code>: <strong>dos nodos</strong> (<code>cassandra1</code>, <code>cassandra2</code>) en la misma red: un clúster pequeño con replicación; más memoria (3 GB de <em>heap</em> por nodo) y arranque más lento (hasta un par de minutos)</li>
+<li><code>docker-compose-cassandra-2.yml</code>: <strong>dos nodos</strong> (<code>cassandra1</code>, <code>cassandra2</code>) en la misma red: un clúster pequeño con replicación; más memoria y arranque más lento (hasta un par de minutos)</li>
 <li>Con dos nodos, el notebook corre en el contenedor <code>notebook</code> de esa red; desde el equipo sólo va <code>cqlsh</code> (puertos 9042 y 9043): cada nodo publica su dirección <strong>dentro</strong> de la red de Docker</li>
 </ul>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> cassandra</span>
