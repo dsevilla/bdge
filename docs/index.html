@@ -21,7 +21,7 @@
     header p { color: var(--rojo); font-size: 1.35rem; margin: 0; }
     main { display: flex; flex-direction: column; gap: 3rem; padding-bottom: 3rem; }
     .titulo-seccion { align-items: center; color: var(--tinta-suave); display: flex; font-size: 1.6rem; gap: clamp(.5rem, 2vw, 1.25rem); justify-content: center; margin: 0 0 1.5rem; text-align: center; }
-    .titulo-seccion span { flex: 0 1 auto; }
+    .titulo-seccion span { flex: 0 1 auto; letter-spacing: .08em; text-transform: uppercase; }
     .adornos { height: 0; position: absolute; width: 0; }
     .adorno { color: var(--rojo); flex: 1 1 10rem; height: 2.5rem; max-width: 12.5rem; min-width: 2rem; overflow: visible; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
     .adorno:last-child { transform: scaleX(-1); }
@@ -251,7 +251,7 @@
       <img src="img/comic-rosetta.svg" alt="Tira «La piedra de los datos»: un explorador encuentra una piedra Rosetta con el mismo dato escrito en XML, CSV, JSON y Parquet" loading="lazy">
     </figure>
   </main>
-  <footer>Universidad de Murcia</footer>
+  <footer>Diego Sevilla Ruiz · Universidad de Murcia</footer>
   <script>
     const adorno = "#adorno-" + (1 + Math.floor(Math.random() * 9));
     document.querySelectorAll(".adorno use").forEach((uso) => uso.setAttribute("href", adorno));
