@@ -1,0 +1,122 @@
+# Clúster simulado de dos nodos de Cassandra más el cuaderno de Jupyter.
+#
+# Los tres servicios comparten la red `cassandra-net`. Esto es imprescindible:
+# cada nodo publica en `system.peers` la dirección de su interfaz **dentro** de
+# esa red (172.x.y.z), que es la que el driver usará para conectarse a él tras
+# descubrirlo. Desde el equipo anfitrión sólo son accesibles los puertos
+# publicados (9042 y 9043), suficientes para `cqlsh`, que habla con un único
+# nodo, pero no para el driver de Python, que intentaría abrir conexiones con
+# todos los nodos descubiertos.
+networks:
+  cassandra-net:
+    driver: bridge
+
+services:
+
+  cassandra1:
+    image: "cassandra:5"
+    container_name: "cassandra1"
+    hostname: "cassandra1"
+    ports:
+      # Sólo se publica el puerto CQL: el de gossip (storage_port, movido a
+      # 7070 más abajo) sólo se usa entre nodos, dentro de cassandra-net.
+      - 9042:9042
+    networks:
+      - cassandra-net
+    environment:
+      - CASSANDRA_START_RPC=true       # default
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0  # default
+      - CASSANDRA_LISTEN_ADDRESS=auto  # default, use IP addr of container # = CASSANDRA_BROADCAST_ADDRESS
+      - CASSANDRA_CLUSTER_NAME=my-cluster
+      # Con GossipingPropertyFileSnitch cada nodo declara su datacenter, así
+      # que la estrategia recomendada para el keyspace es NetworkTopologyStrategy
+      # (los cuadernos usan SimpleStrategy por sencillez).
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_DC=my-datacenter-1
+      - CASSANDRA_SEEDS=cassandra1:7070
+      # Heap fijo por nodo (ver docker-compose-cassandra.yml): con dos JVM, la
+      # mitad de la RAM del anfitrión por nodo, pre-tocada, dejaría sin memoria
+      # al equipo. 4G por nodo: con 3G, las memtables se llenan antes, hay más
+      # SSTables y el CREATE INDEX coincidía con una compactación (el build de
+      # SAI se abortaba). Cada nodo llega a ocupar unos 5,5 GiB (heap pre-tocado
+      # más memoria fuera del heap): el runner onprem sólo debe ejecutar un job de
+      # la JVM a la vez (resource_group), o el kernel mata a un nodo (137).
+      - MAX_HEAP_SIZE=4G
+    restart:
+      on-failure
+    # Cassandra sólo lee cassandra.yaml: se copia encima cassandra_latest.yaml, la
+    # configuración para instalaciones nuevas (índices SAI por omisión, SSTables
+    # BTI, memtables trie, UnifiedCompactionStrategy), y después se ajusta. El
+    # entrypoint añade la red y las semillas, así que la copia va antes que él.
+    command: bash -c 'cp /etc/cassandra/cassandra_latest.yaml /etc/cassandra/cassandra.yaml && sed -i -e "s/\(materialized_views_enabled:\).*/\\1 true/;s/\(storage_port:\).*/\\1 7070/;s/\(batch_size_warn_threshold:\).*/\\1 128KiB/;s/\(batch_size_fail_threshold:\).*/\\1 1024KiB/" /etc/cassandra/cassandra.yaml && /usr/local/bin/docker-entrypoint.sh cassandra -f'
+    healthcheck:
+      # El cuaderno depende de que el puerto CQL responda, no sólo de que el
+      # proceso esté vivo: se comprueba con una consulta real.
+      test: ["CMD", "cqlsh", "-e", "SELECT now() FROM system.local;"]
+      interval: 30s
+      start_period: 60s
+      timeout: 15s
+      retries: 5
+    labels:
+      - "project=bdge"
+      - "service=cassandra"
+      - "environment=development"
+
+  cassandra2:
+    image: "cassandra:5"
+    container_name: "cassandra2"
+    hostname: "cassandra2"
+    ports:
+      - 9043:9042
+    networks:
+      - cassandra-net
+    environment:
+      - CASSANDRA_START_RPC=true       # default
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0  # default
+      - CASSANDRA_LISTEN_ADDRESS=auto  # default, use IP addr of container # = CASSANDRA_BROADCAST_ADDRESS
+      - CASSANDRA_CLUSTER_NAME=my-cluster
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      # Mismo datacenter que cassandra1: el clúster tiene un solo DC con dos
+      # nodos, que es lo que se refleja en el factor de replicación.
+      - CASSANDRA_DC=my-datacenter-1
+      - CASSANDRA_SEEDS=cassandra1:7070
+      - MAX_HEAP_SIZE=4G
+    depends_on:
+      cassandra1:
+        condition: service_healthy
+    restart:
+      on-failure
+    # La configuración debe ser la misma que la del primer nodo.
+    command: bash -c 'cp /etc/cassandra/cassandra_latest.yaml /etc/cassandra/cassandra.yaml && sed -i -e "s/\(materialized_views_enabled:\).*/\\1 true/;s/\(storage_port:\).*/\\1 7070/;s/\(batch_size_warn_threshold:\).*/\\1 128KiB/;s/\(batch_size_fail_threshold:\).*/\\1 1024KiB/" /etc/cassandra/cassandra.yaml && /usr/local/bin/docker-entrypoint.sh cassandra -f'
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "SELECT now() FROM system.local;"]
+      interval: 30s
+      start_period: 90s
+      timeout: 15s
+      retries: 5
+    labels:
+      - "project=bdge"
+      - "service=cassandra"
+      - "environment=development"
+
+  notebook:
+    image: "quay.io/jupyter/scipy-notebook:latest"
+    user: root
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan/work/bdge
+    environment:
+      - GRANT_SUDO=yes
+      - JUPYTER_TOKEN=bdge
+      # Los dos nodos como puntos de contacto: con uno bastaría para descubrir
+      # el clúster, pero así el arranque tolera que uno de ellos no esté listo.
+      - DB_HOSTNAME=cassandra1,cassandra2
+      - RUNNING_IN_CONTAINER=true
+    networks:
+      - cassandra-net
+    depends_on:
+      cassandra1:
+        condition: service_healthy
+      cassandra2:
+        condition: service_healthy

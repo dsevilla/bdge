@@ -1,0 +1,51 @@
+# Un único nodo de Cassandra más el cuaderno de Jupyter. Es la configuración
+# más cómoda para trabajar y la que simula Colab: el snitch por omisión
+# (SimpleSnitch) sitúa el nodo en el datacenter `datacenter1`.
+#
+# Para experimentar con un clúster de dos nodos, con GossipingPropertyFileSnitch
+# y replicación entre ellos, usar `docker-compose-cassandra-2.yml`.
+services:
+  cassandra:
+    image: cassandra:5
+    ports:
+      - "9042:9042"
+      - "7199:7199"
+    environment:
+      # Sin esto, Cassandra 5 fija el heap en la MITAD de la RAM que ve el
+      # contenedor, con tope de 31 GiB, y con -XX:+AlwaysPreTouch lo reserva
+      # entero al arrancar. Docker enseña la memoria del anfitrión, no la del
+      # job: en un runner grande eso son 31 GiB de heap y el kernel de Python
+      # muere (DeadKernelError) al competir por la RAM. 4G bastan para las
+      # cargas de los cuadernos: con 3G por nodo, y los datos completos en cada
+      # uno (factor de replicación 2), el heap llegó a 1,9 GB; 4G dejan margen.
+      # Con G1 sólo se fija MAX_HEAP_SIZE (HEAP_NEWSIZE debe quedar sin definir).
+      # CASSANDRA_MAX_HEAP_SIZE permite cambiarlo según la memoria del equipo;
+      # sin definir, vale 4G.
+      - MAX_HEAP_SIZE=${CASSANDRA_MAX_HEAP_SIZE:-4G}
+    # Cassandra sólo lee cassandra.yaml: se copia encima cassandra_latest.yaml, la
+    # configuración para instalaciones nuevas (índices SAI por omisión, SSTables
+    # BTI, memtables trie, UnifiedCompactionStrategy), y después se ajusta. El
+    # entrypoint añade la red y las semillas, así que la copia va antes que él.
+    command: bash -c 'cp /etc/cassandra/cassandra_latest.yaml /etc/cassandra/cassandra.yaml && sed -i -e "s/\(materialized_views_enabled:\).*/\\1 true/;s/\(storage_port:\).*/\\1 7070/;s/\(batch_size_warn_threshold:\).*/\\1 128KiB/;s/\(batch_size_fail_threshold:\).*/\\1 1024KiB/" /etc/cassandra/cassandra.yaml && /usr/local/bin/docker-entrypoint.sh cassandra -f'
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "SELECT now() FROM system.local;"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  notebook:
+    image: "quay.io/jupyter/scipy-notebook:latest"
+    user: root
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan/work/bdge
+    environment:
+      - GRANT_SUDO=yes
+      - JUPYTER_TOKEN=bdge
+      - DB_HOSTNAME=cassandra
+      - RUNNING_IN_CONTAINER=true
+    depends_on:
+      cassandra:
+        condition: service_healthy
