@@ -1,1 +1,4 @@
 @sqlite.org/sqlite-wasm 3.54.1-build1 sha512-foW427VBLJ3G87bsnvQTZCc9zYe0Fq1wH0pz1I6BlKLKXcArIAyTkHtq0iT2llmhcMQt9T/p6l5PpQQh+6O8uQ==
+index.mjs minificado con esbuild 0.28.2
+index.mjs
+sqlite3.wasm

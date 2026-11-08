@@ -1,10 +1,10 @@
 // Buscador del sitio de la asignatura.
 //
-// La base de datos (SQLite con un índice FTS5, ~650 kB con gzip) va dentro de
-// la propia página, en base64 (<script id="bd-indice">), junto con la lista de
-// documentos (<script id="documentos-indice">); la escribe buscador.py en el CI.
-// Aquí se descomprime, se carga en memoria con SQLite compilado a WebAssembly
-// (vendor/, el paquete oficial @sqlite.org/sqlite-wasm) y cada consulta es local.
+// La base de datos (bd.sqlite3.gz: SQLite con un índice FTS5 y la lista de
+// documentos, ~650 kB con gzip) la escribe buscador.py en el CI. Se descarga
+// entera (index.html la precarga), se descomprime, se carga en memoria con
+// SQLite compilado a WebAssembly (vendor/, el paquete oficial
+// @sqlite.org/sqlite-wasm) y cada consulta es local.
 // Las miniaturas (miniaturas/*.jpg) son imágenes aparte y sólo se piden las de
 // los documentos que se muestran.
 //
@@ -34,28 +34,29 @@ import sqlite3InitModule from "./vendor/index.mjs";
   const filtros = $("#filtros");
   const resultados = $("#resultados");
 
+  const FICHERO_BD = "bd.sqlite3.gz";
+
   let indice = null;
   let bd = null;
   let tipoActivo = "todos";
   let ultimos = [];
 
   // ── datos ────────────────────────────────────────────────────────────────
-  function cargarIndice() {
-    if (indice === null) {
-      indice = JSON.parse($("#documentos-indice").textContent);
-      indice.porId = new Map(indice.documentos.map((doc) => [doc.id, doc]));
-    }
-    return indice;
+  // Los bytes de la base de datos. Si el servidor la hubiera enviado ya
+  // descomprimida (Content-Encoding: gzip), no empiezan por la marca de gzip.
+  async function bytesBaseDeDatos() {
+    const respuesta = await fetch(FICHERO_BD);
+    if (!respuesta.ok) throw new Error(`no se pudo descargar el índice (${FICHERO_BD}: ${respuesta.status})`);
+    const datos = new Uint8Array(await respuesta.arrayBuffer());
+    if (datos[0] !== 0x1f || datos[1] !== 0x8b) return datos;
+    const descomprimida = new Blob([datos]).stream().pipeThrough(new DecompressionStream("gzip"));
+    return new Uint8Array(await new Response(descomprimida).arrayBuffer());
   }
 
-  // Base64 → gzip → bytes de la base de datos → SQLite en memoria (sólo lectura).
+  // bd.sqlite3.gz → SQLite en memoria (sólo lectura), y de ella la lista de documentos.
   async function baseDeDatos() {
     if (bd === null) {
-      const base64 = $("#bd-indice").textContent.replace(/\s+/g, "");
-      const comprimida = await fetch("data:application/gzip;base64," + base64);
-      const descomprimida = comprimida.body.pipeThrough(new DecompressionStream("gzip"));
-      const bytes = new Uint8Array(await new Response(descomprimida).arrayBuffer());
-      const sqlite3 = await sqlite3InitModule();
+      const [bytes, sqlite3] = await Promise.all([bytesBaseDeDatos(), sqlite3InitModule()]);
       const db = new sqlite3.oo1.DB();
       const puntero = sqlite3.wasm.allocFromTypedArray(bytes);
       db.checkRc(
@@ -68,6 +69,14 @@ import sqlite3InitModule from "./vendor/index.mjs";
           sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE | sqlite3.capi.SQLITE_DESERIALIZE_READONLY,
         ),
       );
+      const documentos = db.selectObjects(
+        "SELECT id, tipo, titulo, url, colab, miniatura FROM docs ORDER BY id",
+      );
+      indice = {
+        rowid_doc: db.selectValue("SELECT valor FROM meta WHERE clave = 'rowid_doc'"),
+        documentos,
+        porId: new Map(documentos.map((doc) => [doc.id, doc])),
+      };
       bd = db;
     }
     return bd;
@@ -116,7 +125,7 @@ import sqlite3InitModule from "./vendor/index.mjs";
 
     // El rowid de cada trozo es documento * rowid_doc + orden: el documento sale
     // del índice FTS sin leer la tabla de trozos, que lleva todo el texto.
-    const porDocumento = cargarIndice().rowid_doc;
+    const porDocumento = indice.rowid_doc;
     const docsDe = new Map();
     for (const atomo of new Set([...grupos.flat(), ...negados])) {
       const filas = db.selectObjects("SELECT DISTINCT rowid / ? AS doc FROM fts WHERE fts MATCH ?", [
@@ -268,11 +277,11 @@ import sqlite3InitModule from "./vendor/index.mjs";
     resultados.innerHTML = visibles.map(tarjeta).join("");
   }
 
-  function pintarCatalogo() {
-    const datos = cargarIndice();
+  async function pintarCatalogo() {
+    await baseDeDatos();
     filtros.hidden = true;
-    estado.textContent = `${datos.documentos.length} documentos indexados: transparencias y cuadernos de la asignatura.`;
-    resultados.innerHTML = datos.documentos
+    estado.textContent = `${indice.documentos.length} documentos indexados: transparencias y cuadernos de la asignatura.`;
+    resultados.innerHTML = indice.documentos
       .map((doc) => tarjeta({ doc, trozos: [], total: 0 }))
       .join("");
   }
@@ -285,7 +294,7 @@ import sqlite3InitModule from "./vendor/index.mjs";
     history.replaceState(null, "", url);
     document.title = consulta ? `${consulta} · ${document.body.dataset.titulo}` : document.body.dataset.titulo;
     if (!consulta) {
-      pintarCatalogo();
+      await pintarCatalogo();
       return;
     }
     estado.textContent = "Buscando…";
@@ -323,6 +332,17 @@ import sqlite3InitModule from "./vendor/index.mjs";
     filtros.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === boton)));
     pintar();
   });
+
+  // Una miniatura que ya no existe (la BD de la caché del navegador es de una
+  // publicación anterior) se quita en vez de dejar la imagen rota.
+  resultados.addEventListener(
+    "error",
+    (evento) => {
+      if (evento.target instanceof HTMLImageElement) evento.target.closest(".miniatura")?.classList.add("vacia");
+      if (evento.target instanceof HTMLImageElement) evento.target.remove();
+    },
+    true,
+  );
 
   const inicial = new URLSearchParams(location.search).get("q") || "";
   entrada.value = inicial;
