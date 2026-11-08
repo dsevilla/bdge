@@ -33,11 +33,14 @@ import sqlite3InitModule from "./vendor/index.mjs";
   const estado = $("#estado");
   const filtros = $("#filtros");
   const resultados = $("#resultados");
+  const estadisticas = $("#estadisticas");
 
   const FICHERO_BD = "bd.sqlite3.gz";
 
   let indice = null;
   let bd = null;
+  // Lo que se mide al cargar la base de datos, para las estadísticas.
+  const carga = { comprimida: null, bytes: 0, ms: 0 };
   let tipoActivo = "todos";
   let ultimos = [];
 
@@ -49,6 +52,7 @@ import sqlite3InitModule from "./vendor/index.mjs";
     if (!respuesta.ok) throw new Error(`no se pudo descargar el índice (${FICHERO_BD}: ${respuesta.status})`);
     const datos = new Uint8Array(await respuesta.arrayBuffer());
     if (datos[0] !== 0x1f || datos[1] !== 0x8b) return datos;
+    carga.comprimida = datos.byteLength;
     const descomprimida = new Blob([datos]).stream().pipeThrough(new DecompressionStream("gzip"));
     return new Uint8Array(await new Response(descomprimida).arrayBuffer());
   }
@@ -56,7 +60,9 @@ import sqlite3InitModule from "./vendor/index.mjs";
   // bd.sqlite3.gz → SQLite en memoria (sólo lectura), y de ella la lista de documentos.
   async function baseDeDatos() {
     if (bd === null) {
+      const inicio = performance.now();
       const [bytes, sqlite3] = await Promise.all([bytesBaseDeDatos(), sqlite3InitModule()]);
+      carga.bytes = bytes.byteLength;
       const db = new sqlite3.oo1.DB();
       const puntero = sqlite3.wasm.allocFromTypedArray(bytes);
       db.checkRc(
@@ -72,14 +78,54 @@ import sqlite3InitModule from "./vendor/index.mjs";
       const documentos = db.selectObjects(
         "SELECT id, tipo, titulo, url, colab, miniatura FROM docs ORDER BY id",
       );
+      const meta = Object.fromEntries(db.selectArrays("SELECT clave, valor FROM meta"));
       indice = {
-        rowid_doc: db.selectValue("SELECT valor FROM meta WHERE clave = 'rowid_doc'"),
+        rowid_doc: meta.rowid_doc,
+        meta,
         documentos,
         porId: new Map(documentos.map((doc) => [doc.id, doc])),
       };
       bd = db;
+      carga.ms = performance.now() - inicio;
+      pintarEstadisticas();
     }
     return bd;
+  }
+
+  // ── estadísticas del índice ──────────────────────────────────────────────
+  // useGrouping "always": en español, sin él 8153 sale sin punto y 134.266 con él.
+  const numero = (n) => Number(n).toLocaleString("es-ES", { useGrouping: "always" });
+  const tamano = (bytes) =>
+    bytes >= 1e6
+      ? `${(bytes / 1e6).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MB`
+      : `${numero(Math.round(bytes / 1e3))} kB`;
+  const PLURALES = { transparencias: "transparencias", cuaderno: "cuadernos", pagina: "páginas" };
+
+  function pintarEstadisticas() {
+    if (!estadisticas) return;
+    const { meta, documentos } = indice;
+    const porTipo = new Map();
+    documentos.forEach((doc) => porTipo.set(doc.tipo, (porTipo.get(doc.tipo) || 0) + 1));
+    const tipos = [...porTipo].map(([tipo, n]) => `${n} ${PLURALES[tipo] || tipo}`).join(" · ");
+    const filas = [
+      ["Documentos", numero(documentos.length), tipos],
+      ["Fragmentos", numero(meta.trozos ?? 0), "diapositivas y secciones"],
+      ["Términos distintos", numero(meta.terminos ?? 0), "sin mayúsculas ni acentos"],
+      ["Palabras indexadas", numero(meta.palabras ?? 0), "todas las apariciones"],
+      [
+        "Base de datos",
+        tamano(carga.bytes),
+        carga.comprimida ? `${tamano(carga.comprimida)} comprimida` : "SQLite con FTS5",
+      ],
+      ["Carga", `${numero(Math.round(carga.ms))} ms`, "descarga y apertura"],
+    ];
+    estadisticas.innerHTML = filas
+      .map(
+        ([rotulo, valor, detalle]) =>
+          `<div><dt>${escapar(rotulo)}</dt><dd><strong>${escapar(valor)}</strong> <span>${escapar(detalle)}</span></dd></div>`,
+      )
+      .join("");
+    estadisticas.hidden = false;
   }
 
   // ── consulta ─────────────────────────────────────────────────────────────

@@ -267,6 +267,53 @@ footer {
   padding-top: 1rem;
 }
 
+footer p {
+  margin: 0;
+}
+
+/* Estadísticas del índice (las rellena buscador.js al cargar la base de datos). */
+.estadisticas {
+  display: grid;
+  gap: 0.75rem 1.25rem;
+  /* Seis cifras: en una fila, en dos de tres o en tres de dos, nunca una suelta. */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: 0 0 1.25rem;
+}
+
+@media (max-width: 62rem) {
+  .estadisticas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 34rem) {
+  .estadisticas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.estadisticas dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.estadisticas dd {
+  margin: 0.15rem 0 0;
+}
+
+.estadisticas strong {
+  color: var(--tinta);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.estadisticas span {
+  display: block;
+  font-size: 0.8rem;
+}
+
 @media (max-width: 40rem) {
   .resultado {
     grid-template-columns: 1fr;
