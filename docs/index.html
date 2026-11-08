@@ -43,6 +43,10 @@
     .enlaces-cabecera { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
     .enlaces-cabecera a { align-items: center; display: inline-flex; font-size: .85rem; gap: .45rem; padding: .4rem .65rem; }
     .icono-github { flex: none; height: 1.1rem; width: 1.1rem; }
+    .busqueda { display: flex; gap: .5rem; margin-top: 1rem; max-width: 34rem; }
+    .busqueda input { border: 2px solid var(--linea); border-radius: .4rem; color: inherit; flex: 1; font: inherit; min-width: 0; padding: .5rem .7rem; }
+    .busqueda input:focus { border-color: var(--rojo); outline: none; }
+    .busqueda button { background: var(--rojo); border: 2px solid var(--rojo); border-radius: .4rem; color: white; cursor: pointer; font: inherit; font-weight: 700; padding: .5rem .9rem; }
     footer { border-top: 1px solid var(--linea); color: #5e6b74; padding-bottom: 2rem; padding-top: 1.5rem; }
     @media (max-width: 56rem) {
       header { align-items: flex-start; flex-direction: column; padding-top: 2rem; }
@@ -75,6 +79,10 @@
         </a>
         <a href="https://api.um.es/aulavirtual/guiasdocentes-api/public/v1/guias/6418/P/2026/E/pdf/redirect" target="_blank" rel="noopener noreferrer">Guía docente</a>
       </div>
+      <form class="busqueda" action="buscador/" method="get" role="search">
+        <input type="search" name="q" placeholder="Buscar en transparencias y boletines" aria-label="Buscar en transparencias y boletines" required>
+        <button type="submit">Buscar</button>
+      </form>
     </div>
   </header>
   <main>
