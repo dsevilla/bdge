@@ -24,8 +24,6 @@ import sqlite3InitModule from "./vendor/index.mjs";
     pagina: "Página",
   };
   const FRAGMENTOS_POR_DOCUMENTO = 3;
-  // Se piden algunos más para descartar los de una misma sección partida en varios trozos.
-  const CANDIDATOS_POR_DOCUMENTO = 6;
 
   const $ = (selector) => document.querySelector(selector);
   const formulario = $("#formulario");
@@ -38,7 +36,12 @@ import sqlite3InitModule from "./vendor/index.mjs";
   const FICHERO_BD = "bd.sqlite3.gz";
 
   let indice = null;
-  let bd = null;
+  // La carga de la base de datos, compartida: una búsqueda lanzada mientras
+  // todavía se descarga espera a la misma carga en vez de empezar otra.
+  let cargaBd = null;
+  // Cada ejecutar() toma un turno; al terminar sólo pinta el último, para que
+  // una consulta lanzada antes no tape el resultado de otra posterior.
+  let turno = 0;
   // Lo que se mide al cargar la base de datos, para las estadísticas.
   const carga = { comprimida: null, bytes: 0, ms: 0 };
   let tipoActivo = "todos";
@@ -58,38 +61,44 @@ import sqlite3InitModule from "./vendor/index.mjs";
   }
 
   // bd.sqlite3.gz → SQLite en memoria (sólo lectura), y de ella la lista de documentos.
-  async function baseDeDatos() {
-    if (bd === null) {
-      const inicio = performance.now();
-      const [bytes, sqlite3] = await Promise.all([bytesBaseDeDatos(), sqlite3InitModule()]);
-      carga.bytes = bytes.byteLength;
-      const db = new sqlite3.oo1.DB();
-      const puntero = sqlite3.wasm.allocFromTypedArray(bytes);
-      db.checkRc(
-        sqlite3.capi.sqlite3_deserialize(
-          db.pointer,
-          "main",
-          puntero,
-          bytes.byteLength,
-          bytes.byteLength,
-          sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE | sqlite3.capi.SQLITE_DESERIALIZE_READONLY,
-        ),
-      );
-      const documentos = db.selectObjects(
-        "SELECT id, tipo, titulo, url, colab, miniatura FROM docs ORDER BY id",
-      );
-      const meta = Object.fromEntries(db.selectArrays("SELECT clave, valor FROM meta"));
-      indice = {
-        rowid_doc: meta.rowid_doc,
-        meta,
-        documentos,
-        porId: new Map(documentos.map((doc) => [doc.id, doc])),
-      };
-      bd = db;
-      carga.ms = performance.now() - inicio;
-      pintarEstadisticas();
-    }
-    return bd;
+  // Si la carga falla, se olvida, para que la siguiente búsqueda lo reintente.
+  function baseDeDatos() {
+    cargaBd ??= cargarBaseDeDatos().catch((error) => {
+      cargaBd = null;
+      throw error;
+    });
+    return cargaBd;
+  }
+
+  async function cargarBaseDeDatos() {
+    const inicio = performance.now();
+    const [bytes, sqlite3] = await Promise.all([bytesBaseDeDatos(), sqlite3InitModule()]);
+    carga.bytes = bytes.byteLength;
+    const db = new sqlite3.oo1.DB();
+    const puntero = sqlite3.wasm.allocFromTypedArray(bytes);
+    db.checkRc(
+      sqlite3.capi.sqlite3_deserialize(
+        db.pointer,
+        "main",
+        puntero,
+        bytes.byteLength,
+        bytes.byteLength,
+        sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE | sqlite3.capi.SQLITE_DESERIALIZE_READONLY,
+      ),
+    );
+    const documentos = db.selectObjects(
+      "SELECT id, tipo, titulo, url, colab, miniatura FROM docs ORDER BY id",
+    );
+    const meta = Object.fromEntries(db.selectArrays("SELECT clave, valor FROM meta"));
+    indice = {
+      rowid_doc: meta.rowid_doc,
+      meta,
+      documentos,
+      porId: new Map(documentos.map((doc) => [doc.id, doc])),
+    };
+    carga.ms = performance.now() - inicio;
+    pintarEstadisticas();
+    return db;
   }
 
   // ── estadísticas del índice ──────────────────────────────────────────────
@@ -192,11 +201,13 @@ import sqlite3InitModule from "./vendor/index.mjs";
     negados.forEach((atomo) => docsDe.get(atomo).forEach((d) => validos.delete(d)));
     if (!validos.size) return [];
 
-    // Primero sólo la puntuación de cada trozo (lee el índice, no el texto);
-    // después el texto y el fragmento de los pocos trozos que se van a mostrar.
+    // Primero la puntuación de cada trozo, con su ancla y su título pero sin el
+    // texto; después el texto y el fragmento de los pocos trozos que se muestran.
     const expresion = [...new Set(grupos.flat())].join(" OR ");
     const puntuados = db.selectObjects(
-      "SELECT rowid AS id, bm25(fts, 4.0, 1.0) AS puntos FROM fts WHERE fts MATCH ? ORDER BY puntos",
+      `SELECT fts.rowid AS id, bm25(fts, 4.0, 1.0) AS puntos, t.ancla AS ancla, t.titulo AS titulo
+         FROM fts JOIN trozos t ON t.id = fts.rowid
+        WHERE fts MATCH ? ORDER BY puntos`,
       [expresion],
     );
     const porDoc = new Map();
@@ -205,14 +216,22 @@ import sqlite3InitModule from "./vendor/index.mjs";
       const doc = Math.floor(fila.id / porDocumento);
       if (!validos.has(doc)) continue;
       if (!porDoc.has(doc)) {
-        porDoc.set(doc, { doc: indice.porId.get(doc), puntos: fila.puntos, trozos: [], total: 0 });
+        porDoc.set(doc, { doc: indice.porId.get(doc), puntos: fila.puntos, trozos: [], secciones: new Set() });
       }
       const r = porDoc.get(doc);
-      r.total += 1;
-      if (r.trozos.length < CANDIDATOS_POR_DOCUMENTO) {
+      // Una sección larga se parte en varios trozos con la misma ancla y el mismo
+      // título: cuenta una vez y se muestra por su trozo mejor puntuado, el primero.
+      const seccion = `${fila.ancla}\u0000${fila.titulo}`;
+      if (r.secciones.has(seccion)) continue;
+      r.secciones.add(seccion);
+      if (r.trozos.length < FRAGMENTOS_POR_DOCUMENTO) {
         r.trozos.push(fila);
         mostrar.push(fila.id);
       }
+    }
+    for (const r of porDoc.values()) {
+      r.total = r.secciones.size;
+      delete r.secciones;
     }
     if (mostrar.length) {
       const textos = db.selectObjects(
@@ -224,16 +243,7 @@ import sqlite3InitModule from "./vendor/index.mjs";
       );
       const porId = new Map(textos.map((t) => [t.id, t]));
       for (const r of porDoc.values()) {
-        const vistos = new Set();
-        r.trozos = r.trozos
-          .map((f) => porId.get(f.id))
-          .filter((t) => {
-            const clave = t ? `${t.ancla}\u0000${t.titulo}` : null;
-            if (clave === null || vistos.has(clave)) return false;
-            vistos.add(clave);
-            return true;
-          })
-          .slice(0, FRAGMENTOS_POR_DOCUMENTO);
+        r.trozos = r.trozos.map((f) => porId.get(f.id)).filter(Boolean);
       }
     }
     // Un documento que sólo cumple por un átomo de otro grupo OR sin trozo
@@ -254,9 +264,10 @@ import sqlite3InitModule from "./vendor/index.mjs";
     escapar(fragmento).replaceAll("\u0001", "<mark>").replaceAll("\u0002", "</mark>");
 
   function enlaceTrozo(doc, trozo) {
+    // Las secciones de un cuaderno .ipynb se abren en el visor de GitHub (doc.url),
+    // en su encabezado; Colab queda para el botón «Abrir en Colab» de la tarjeta.
     if (doc.colab) {
-      const ancla = trozo.ancla.startsWith("#scrollTo=") ? trozo.ancla : "";
-      return { href: doc.colab + ancla, rotulo: trozo.titulo || "Abrir en Colab", externo: true };
+      return { href: doc.url + trozo.ancla, rotulo: trozo.titulo || doc.titulo, externo: true };
     }
     if (doc.tipo === "transparencias") {
       const numero = trozo.ancla.slice(1);
@@ -323,8 +334,7 @@ import sqlite3InitModule from "./vendor/index.mjs";
     resultados.innerHTML = visibles.map(tarjeta).join("");
   }
 
-  async function pintarCatalogo() {
-    await baseDeDatos();
+  function pintarCatalogo() {
     filtros.hidden = true;
     estado.textContent = `${indice.documentos.length} documentos indexados: transparencias y cuadernos de la asignatura.`;
     resultados.innerHTML = indice.documentos
@@ -332,7 +342,18 @@ import sqlite3InitModule from "./vendor/index.mjs";
       .join("");
   }
 
+  // El error de una consulta que ya no es la última sólo va a la consola.
   async function ejecutar(consulta) {
+    const mio = ++turno;
+    try {
+      await consultar(consulta, mio);
+    } catch (error) {
+      if (mio !== turno) console.error(error);
+      else throw error;
+    }
+  }
+
+  async function consultar(consulta, mio) {
     consulta = consulta.trim();
     const url = new URL(location.href);
     if (consulta) url.searchParams.set("q", consulta);
@@ -340,12 +361,14 @@ import sqlite3InitModule from "./vendor/index.mjs";
     history.replaceState(null, "", url);
     document.title = consulta ? `${consulta} · ${document.body.dataset.titulo}` : document.body.dataset.titulo;
     if (!consulta) {
-      await pintarCatalogo();
+      await baseDeDatos();
+      if (mio === turno) pintarCatalogo();
       return;
     }
     estado.textContent = "Buscando…";
     const inicio = performance.now();
     const encontrados = await buscar(consulta);
+    if (mio !== turno) return;
     if (encontrados === null) {
       ultimos = [];
       filtros.hidden = true;
