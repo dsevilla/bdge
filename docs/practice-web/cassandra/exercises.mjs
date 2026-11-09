@@ -135,6 +135,17 @@ export function exerciseContext(questions) {
   };
 }
 
+/** Consultas independientes para explorar el prefijo de clustering en la zona libre. */
+export function guidedQueries(ctx) {
+  const base = `SELECT preguntaid, fecha, score FROM ${TABLES.porAutor}\nWHERE autorid = ${ctx.author.id}`;
+  return [
+    { title: "Clave de partición y rango de fecha", text: "La primera columna de clustering delimita un intervalo ordenado dentro de una partición.", source: `${base} AND fecha >= '${ctx.link.fecha}';` },
+    { title: "Clave primaria completa", text: "La igualdad en fecha permite añadir la siguiente columna de clustering, preguntaid.", source: `${base} AND fecha = '${ctx.link.fecha}' AND preguntaid = ${ctx.link.preguntaid};` },
+    { title: "Una columna de clustering sin su predecesora", text: "Sin fecha, preguntaid no forma un prefijo: ejecuta y lee el rechazo. Añadir ALLOW FILTERING permite explorar el coste dentro de la partición.", source: `${base} AND preguntaid = ${ctx.link.preguntaid};` },
+    { title: "Filtrado dentro de una partición", text: "La clave localiza la partición; score no está indexado y se filtra dentro de ella. Compara las filas examinadas con las devueltas.", source: `${base} AND score > 0 ALLOW FILTERING;` },
+  ];
+}
+
 function tableCreationReminder(names) {
   const list = names.map((name) => `\`${name}\``).join(" y ");
   return `Este ejercicio crea ${list}: empieza con \`DROP TABLE IF EXISTS\` de cada tabla que crees para poder ejecutarlo varias veces`;
@@ -276,8 +287,8 @@ export const EXERCISES = Object.freeze([
   },
   {
     id: "particion-caliente",
-    title: "Particiones calientes",
-    need: () => `¿Por qué no particionar sólo por etiqueta? Una partición entera vive en un nodo (y en sus réplicas). Si una etiqueta concentra muchas preguntas, ese nodo carga con ellas para siempre: la partición no deja de crecer y no se puede repartir.`,
+    title: "El tamaño de las particiones",
+    need: () => `¿Por qué no particionar sólo por etiqueta? Una partición entera vive en un nodo (y en sus réplicas). Una etiqueta con muchas preguntas produce una partición grande que sigue creciendo y no se reparte entre nodos; si además concentra muchas operaciones, puede convertirse en una partición caliente.`,
     steps: (ctx) => [
       tableCreationReminder([TABLES.porEtiqueta]),
       `Crea \`${TABLES.porEtiqueta}\` con las mismas columnas que \`${TABLES.porEtiquetaMes}\` salvo \`mes\`, particionada sólo por \`etiqueta\` y con el mismo clustering`,
@@ -287,7 +298,8 @@ export const EXERCISES = Object.freeze([
     observe: (ctx) => [
       `La partición mayor tiene ${formatNumber(ctx.topTagCount)} filas; en \`${TABLES.porEtiquetaMes}\` ninguna pasa de ${formatNumber(ctx.tagMonth.count)}`,
       "Compara la barra de carga de los nodos en las dos tablas (selector de tabla sobre el dibujo)",
-      "Añadir el mes a la clave es un «cubo» temporal: acota el tamaño de cada partición a costa de consultar varios meses si hacen falta",
+      "Añadir el mes a la clave es un «cubo» temporal: limita el crecimiento de cada partición a un mes, aunque un mes muy activo todavía puede ser grande",
+      "La sesión 6 usa (tag, year_month): consultar varios meses puede exigir varias particiones; este ejemplo usa preguntas y datos distintos",
     ],
     expected: (ctx) => `${formatNumber(ctx.tagRowCount)} filas en ${formatNumber(ctx.tagPartitions)} particiones; la consulta devuelve tres filas de la partición más grande.`,
     starter: () => `DROP TABLE IF EXISTS ${TABLES.porEtiqueta};\n\nCREATE TABLE ${TABLES.porEtiqueta} (\n  -- columnas\n  PRIMARY KEY (...)\n) WITH CLUSTERING ORDER BY (...);\n`,
@@ -329,9 +341,9 @@ export const EXERCISES = Object.freeze([
       "Compara en un comentario los nodos contactados y las filas examinadas con las del ejercicio 3 y con las del ejercicio 4",
     ],
     observe: () => [
-      "Cada nodo indexa sólo sus propias filas: el índice es local, así que el coordinador sigue preguntando a los cuatro nodos",
-      "Pero ya no se leen todas las filas: cada nodo lee sólo las que su índice señala",
-      "Una tabla por consulta lee un nodo; el índice, todos. Con cien nodos la diferencia es enorme",
+      "En este simulador el índice es local y una consulta global pregunta a los cuatro nodos",
+      "El simulador cuenta como candidatas las filas que señala el índice; no representa todo el trabajo de un índice SAI real",
+      "Aquí la tabla por consulta lee una partición en un nodo y la consulta global con índice alcanza los cuatro; no es una medida de rendimiento",
     ],
     expected: (ctx) => `${formatNumber(ctx.month.withAuthor)} filas; cuatro nodos contactados y sólo ${formatNumber(ctx.month.withAuthor)} filas examinadas.`,
     starter: () => `-- CREATE INDEX ...\n\n-- SELECT ...\n`,
@@ -366,6 +378,7 @@ export const EXERCISES = Object.freeze([
     observe: () => [
       "Cada consulta toca un único nodo, aunque no tienen por qué ser el mismo: dos lecturas por clave en vez de preguntar a todo el clúster",
       "El precio está en las escrituras: cada pregunta nueva hay que escribirla también en esta tabla, y es la aplicación quien las mantiene de acuerdo",
+      "En la sesión 5 también se combinan lecturas por clave y tablas auxiliares para resolver consultas con otro acceso",
     ],
     expected: (ctx) => `La primera consulta devuelve autorid ${ctx.link.autorid}; la segunda, una fila con el título «${ctx.link.titulo}».`,
     starter: () => `DROP TABLE IF EXISTS ${TABLES.autorPorPregunta};\n\nCREATE TABLE ${TABLES.autorPorPregunta} (\n  -- columnas\n);\n\n-- 1. SELECT ... FROM ${TABLES.autorPorPregunta} ...\n-- 2. SELECT ... FROM ${TABLES.porAutor} ...\n`,

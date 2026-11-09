@@ -38,6 +38,12 @@
     a { border: 2px solid var(--rojo); border-radius: .4rem; color: var(--rojo); font-weight: 700; padding: .55rem .8rem; text-decoration: none; }
     a.principal { background: var(--rojo); color: white; }
     a:hover, a:focus-visible { box-shadow: 0 0 0 .2rem rgb(242 183 5 / 45%); outline: none; }
+    /* Versión alternativa de una sesión (SESSION_EXTRAS): franja a todo el ancho al pie
+       de la tarjeta (los márgenes negativos anulan el relleno de .tema), con el azul
+       nocturno y la estrella de la escena 3D, separada de los dos formatos de siempre. */
+    a.extra { background: radial-gradient(circle at 88% 30%, #2c4a6e, #0d1726 65%); border: 0; border-radius: 0 0 .75rem .75rem; color: var(--oro); margin: 1.25rem -1.5rem -1.5rem; padding: .7rem 1.5rem; }
+    a.extra::before { content: "✦"; margin-right: .45rem; }
+    a.extra small { color: #c9d6e4; font-size: .8rem; font-weight: 400; margin-left: .35rem; }
     .tira { margin: 0; text-align: center; }
     .tira img { border: 1px solid var(--linea); border-radius: .75rem; box-shadow: 0 .3rem 1rem rgb(24 35 45 / 8%); height: auto; max-width: min(100%, 46rem); }
     /* Los enlaces y el cuadro de búsqueda en una fila; el cuadro baja a la
@@ -141,6 +147,7 @@
           <a class="principal" href="sesion5.html" target="_blank" rel="noopener noreferrer">Ver transparencias</a>
           <a href="sesion5.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
         </nav>
+        <a class="extra" href="cassandra-3d/" target="_blank" rel="noopener noreferrer"><span>Expedición 3D</span> <small>prólogo experimental</small></a>
       </article>
       <article class="tema">
         <h3>Sesión 6 · Bases de datos de grafos: Neo4j</h3>

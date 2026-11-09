@@ -421,7 +421,7 @@ function classifyQuery(table, predicates, allowFiltering) {
       mode: "index",
       requiresFiltering: rest.length > 0,
       indexColumns: [...new Set(usable.map((predicate) => predicate.column))],
-      reason: "El índice secundario es local: cada nodo indexa sólo sus propias filas. El coordinador tiene que preguntar a todos los nodos, aunque cada uno lee únicamente las filas que el índice señala.",
+      reason: "En este simulador el índice es local y la consulta global contacta los cuatro nodos; se cuentan como candidatas las filas señaladas por el índice. No es un plan de ejecución real de Cassandra.",
     };
   }
 

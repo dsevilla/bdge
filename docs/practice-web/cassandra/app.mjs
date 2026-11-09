@@ -1,7 +1,7 @@
 import { CqlExecutionError, NODE_COUNT, databaseView, partitionLayout } from "./cql-engine.mjs";
 import { CqlParseError } from "./cql-parser.mjs";
 import { loadRemoteQuestions, SAMPLE_YEAR, SOURCE_COLUMNS } from "./dataset.mjs";
-import { checkExercise, EXERCISES, exerciseContext, formatNumber, initialDatabase, initialSandboxDatabase, runLab } from "./exercises.mjs";
+import { checkExercise, EXERCISES, exerciseContext, formatNumber, guidedQueries, initialDatabase, initialSandboxDatabase, runLab } from "./exercises.mjs";
 import { FIXTURE_QUESTIONS } from "./sample-fixture.mjs";
 
 const RESULT_PAGE_SIZE = 100;
@@ -44,6 +44,7 @@ const state = {
   highlight: null,
   page: 0,
   drafts: new Map(),
+  downloaded: null,
 };
 
 const codeEditor = typeof window.CodeMirror === "function"
@@ -167,6 +168,24 @@ function renderBrief() {
   const observe = $("#exercise-observe");
   observe.replaceChildren(...exercise.observe(ctx).map((item) => withCode(element("li"), item)));
   withCode($("#exercise-expected"), exercise.expected(ctx));
+}
+
+function renderGuidedQueries() {
+  const list = $("#guided-queries");
+  list.replaceChildren();
+  for (const example of guidedQueries(state.ctx)) {
+    const item = element("li");
+    const button = element("button", `Cargar: ${example.title}`, "button small");
+    button.type = "button";
+    button.addEventListener("click", () => {
+      if (sandboxCodeEditor) sandboxCodeEditor.setValue(example.source);
+      else sandboxEditorElement.value = example.source;
+      setMessage("Consulta cargada en la zona de pruebas. Ejecútala para ver el acceso.", "", sandboxMessage);
+      sandboxCodeEditor?.refresh();
+    });
+    item.append(element("p", example.text), button);
+    list.append(item);
+  }
 }
 
 function resetExerciseState() {
@@ -484,6 +503,7 @@ function useQuestions(questions, label) {
   state.dataLabel = label;
   state.ctx = exerciseContext(questions);
   state.sandboxDatabase = initialSandboxDatabase(questions);
+  renderGuidedQueries();
   // Los enunciados cambian con los datos. Un editor que el alumno no había
   // tocado recibe el esqueleto nuevo; uno modificado se conserva.
   for (const exercise of EXERCISES) {
@@ -495,18 +515,24 @@ function useQuestions(questions, label) {
 async function loadRemote() {
   const button = $("#load-remote");
   button.disabled = true;
-  setDataStatus("Descargando…", "loading");
+  dataMessage.textContent = "Descargando la muestra; puedes seguir trabajando con los datos actuales.";
   try {
-    const { questions, source } = await loadRemoteQuestions((text) => { dataMessage.textContent = text; });
-    useQuestions(questions, `Preguntas de ${SAMPLE_YEAR}`);
-    setDataStatus(`${formatNumber(questions.length)} preguntas de ${SAMPLE_YEAR}`, "ready");
-    dataMessage.textContent = `Descargadas desde ${source}. El estado del ejercicio se ha reiniciado con estos datos; vuelve a ejecutar tu código.`;
+    state.downloaded = await loadRemoteQuestions((text) => { dataMessage.textContent = text; });
+    $("#apply-remote").hidden = false;
+    dataMessage.textContent = `Descargadas ${formatNumber(state.downloaded.questions.length)} preguntas desde ${state.downloaded.source}. Pulsa «Usar la muestra descargada» cuando quieras reiniciar el laboratorio con esos datos.`;
   } catch (error) {
-    setDataStatus("Muestra mínima", "error");
-    dataMessage.textContent = `No se pudo descargar la muestra (${error.message}). Sigues con la muestra mínima; puedes reintentarlo.`;
+    dataMessage.textContent = `No se pudo descargar la muestra (${error.message}). Se conservan los datos actuales; puedes reintentarlo.`;
   } finally {
     button.disabled = false;
   }
+}
+
+function applyRemote() {
+  if (!state.downloaded) return;
+  const { questions, source } = state.downloaded;
+  useQuestions(questions, `Preguntas de ${SAMPLE_YEAR}`);
+  setDataStatus(`${formatNumber(questions.length)} preguntas de ${SAMPLE_YEAR}`, "ready");
+  dataMessage.textContent = `Muestra de ${source} aplicada. Se han reiniciado las bases del ejercicio y de la zona de pruebas; vuelve a ejecutar tu código.`;
 }
 
 function useMini() {
@@ -541,10 +567,11 @@ $("#previous-page").addEventListener("click", () => { state.page -= 1; renderRes
 $("#next-page").addEventListener("click", () => { state.page += 1; renderResultTable(); });
 $("#load-remote").addEventListener("click", loadRemote);
 $("#load-mini").addEventListener("click", useMini);
+$("#apply-remote").addEventListener("click", applyRemote);
 
 renderSourceColumns();
 setDataStatus(`Muestra mínima: ${formatNumber(FIXTURE_QUESTIONS.length)} preguntas`);
 state.sandboxDatabase = initialSandboxDatabase(state.questions);
 selectExercise(EXERCISES[0]);
+renderGuidedQueries();
 codeEditor?.refresh();
-loadRemote();

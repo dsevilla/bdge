@@ -26,8 +26,8 @@
       <h2 id="problem-title">El problema: el diseño empieza por las consultas</h2>
       <div class="problem-grid">
         <div>
-          <p>En SQL se diseñan las tablas a partir de las entidades, <code>Users</code> y <code>Posts</code>, y el optimizador resuelve después cualquier consulta, aunque nadie la previera. Cassandra reparte cada tabla entre los nodos del clúster según su <strong>clave de partición</strong>: el coordinador calcula el <em>token</em> de esa clave y sabe qué nodo guarda la partición. Sólo es eficiente la consulta que conoce la clave. Todas las demás tienen que preguntar a todos los nodos.</p>
-          <p>Por eso primero se enumeran las consultas de la aplicación y después se elige, para cada una, una clave que le permita leer <strong>una partición en un nodo</strong>. Dentro de la partición, las <strong>columnas de clustering</strong> fijan el orden de las filas.</p>
+          <p>En SQL se diseñan las tablas a partir de las entidades, <code>Users</code> y <code>Posts</code>, y el optimizador puede elegir entre distintos caminos de acceso. En Cassandra, cada tabla se reparte según su <strong>clave de partición</strong>: conocerla permite dirigir la lectura a las réplicas responsables. Otras consultas pueden necesitar un índice o recorrer más particiones.</p>
+          <p>Por eso primero se enumeran las consultas de la aplicación y después se elige, para cada una, una clave que le permita leer <strong>una partición</strong> (en este simulador, un nodo). Dentro de la partición, las <strong>columnas de clustering</strong> fijan el orden de las filas.</p>
         </div>
         <div class="table-wrap">
           <table class="plain-table">
@@ -45,10 +45,10 @@
       </div>
       <h3>Cuatro salidas cuando la clave no sirve para una consulta</h3>
       <ul class="options">
-        <li><strong>ALLOW FILTERING.</strong> Pregunta a todos los nodos y lee todas las filas para descartar la mayoría. El coste crece con la tabla, no con el resultado.</li>
-        <li><strong>Índice secundario (SAI).</strong> Cada nodo indexa sólo sus filas: es un índice <em>local</em>. Sigue preguntando a todos los nodos, pero cada uno lee sólo lo que coincide.</li>
-        <li><strong>Otra tabla con otra clave.</strong> Copia los datos organizados para esa consulta. Lee un nodo, a cambio de más espacio y más escrituras.</li>
-        <li><strong>Índice global.</strong> Una tabla pequeña que va del valor buscado a la clave de la fila original. Son dos lecturas de un nodo y la aplicación mantiene la copia.</li>
+        <li><strong>ALLOW FILTERING.</strong> Permite filtrar filas que la clave o un índice no resuelven. Con la clave completa puede limitarse a una partición; sin ella puede exigir un recorrido mucho mayor.</li>
+        <li><strong>Índice secundario (SAI).</strong> Cada nodo indexa sólo sus filas: es un índice <em>local</em>. En el ejemplo global, el simulador consulta los cuatro nodos y cuenta como candidatas las filas señaladas por el índice. Son cifras didácticas, no un plan real de Cassandra.</li>
+        <li><strong>Otra tabla con otra clave.</strong> Copia los datos organizados para esa consulta. Permite leer una partición, a cambio de más espacio y más escrituras.</li>
+        <li><strong>Índice global.</strong> Una tabla pequeña que va del valor buscado a la clave de la fila original. Son dos lecturas por clave, que pueden ir a nodos distintos; la aplicación mantiene la copia.</li>
       </ul>
       <details>
         <summary>Qué simula este laboratorio y qué no</summary>
@@ -67,9 +67,10 @@
         <h2 id="data-title">Los datos</h2>
         <span id="data-status" class="status" role="status" aria-live="polite">Muestra mínima</span>
       </div>
-      <p>Preguntas de 2016 de la muestra reducida de Stack Overflow en español, <code>Posts-sample</code> y <code>Users-sample</code> de <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>, que conserva una pregunta de cada ocho. Mientras se descargan, o si falla la red, se usa una muestra mínima incrustada con las del primer trimestre.</p>
+      <p>Preguntas de 2016 de la muestra reducida de Stack Overflow en español, <code>Posts-sample</code> y <code>Users-sample</code> de <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>, que conserva una pregunta de cada ocho. Se empieza con una muestra mínima incrustada del primer trimestre. Puedes descargar la muestra anual y decidir cuándo aplicarla; cambiar de muestra reinicia los datos del laboratorio.</p>
       <div class="button-row">
         <button id="load-remote" class="button" type="button">Descargar la muestra de 2016</button>
+        <button id="apply-remote" class="button" type="button" hidden>Usar la muestra descargada</button>
         <button id="load-mini" class="button" type="button">Usar la muestra mínima</button>
       </div>
       <p id="data-message" class="help" aria-live="polite"></p>
@@ -83,6 +84,11 @@
     <section class="panel sandbox-panel" aria-labelledby="sandbox-title">
       <h2 id="sandbox-title">Zona de pruebas</h2>
       <p class="help">Escribe cualquier sentencia del CQL que admite este simulador. Esta zona usa una base propia con preguntas cargadas en <code>preguntas_por_autor</code>; sus cambios persisten al cambiar de ejercicio y se pierden al cambiar la muestra. El resultado y el dibujo del clúster aparecen en los paneles inferiores.</p>
+      <details class="guided-queries">
+        <summary>Práctica opcional: qué consultas sirve la clave</summary>
+        <p>La tabla tiene clave <code>((autorid), fecha, preguntaid)</code>. Carga cada consulta en el editor y ejecútala por separado. Compara el intervalo de clustering y el filtrado dentro de una partición con el filtrado global del ejercicio 3. Este ensayo prepara el razonamiento del ejercicio 5 de la sesión 6 con otra tabla y otros datos.</p>
+        <ol id="guided-queries"></ol>
+      </details>
       <label for="sandbox-editor" class="editor-label"><span>Sentencias CQL</span><span>Ejecutar: <kbd>Ctrl/Cmd</kbd> + <kbd>Intro</kbd></span></label>
       <textarea id="sandbox-editor" spellcheck="false" rows="8" aria-describedby="sandbox-help"></textarea>
       <p id="sandbox-help" class="help">Puedes escribir varias sentencias separadas por <code>;</code> y comentarios con <code>--</code>.</p>
