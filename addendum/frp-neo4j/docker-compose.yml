@@ -1,7 +1,12 @@
 services:
-  nginx:
-    build: "."
-    ports:
-      - "81:8000"
-      - "8080:8080"
-      - "8081-8181:8081-8181"
+  frps:
+    # Imagen oficial de frp. La versión debe coincidir con FRP_VERSION de
+    # setup-neo4j-colab.sh (al actualizar, primero el servidor y luego el cliente).
+    image: ghcr.io/fatedier/frps:v0.72.0
+    command: ["-c", "/etc/frp/frps.toml"]
+    # Red del anfitrión: evita publicar 100 puertos uno a uno con docker-proxy
+    # y deja ver en los registros la IP real de cada cliente.
+    network_mode: host
+    volumes:
+      - ./frps.toml:/etc/frp/frps.toml:ro
+    restart: unless-stopped

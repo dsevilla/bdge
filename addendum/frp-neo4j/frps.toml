@@ -1,0 +1,18 @@
+# Servidor frp de los túneles de Neo4j desde Colab (ver README.md).
+
+# Puerto al que se conectan los frpc de Colab.
+bindPort = 8080
+
+# Token compartido. Se publica en setup-neo4j-colab.sh, así que no protege de
+# quien lo lea: sólo descarta a los clientes frp genéricos que barren Internet
+# buscando servidores abiertos.
+auth.token = "bdge-neo4j"
+
+# Cada sesión pide remotePort = 0 y frps le asigna puertos libres de este rango.
+# 100 puertos = 50 sesiones simultáneas (Neo4j Browser + Bolt).
+allowPorts = [{ start = 8082, end = 8181 }]
+# Una sesión abre exactamente dos puertos; no se le permite ocupar más.
+maxPortsPerClient = 2
+
+log.to = "console"
+log.level = "info"
