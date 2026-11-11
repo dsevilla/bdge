@@ -1,0 +1,117 @@
+{
+ "formato": 3,
+ "documentos": [
+  {
+   "tipo": "transparencias",
+   "titulo": "Bases de Datos a Gran Escala — Sesión 0",
+   "url": "../sesion0.html",
+   "colab": null,
+   "miniatura": "miniaturas/996d95ad853948b7.jpg",
+   "bd": "bd/222e99ae8d8d8d5c.sqlite3.gz"
+  },
+  {
+   "tipo": "transparencias",
+   "titulo": "Bases de Datos a Gran Escala — Sesión 1",
+   "url": "../sesion1.html",
+   "colab": null,
+   "miniatura": "miniaturas/bb9469c6b5c8310a.jpg",
+   "bd": "bd/97285b1a22c2a1f9.sqlite3.gz"
+  },
+  {
+   "tipo": "transparencias",
+   "titulo": "Bases de Datos a Gran Escala — Sesión 2",
+   "url": "../sesion2.html",
+   "colab": null,
+   "miniatura": "miniaturas/881ae3cfab7f785a.jpg",
+   "bd": "bd/d0f4652bba898345.sqlite3.gz"
+  },
+  {
+   "tipo": "transparencias",
+   "titulo": "Bases de Datos a Gran Escala — Sesión 3",
+   "url": "../sesion3.html",
+   "colab": null,
+   "miniatura": "miniaturas/e687c7df082d6438.jpg",
+   "bd": "bd/5a1f87fee009cd41.sqlite3.gz"
+  },
+  {
+   "tipo": "transparencias",
+   "titulo": "Bases de Datos a Gran Escala — Sesión 4",
+   "url": "../sesion4.html",
+   "colab": null,
+   "miniatura": "miniaturas/f6ec6e0886a2c6bd.jpg",
+   "bd": "bd/0bfd0395743d2672.sqlite3.gz"
+  },
+  {
+   "tipo": "transparencias",
+   "titulo": "Bases de Datos a Gran Escala — Sesión 5",
+   "url": "../sesion5.html",
+   "colab": null,
+   "miniatura": "miniaturas/07d34bf485df9515.jpg",
+   "bd": "bd/7fde1d27134891f0.sqlite3.gz"
+  },
+  {
+   "tipo": "transparencias",
+   "titulo": "Bases de Datos a Gran Escala — Sesión 6",
+   "url": "../sesion6.html",
+   "colab": null,
+   "miniatura": "miniaturas/6dca5f0811442701.jpg",
+   "bd": "bd/28870d24ec5d8ecf.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
+   "titulo": "Sesión 0 — Jupyter Notebook/Colab, importación de datos de Stackoverflow, esquemas, Parquet, DuckDB y programación asíncrona, curso 2026-27",
+   "url": "https://github.com/dsevilla/bdge/blob/26-27/intro/sesion0.ipynb",
+   "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/intro/sesion0.ipynb",
+   "miniatura": "miniaturas/eedd9b20d75b9fda.jpg",
+   "bd": "bd/1b155731eda00600.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
+   "titulo": "Sesión 1 — Toma de contacto con Jupyter/Colab y SQL, curso 2026-27",
+   "url": "https://github.com/dsevilla/bdge/blob/26-27/sql/sesion1.ipynb",
+   "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/sql/sesion1.ipynb",
+   "miniatura": "miniaturas/e01311cf4acaa52d.jpg",
+   "bd": "bd/378471e9e8cf36c9.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
+   "titulo": "Sesión 2 — SQL (ii), curso 2026-27",
+   "url": "https://github.com/dsevilla/bdge/blob/26-27/sql/sesion2.ipynb",
+   "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/sql/sesion2.ipynb",
+   "miniatura": "miniaturas/b555b8e6797e3128.jpg",
+   "bd": "bd/dd7f52d4b1cd7f02.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
+   "titulo": "Sesión 3 — NoSQL (MongoDB) (I), curso 2026-27",
+   "url": "https://github.com/dsevilla/bdge/blob/26-27/mongo/sesion3.ipynb",
+   "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/mongo/sesion3.ipynb",
+   "miniatura": "miniaturas/1d037079127c5666.jpg",
+   "bd": "bd/9b532cb92761b000.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
+   "titulo": "Sesión 4 — NoSQL (MongoDB) (II), curso 2026-27",
+   "url": "https://github.com/dsevilla/bdge/blob/26-27/mongo/sesion4.ipynb",
+   "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/mongo/sesion4.ipynb",
+   "miniatura": "miniaturas/7b01bf1a69f5212a.jpg",
+   "bd": "bd/15fc9d229b512c78.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
+   "titulo": "Sesión 5 — Cassandra (I), curso 2026-27",
+   "url": "https://github.com/dsevilla/bdge/blob/26-27/cassandra/sesion5.ipynb",
+   "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/cassandra/sesion5.ipynb",
+   "miniatura": "miniaturas/a3ee1b560f5b9e68.jpg",
+   "bd": "bd/a0ce91313f75dfb5.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
+   "titulo": "Trabajos",
+   "url": "../trabajos.html",
+   "colab": null,
+   "miniatura": "miniaturas/3dde6d8ff94263fa.jpg",
+   "bd": "bd/923a18328b36add9.sqlite3.gz"
+  }
+ ]
+}

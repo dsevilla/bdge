@@ -20,9 +20,10 @@
     }
     .marca img { background: var(--tinta); }
   </style>
-  <!-- El índice (lo escribe buscador.py en el CI) se empieza a descargar a la vez
-       que la biblioteca; buscador.js lo recoge con fetch(). -->
-  <link rel="preload" href="bd.sqlite3.gz" as="fetch" crossorigin>
+  <!-- La lista de documentos (la escribe buscador.py en el CI) se empieza a
+       descargar a la vez que la biblioteca; buscador.js la recoge con fetch() y
+       pide después la base de datos de cada documento. -->
+  <link rel="preload" href="indice.json" as="fetch" crossorigin>
   <script type="module" src="buscador.js"></script>
 </head>
 <body data-titulo="Buscar · BDGE">
@@ -50,9 +51,10 @@
     <footer>
       <dl id="estadisticas" class="estadisticas" aria-label="El índice" hidden></dl>
       <p>
-        La búsqueda se hace en el navegador, sin servidor: el índice (SQLite con búsqueda de
-        texto completo, comprimido) se descarga entero y SQLite, compilado a WebAssembly,
-        lo consulta en memoria. Se indexan las transparencias, los boletines
+        La búsqueda se hace en el navegador, sin servidor: se descarga el texto de cada
+        documento (una pequeña base de datos SQLite comprimida) y SQLite, compilado a
+        WebAssembly, las junta en memoria, construye el índice de búsqueda de texto
+        completo y lo consulta. Se indexan las transparencias, los boletines
         publicados y el enunciado de los trabajos.
       </p>
     </footer>
