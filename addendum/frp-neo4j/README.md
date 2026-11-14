@@ -47,8 +47,11 @@ después el cliente.
 ## Kubernetes
 
 La configuración compartida por Docker y Kubernetes está en `k8s/base/frps.toml`.
-La base describe el servicio; `k8s/homelab` lo sitúa en el nodo etiquetado
-`homelab/edge=true`. Consulta los contextos con `kubectl config get-contexts`
+La base describe el servicio; `k8s/homelab` lo fija al nodo
+`dsevilla-proxy` mediante `kubernetes.io/hostname`. Como usa la red del
+anfitrión, los clientes de Colab necesitan que frps escuche precisamente
+en ese nodo. Si no está disponible, el pod queda pendiente.
+Consulta los contextos con `kubectl config get-contexts`
 y usa el fichero de acceso adecuado mediante `KUBECONFIG` si es necesario:
 
 ```sh

@@ -7,4 +7,4 @@ spec:
   template:
     spec:
       nodeSelector:
-        homelab/edge: "true"
+        kubernetes.io/hostname: dsevilla-proxy
