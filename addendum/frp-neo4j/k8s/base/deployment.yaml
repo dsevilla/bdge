@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frps
+spec:
+  replicas: 1
+  # Con red del anfitrión dos pods no pueden escuchar a la vez en el 8080:
+  # primero se para el viejo y luego arranca el nuevo.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: frps
+  template:
+    metadata:
+      labels:
+        app: frps
+    spec:
+      # Igual que en docker compose: red del anfitrión, para no publicar los 100
+      # puertos uno a uno y ver en los registros la IP real de cada cliente.
+      # Escucha en 8080 y en 8082-8181 de dsevilla-proxy.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: frps
+          image: ghcr.io/fatedier/frps:v0.72.0
+          args: ["-c", "/etc/frp/frps.toml"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/frp
+              readOnly: true
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 20m, memory: 32Mi}
+      volumes:
+        - name: config
+          configMap:
+            name: frps-config

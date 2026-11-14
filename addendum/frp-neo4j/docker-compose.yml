@@ -8,5 +8,5 @@ services:
     # y deja ver en los registros la IP real de cada cliente.
     network_mode: host
     volumes:
-      - ./frps.toml:/etc/frp/frps.toml:ro
+      - ./k8s/base/frps.toml:/etc/frp/frps.toml:ro
     restart: unless-stopped

@@ -43,3 +43,26 @@ la conexión local por Bolt sigue funcionando.
 La versión aparece en dos sitios, `docker-compose.yml` (etiqueta de la imagen)
 y `FRP_VERSION` en `setup-neo4j-colab.sh`. Se actualiza primero el servidor y
 después el cliente.
+
+## Kubernetes
+
+La configuración compartida por Docker y Kubernetes está en `k8s/base/frps.toml`.
+La base describe el servicio; `k8s/homelab` lo sitúa en el nodo etiquetado
+`homelab/edge=true`. Consulta los contextos con `kubectl config get-contexts`
+y usa el fichero de acceso adecuado mediante `KUBECONFIG` si es necesario:
+
+```sh
+export KUBECONFIG=~/svn/kubernetes/kubeconfig
+make k8s-diff KUBE_CONTEXT=homelab
+make k8s-apply KUBE_CONTEXT=homelab
+make k8s-status KUBE_CONTEXT=homelab
+make k8s-logs KUBE_CONTEXT=homelab
+```
+
+Comprueba el nombre real del contexto antes de usarlo. `diff` muestra cambios;
+`apply` los aplica y espera al arranque. Como frps usa la red del nodo y
+estrategia `Recreate`, una actualización interrumpe brevemente los túneles.
+Para otro clúster, crea un overlay adaptado y pásalo con `K8S_DIR=...`.
+
+`make k8s-delete KUBE_CONTEXT=homelab` elimina el Deployment y detiene los
+túneles; conserva el namespace y el ConfigMap.

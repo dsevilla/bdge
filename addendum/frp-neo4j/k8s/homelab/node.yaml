@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frps
+  namespace: frp
+spec:
+  template:
+    spec:
+      nodeSelector:
+        homelab/edge: "true"

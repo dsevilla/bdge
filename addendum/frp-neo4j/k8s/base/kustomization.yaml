@@ -1,0 +1,8 @@
+namespace: frp
+resources:
+  - namespace.yaml
+  - deployment.yaml
+configMapGenerator:
+  - name: frps-config
+    files:
+      - frps.toml
