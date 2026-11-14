@@ -13,6 +13,10 @@ services:
       - JUPYTER_TOKEN=bdge
       - GRANT_SUDO=yes
       - DB_HOSTNAME=mysql
+      # Se comprime el tráfico con `mysql` aunque esté en la misma máquina, en la red
+      # virtual de Compose, para usar la misma configuración que con un servidor
+      # remoto (aquí no hay enlace lento, así que sólo cuesta algo de CPU).
+      - DB_COMPRESS=1
     depends_on:
       mysql:
         condition: service_healthy
