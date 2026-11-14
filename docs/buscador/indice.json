@@ -70,16 +70,16 @@
    "titulo": "Sesión 1 — Toma de contacto con Jupyter/Colab y SQL, curso 2026-27",
    "url": "https://github.com/dsevilla/bdge/blob/26-27/sql/sesion1.ipynb",
    "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/sql/sesion1.ipynb",
-   "miniatura": "miniaturas/130691a3338e5a7d.jpg",
-   "bd": "bd/ed89b4cc4e84de3a.sqlite3.gz"
+   "miniatura": "miniaturas/208e52c4e1f98b7d.jpg",
+   "bd": "bd/e0d7b014ffdda0e5.sqlite3.gz"
   },
   {
    "tipo": "cuaderno",
    "titulo": "Sesión 2 — SQL (ii), curso 2026-27",
    "url": "https://github.com/dsevilla/bdge/blob/26-27/sql/sesion2.ipynb",
    "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/sql/sesion2.ipynb",
-   "miniatura": "miniaturas/afd11a2310f04c0c.jpg",
-   "bd": "bd/735c563e32f35a0f.sqlite3.gz"
+   "miniatura": "miniaturas/a86249b9106ca129.jpg",
+   "bd": "bd/61882dd73b7f7da0.sqlite3.gz"
   },
   {
    "tipo": "cuaderno",
