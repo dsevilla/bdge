@@ -4,6 +4,12 @@ Este directorio contiene los cuadernos SQL y `docker-compose.yml`. Compose
 arranca Jupyter y MySQL 8; el cuaderno se conecta al servicio `mysql` dentro de
 la red de Compose.
 
+En Google Colab, la primera celda de instalación configura el repositorio APT
+oficial de MySQL e instala la serie **8.4 LTS**. La celda muestra la versión y
+comprueba que sea 8.4; necesita acceso a Internet y un entorno Colab nuevo. En
+Docker Compose se usa también la serie `mysql:8.4`. La versión de corrección
+concreta puede variar conforme se actualicen los repositorios y las imágenes.
+
 ## Requisitos
 
 - **Linux:** instala Docker Engine y el complemento Docker Compose para tu
