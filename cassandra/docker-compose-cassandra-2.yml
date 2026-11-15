@@ -36,12 +36,13 @@ services:
       - CASSANDRA_SEEDS=cassandra1:7070
       # Heap fijo por nodo (ver docker-compose-cassandra.yml): con dos JVM, la
       # mitad de la RAM del anfitrión por nodo, pre-tocada, dejaría sin memoria
-      # al equipo. 4G por nodo: con 3G, las memtables se llenan antes, hay más
-      # SSTables y el CREATE INDEX coincidía con una compactación (el build de
-      # SAI se abortaba). Cada nodo llega a ocupar unos 5,5 GiB (heap pre-tocado
-      # más memoria fuera del heap): el runner onprem sólo debe ejecutar un job de
-      # la JVM a la vez (resource_group), o el kernel mata a un nodo (137).
-      - MAX_HEAP_SIZE=4G
+      # al equipo. 4G por nodo por omisión: con 3G, las memtables se llenan antes,
+      # hay más SSTables y el CREATE INDEX coincidía con una compactación (el build
+      # de SAI se abortaba). Cada nodo llega a ocupar unos 5,5 GiB (heap pre-tocado
+      # más memoria fuera del heap). CASSANDRA_MAX_HEAP_SIZE lo cambia en los dos
+      # nodos, como en el Compose de un nodo; el CI usa 6G. El runner onprem sólo
+      # ejecuta un job a la vez (resource_group), o el kernel mata a un nodo (137).
+      - MAX_HEAP_SIZE=${CASSANDRA_MAX_HEAP_SIZE:-4G}
     restart:
       on-failure
     # Cassandra sólo lee cassandra.yaml: se copia encima cassandra_latest.yaml, la
@@ -80,7 +81,7 @@ services:
       # nodos, que es lo que se refleja en el factor de replicación.
       - CASSANDRA_DC=my-datacenter-1
       - CASSANDRA_SEEDS=cassandra1:7070
-      - MAX_HEAP_SIZE=4G
+      - MAX_HEAP_SIZE=${CASSANDRA_MAX_HEAP_SIZE:-4G}
     depends_on:
       cassandra1:
         condition: service_healthy
