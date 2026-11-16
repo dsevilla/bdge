@@ -46,8 +46,8 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 5",
    "url": "../sesion5.html",
    "colab": null,
-   "miniatura": "miniaturas/07d34bf485df9515.jpg",
-   "bd": "bd/7fde1d27134891f0.sqlite3.gz"
+   "miniatura": "miniaturas/a17fdb79aa0d0e83.jpg",
+   "bd": "bd/6634e85f29c85eb8.sqlite3.gz"
   },
   {
    "tipo": "transparencias",
@@ -102,8 +102,8 @@
    "titulo": "Sesión 5 — Cassandra (I), curso 2026-27",
    "url": "https://github.com/dsevilla/bdge/blob/26-27/cassandra/sesion5.ipynb",
    "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/cassandra/sesion5.ipynb",
-   "miniatura": "miniaturas/0270743f2c17fc6e.jpg",
-   "bd": "bd/eab68daef0c6adc8.sqlite3.gz"
+   "miniatura": "miniaturas/e1c45ae53112ca0b.jpg",
+   "bd": "bd/01d986df151b38f4.sqlite3.gz"
   },
   {
    "tipo": "cuaderno",
