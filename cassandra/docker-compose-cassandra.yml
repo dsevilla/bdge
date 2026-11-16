@@ -26,7 +26,7 @@ services:
     # configuración para instalaciones nuevas (índices SAI por omisión, SSTables
     # BTI, memtables trie, UnifiedCompactionStrategy), y después se ajusta. El
     # entrypoint añade la red y las semillas, así que la copia va antes que él.
-    command: bash -c 'cp /etc/cassandra/cassandra_latest.yaml /etc/cassandra/cassandra.yaml && sed -i -e "s/\(materialized_views_enabled:\).*/\\1 true/;s/\(storage_port:\).*/\\1 7070/;s/\(batch_size_warn_threshold:\).*/\\1 128KiB/;s/\(batch_size_fail_threshold:\).*/\\1 1024KiB/" /etc/cassandra/cassandra.yaml && /usr/local/bin/docker-entrypoint.sh cassandra -f'
+    command: bash -c 'cp /etc/cassandra/cassandra_latest.yaml /etc/cassandra/cassandra.yaml && sed -i -e "s/\(storage_port:\).*/\\1 7070/;s/\(batch_size_warn_threshold:\).*/\\1 128KiB/;s/\(batch_size_fail_threshold:\).*/\\1 1024KiB/" /etc/cassandra/cassandra.yaml && /usr/local/bin/docker-entrypoint.sh cassandra -f'
     healthcheck:
       test: ["CMD", "cqlsh", "-e", "SELECT now() FROM system.local;"]
       interval: 30s
