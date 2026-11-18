@@ -67,7 +67,7 @@ a { color: var(--bdge-red); }
 
 table { border-collapse: collapse; font-size: 32px; margin: 18px auto; width: 100%; }
 thead, section table thead tr { background: var(--bdge-ink-soft); color: #fff; }
-th { color: #fff; font-weight: 700; }
+th, th strong, th em, th code { color: #fff; font-weight: 700; }
 th, td { border: 1px solid var(--bdge-line); padding: 10px 14px; text-align: left; vertical-align: middle; }
 tbody tr:nth-child(even) { background: var(--bdge-gold-soft); }
 
