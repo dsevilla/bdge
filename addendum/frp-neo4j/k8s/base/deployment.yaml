@@ -39,7 +39,7 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
           resources:
-            requests: {cpu: 20m, memory: 32Mi}
+            requests: {cpu: 20m, memory: 32Mi, ephemeral-storage: 64Mi}
       volumes:
         - name: config
           configMap:
