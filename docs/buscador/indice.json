@@ -107,6 +107,14 @@
   },
   {
    "tipo": "cuaderno",
+   "titulo": "Sesión 6 — Cassandra (II), curso 2026-27",
+   "url": "https://github.com/dsevilla/bdge/blob/26-27/cassandra/sesion6.ipynb",
+   "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/cassandra/sesion6.ipynb",
+   "miniatura": "miniaturas/10a56a5275b53736.jpg",
+   "bd": "bd/90aea0542852d339.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
    "titulo": "Trabajos",
    "url": "../trabajos.html",
    "colab": null,
