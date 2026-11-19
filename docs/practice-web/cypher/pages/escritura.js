@@ -1,8 +1,7 @@
 /*
  * Escritura y modelado: MERGE frente a CREATE y la construcción de una relación
- * derivada, con Cypher que funciona igual en Neo4j. La relación INTERESTED_IN la
- * declara la página al construir el grafo (Ladybug exige el esquema; Neo4j no),
- * así que ningún ejercicio necesita DDL propio de este motor. Los ejercicios que
+ * derivada, con Cypher que funciona igual en Neo4j. La relación INTERESTED_IN no
+ * se declara: la crea el MERGE del primer ejercicio, como en Neo4j. Los ejercicios que
  * escriben cambian el grafo y no tienen comprobación automática: el botón
  * «Reconstruir el grafo» del panel de arriba lo deja como estaba.
  */

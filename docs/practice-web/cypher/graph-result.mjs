@@ -1,17 +1,72 @@
+/*
+ * Nodos, relaciones y caminos que devuelven los dos motores Cypher del navegador:
+ *
+ * - Grafeo (la práctica de grafos): nodo {_id, _labels, ...propiedades},
+ *   relación {_id, _source, _target, _type, ...}, camino {_type: "path", nodes, edges}.
+ *   Los _id de nodos y relaciones se numeran por separado.
+ * - Ladybug (el grafo del curso, teoria/dot-cloud-neo4j/): nodo {_id: {table, offset},
+ *   _label, ...}, relación {_src, _dst, _label, ...}, camino {_nodes, _rels}.
+ *
+ * Cuando el grafo del curso pase también a Grafeo, sobra la rama de Ladybug.
+ */
+function isGrafeoNode(value) {
+  return Array.isArray(value._labels);
+}
+
+function isGrafeoRelationship(value) {
+  return "_source" in value && "_target" in value;
+}
+
 export function isNode(value) {
-  return Boolean(value) && typeof value === "object" && value._id && value._label && !value._src;
+  if (!value || typeof value !== "object") return false;
+  return isGrafeoNode(value) || Boolean(value._id && value._label && !value._src);
 }
 
 export function isRelationship(value) {
-  return Boolean(value) && typeof value === "object" && value._src && value._dst;
+  if (!value || typeof value !== "object") return false;
+  return isGrafeoRelationship(value) || Boolean(value._src && value._dst);
 }
 
 export function isPath(value) {
-  return Boolean(value) && typeof value === "object" && Array.isArray(value._nodes) && Array.isArray(value._rels);
+  if (!value || typeof value !== "object") return false;
+  return (value._type === "path" && Array.isArray(value.nodes) && Array.isArray(value.edges))
+    || (Array.isArray(value._nodes) && Array.isArray(value._rels));
 }
 
+export function nodeLabels(node) {
+  return isGrafeoNode(node) ? node._labels : [node._label];
+}
+
+export function relationshipType(relationship) {
+  return isGrafeoRelationship(relationship) ? relationship._type : relationship._label;
+}
+
+export function pathNodes(path) {
+  return path.nodes || path._nodes;
+}
+
+export function pathRelationships(path) {
+  return path.edges || path._rels;
+}
+
+// Identificador interno de Ladybug (tabla y desplazamiento).
 export function internalId(reference) {
   return reference.table + ":" + reference.offset;
+}
+
+// Clave única de un nodo o una relación en el resultado, sea del motor que sea.
+export function nodeKey(node) {
+  return isGrafeoNode(node) ? "n" + node._id : internalId(node._id);
+}
+
+export function relationshipKey(relationship) {
+  return isGrafeoRelationship(relationship) ? "e" + relationship._id : internalId(relationship._id);
+}
+
+export function endpointKeys(relationship) {
+  return isGrafeoRelationship(relationship)
+    ? ["n" + relationship._source, "n" + relationship._target]
+    : [internalId(relationship._src), internalId(relationship._dst)];
 }
 
 export function collectGraphElements(rows) {
@@ -23,17 +78,17 @@ export function collectGraphElements(rows) {
       return;
     }
     if (isPath(value)) {
-      value._nodes.forEach(visit);
-      value._rels.forEach(visit);
+      pathNodes(value).forEach(visit);
+      pathRelationships(value).forEach(visit);
       return;
     }
     if (isNode(value)) {
-      const id = internalId(value._id);
+      const id = nodeKey(value);
       if (!nodes.has(id)) nodes.set(id, value);
       return;
     }
     if (isRelationship(value)) {
-      const id = internalId(value._id);
+      const id = relationshipKey(value);
       if (!edges.has(id)) edges.set(id, value);
       return;
     }
@@ -43,30 +98,32 @@ export function collectGraphElements(rows) {
   return { nodes: nodes, edges: edges };
 }
 
-// Tanto la práctica como el grafo del curso dibujan los valores que devuelve Ladybug.
+// La práctica y el grafo del curso dibujan con esta función sus resultados.
+// Un nodo con varias etiquetas toma el color de la primera que lo tenga.
 export function drawResultGraph(Network, container, elements, { caption, colors, limit, onNodeClick, palette = {} }) {
   const labels = new Set();
   const nodes = [];
   Array.from(elements.nodes.entries()).slice(0, limit).forEach(function (entry) {
     const node = entry[1];
-    labels.add(node._label);
+    const nodeLabelList = nodeLabels(node);
+    const label = nodeLabelList.find(function (candidate) { return colors[candidate]; }) || nodeLabelList[0];
+    labels.add(label);
     const title = document.createElement("span");
-    title.textContent = node._label;
+    title.textContent = nodeLabelList.join(":");
     nodes.push({
       id: entry[0],
       label: caption(node),
       title: title,
-      color: { background: colors[node._label] || "#666", border: palette.border || "#2b2620" },
+      color: { background: colors[label] || "#666", border: palette.border || "#2b2620" },
       font: { color: palette.text || "#fffdf8", size: 14 }
     });
   });
   const known = new Set(nodes.map(function (node) { return node.id; }));
   const edges = [];
   elements.edges.forEach(function (edge) {
-    const from = internalId(edge._src);
-    const to = internalId(edge._dst);
+    const [from, to] = endpointKeys(edge);
     if (!known.has(from) || !known.has(to)) return;
-    edges.push({ from: from, to: to, label: edge._label, arrows: "to",
+    edges.push({ from: from, to: to, label: relationshipType(edge), arrows: "to",
       color: { color: palette.edge || "#9a8f79" },
       font: { size: 11, color: palette.edgeText || "#6d675d",
         strokeWidth: 3, strokeColor: palette.edgeOutline || "#fffdf8" } });

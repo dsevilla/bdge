@@ -1,20 +1,87 @@
-const LBUG_URL = "https://cdn.jsdelivr.net/npm/@ladybugdb/wasm-core@0.22.3/sync/index.js";
+// Motor de la práctica: Grafeo compilado a WebAssembly, en un worker propio.
+// Cada carga tiene su worker y su base en memoria; al cerrar el worker se libera
+// todo de una vez.
+//
+// El paquete npm está compilado para empaquetador (`import * as wasm from
+// "./grafeo_wasm_bg.wasm"`), que el navegador no sabe importar. El .wasm sólo
+// importa su propio código de enlace, así que se instancia a mano con él: es lo
+// mismo que hace grafeo_wasm.js, sin necesitar un empaquetador.
+const GRAFEO_URL = "https://cdn.jsdelivr.net/npm/@grafeo-db/wasm@0.6.3";
 
-// Cada carga tiene su propio worker y sistema de archivos virtual. Al cerrar el
-// worker se liberan también los CSV, sin depender de unlink en WasmFS.
-let lbug;
 let database;
-let connection;
 
-function query(cypher, readRows = true) {
-  const result = connection.query(cypher);
-  try {
-    const last = result.at(-1);
-    if (!last.isSuccess()) throw new Error(last.getErrorMessage());
-    if (readRows) return { columns: last.getColumnNames(), rows: last.getAllObjects() };
-  } finally {
-    result.close();
+async function openDatabase() {
+  const glue = await import(GRAFEO_URL + "/grafeo_wasm_bg.js");
+  const { instance } = await WebAssembly.instantiateStreaming(
+    fetch(GRAFEO_URL + "/grafeo_wasm_bg.wasm"),
+    { "./grafeo_wasm_bg.js": glue }
+  );
+  glue.__wbg_set_wasm(instance.exports);
+  instance.exports.__wbindgen_start();
+  return new glue.Database();
+}
+
+// Separa las sentencias de un texto por los `;` que no están dentro de una
+// cadena ni de un comentario, como hace Neo4j Browser.
+function splitStatements(text) {
+  const statements = [];
+  let current = "";
+  let quote = null;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+    if (quote) {
+      current += char;
+      if (char === "\\") {
+        current += next ?? "";
+        index += 1;
+      } else if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (char === "'" || char === '"' || char === "`") {
+      quote = char;
+      current += char;
+    } else if (char === "/" && next === "/") {
+      const end = text.indexOf("\n", index);
+      index = end === -1 ? text.length : end - 1;
+    } else if (char === "/" && next === "*") {
+      const end = text.indexOf("*/", index + 2);
+      index = end === -1 ? text.length : end + 1;
+    } else if (char === ";") {
+      statements.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
   }
+  statements.push(current);
+  return statements.map(function (statement) { return statement.trim(); }).filter(Boolean);
+}
+
+// Ejecuta una sentencia y devuelve sus columnas, en orden aunque no haya filas,
+// y sus filas como objetos indexados por columna.
+function run(cypher, params) {
+  const raw = params
+    ? database.executeRawWithLanguageAndParams(cypher, "cypher", params)
+    : database.executeRawWithLanguage(cypher, "cypher");
+  const columns = raw.columns;
+  const rows = raw.rows.map(function (values) {
+    const row = {};
+    columns.forEach(function (column, index) { row[column] = values[index]; });
+    return row;
+  });
+  return { columns, rows };
+}
+
+// Varias sentencias seguidas devuelven el resultado de la última.
+function query(text) {
+  const statements = splitStatements(text);
+  if (!statements.length) throw new Error("No hay ninguna sentencia que ejecutar.");
+  let result;
+  statements.forEach(function (statement) { result = run(statement); });
+  return result;
 }
 
 self.addEventListener("message", async function ({ data }) {
@@ -23,22 +90,18 @@ self.addEventListener("message", async function ({ data }) {
     let result;
     switch (action) {
       case "init":
-        lbug = (await import(LBUG_URL)).default;
-        await lbug.init();
-        database = new lbug.Database();
-        connection = new lbug.Connection(database);
-        value.forEach(function (statement) { query(statement, false); });
-        result = lbug.getVersion();
+        database = await openDatabase();
+        value.forEach(function (statement) { run(statement); });
+        result = database.info().version;
         break;
-      case "copy":
-        lbug.getFS().createDataFile("/", value.file, value.bytes, true, true);
-        query(value.statement, false);
+      case "load":
+        run(value.statement, { filas: value.rows });
         break;
       case "query":
         result = query(value);
         break;
       case "compare":
-        result = value.map(function (statement) { return query(statement); });
+        result = value.map(query);
         break;
       default:
         throw new Error("Operación desconocida en el motor: " + action);

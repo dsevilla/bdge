@@ -313,7 +313,7 @@
     <div class="header-inner">
       <p class="eyebrow">BDGE · prototipo de aula</p>
       <h1>Práctica de grafos con Cypher</h1>
-      <p class="intro">El grafo de Stack Overflow en español —usuarios, publicaciones y etiquetas— dentro de tu navegador. Escribe un patrón <code>MATCH</code> y ve el resultado dibujado. El motor no es Neo4j: es Ladybug (WebAssembly), que habla Cypher pero no es idéntico; abajo se explica en qué se aparta.</p>
+      <p class="intro">El grafo de Stack Overflow en español —usuarios, publicaciones y etiquetas— dentro de tu navegador. Escribe un patrón <code>MATCH</code> y ve el resultado dibujado. El motor no es Neo4j: es Grafeo (WebAssembly), que habla el mismo Cypher y se carga con las mismas sentencias, aunque no es idéntico; abajo se explica en qué se aparta.</p>
     </div>
   </header>
 
@@ -326,7 +326,7 @@
       <p class="database-note">
         Al abrir la página se descargan <code>Users</code>, <code>Posts</code> y <code>Tags</code> completos desde el <em>dump</em> publicado en
         <a href="https://github.com/dsevilla/bd2-data/tree/main/es.stackoverflow/jsonl" target="_blank" rel="noreferrer">dsevilla/bd2-data</a>
-        (unos 61,3 MB comprimidos) y se construye el grafo aquí mismo: primero el esquema, después la carga. Puede tardar varios minutos y necesitar varios GB de memoria; nada sale de tu navegador.
+        (unos 61,3 MB comprimidos) y se construye el grafo aquí mismo con sentencias Cypher. Puede tardar un par de minutos y necesitar unos 2 GB de memoria; nada sale de tu navegador.
         El botón permite cambiar a la muestra reducida (unos 6,9 MB), con una pregunta de cada ocho y su hilo completo; las cifras serán menores.
       </p>
       <div class="controls">
@@ -342,19 +342,20 @@
     <section class="schema-panel" aria-labelledby="schema-title">
       <h2 id="schema-title">Cómo se ha creado este grafo</h2>
       <p>
-        En Neo4j se puede empezar a crear nodos sin declarar nada: el esquema es opcional y cada nodo lleva
-        sus propiedades consigo. Aquí no. Ladybug —como Kuzu, del que procede— es una base de grafos
-        <strong>tipada y columnar</strong>: cada clase de nodo y cada clase de relación es una tabla con columnas
-        de tipo fijo, guardadas por columnas y recorridas de forma vectorizada. Eso es lo que le permite resolver
-        recorridos de varios saltos deprisa sobre un WebAssembly de pocos megabytes, y el precio es declarar antes
-        qué hay en el grafo.
+        Como en Neo4j, no hay que declarar nada antes de crear nodos: el esquema es opcional y cada nodo lleva
+        sus propiedades consigo. Las etiquetas, los tipos de relación y las propiedades existen en cuanto se usan
+        por primera vez, y un nodo puede tener varias etiquetas (<code>SET u:Experto</code> le añade una).
+        Aquí la distinción pregunta/respuesta va en la propiedad <code>PostTypeId</code> (1 pregunta, 2 respuesta),
+        como en el <em>dump</em> original, y no en una etiqueta.
       </p>
       <p>
-        Tres consecuencias que se notan al escribir consultas, y que conviene tener presentes porque en Neo4j no ocurren:
-        hay que crear las tablas antes de cargar nada; <strong>un nodo tiene una sola etiqueta</strong>, así que
-        <code>(:Post:Question)</code> no existe y la distinción pregunta/respuesta va en la propiedad
-        <code>PostTypeId</code> (1 pregunta, 2 respuesta); y una relación sólo une los tipos declarados en su
-        <code>FROM … TO …</code>, de modo que el propio esquema documenta qué recorridos tienen sentido.
+        La carga sigue el orden de una carga masiva en Neo4j. Primero se crean los nodos con
+        <code>UNWIND</code> sobre una lista de mapas, <code>$filas</code>, que la página prepara a partir del JSONL.
+        Después se crean las <strong>restricciones de unicidad</strong> de cada clave, que construyen su índice.
+        Al final se crean las relaciones: cada fila busca sus dos extremos por esos índices con <code>MATCH</code>
+        y los une con <code>CREATE</code>. Sin el índice, cada búsqueda recorrería todos los nodos de la etiqueta.
+        Las fechas se convierten con <code>datetime()</code>, así que <code>p.CreationDate.year</code> funciona
+        como en el boletín.
       </p>
       <table class="mapping">
         <caption class="connection-result" style="text-align: left; caption-side: bottom;">
@@ -374,7 +375,7 @@
       </table>
       <details class="schema-details">
         <summary>Ver las sentencias que se acaban de ejecutar</summary>
-        <p class="connection-result">Esto es literalmente lo que corre la página al cargar: primero el esquema, luego la carga masiva con <code>COPY</code>. Puedes copiar cualquier parte en un editor de abajo y ejecutarla. La última relación, <code>INTERESTED_IN</code>, empieza vacía: la llenan con <code>MERGE</code> los ejercicios de «Escritura y modelado», que en Neo4j no necesitarían declararla.</p>
+        <p class="connection-result">Esto es literalmente lo que corre la página al cargar, y funciona igual en Neo4j. Las sentencias con <code>$filas</code> necesitan ese parámetro, así que no se pueden pegar tal cual en un editor de abajo; las restricciones sí (<code>SHOW INDEXES</code> lista los índices que crean).</p>
         <pre id="schema-source" class="cypher-block">…</pre>
       </details>
     </section>
@@ -393,8 +394,9 @@
 
     <footer>
       <p>
-        El motor es <a href="https://ladybugdb.com/" target="_blank" rel="noreferrer">Ladybug</a> compilado a WebAssembly, continuación del proyecto Kuzu. Habla Cypher, pero
-        <strong>no es Neo4j</strong>: no hay APOC ni GDS, los planes de <code>EXPLAIN</code> son los suyos y el esquema es obligatorio.
+        El motor es <a href="https://grafeo.dev/" target="_blank" rel="noreferrer">Grafeo</a> compilado a WebAssembly. Habla Cypher, pero
+        <strong>no es Neo4j</strong>: no hay APOC ni GDS, los planes de <code>EXPLAIN</code> y <code>PROFILE</code> son los suyos
+        y <code>labels()</code> devuelve las etiquetas en orden alfabético.
         Los ejercicios de índices y <code>PROFILE</code> del boletín siguen necesitando el servidor de clase. El grafo usa todas las filas de
         <code>Users</code>, <code>Posts</code> y <code>Tags</code>; el <code>Body</code> de las publicaciones está limitado a 100 bytes UTF‑8.
       </p>

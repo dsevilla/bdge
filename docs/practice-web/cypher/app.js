@@ -1,12 +1,15 @@
 import { PRACTICE_PAGES } from "./pages/index.js";
-import { collectGraphElements, drawResultGraph, isNode, isPath, isRelationship } from "./graph-result.mjs";
+import {
+  collectGraphElements, drawResultGraph, isNode, isPath, isRelationship,
+  nodeLabels, pathNodes, relationshipType
+} from "./graph-result.mjs";
 "use strict";
 /*
  * Motor común de la práctica de grafos. Descarga el JSONL completo, construye
- * el grafo en Ladybug (WebAssembly) y ejecuta el Cypher de cada ejercicio,
- * dibujando el resultado cuando contiene nodos o relaciones. Las páginas de
- * pages/ sólo declaran contenido; este fichero no debe copiarse para añadir
- * ejercicios.
+ * el grafo en Grafeo (WebAssembly) con Cypher de Neo4j y ejecuta el Cypher de
+ * cada ejercicio, dibujando el resultado cuando contiene nodos o relaciones.
+ * Las páginas de pages/ sólo declaran contenido; este fichero no debe copiarse
+ * para añadir ejercicios.
  */
 
 // Los assets de una release de GitHub no envían cabeceras CORS: la página lee
@@ -34,47 +37,109 @@ const MAX_TEXT_LENGTH = 400;
 const WRITE_CLAUSES = /\b(CREATE|MERGE|SET|DELETE|DETACH|REMOVE|COPY|DROP|ALTER|INSTALL|LOAD|ATTACH|EXPORT|IMPORT)\b/i;
 const STATE_CHANGE_NOTE = "No se puede comprobar: la consulta cambia el grafo.";
 
-// El esquema y la carga se declaran aquí y se muestran tal cual en la página:
-// lo que el alumno lee es exactamente lo que se ha ejecutado.
-const SCHEMA_STATEMENTS = [
-  `CREATE NODE TABLE User(
-  Id INT64,
-  DisplayName STRING,
-  Reputation INT64,
-  Location STRING,
-  CreationDate TIMESTAMP,
-  PRIMARY KEY (Id)
-)`,
-  `CREATE NODE TABLE Post(
-  Id INT64,
-  PostTypeId INT64,
-  Title STRING,
-  Score INT64,
-  ViewCount INT64,
-  CreationDate TIMESTAMP,
-  PRIMARY KEY (Id)
-)`,
-  `CREATE NODE TABLE Tag(
-  TagName STRING,
-  Count INT64,
-  PRIMARY KEY (TagName)
-)`,
-  `CREATE REL TABLE WROTE(FROM User TO Post)`,
-  `CREATE REL TABLE ANSWERS(FROM Post TO Post)`,
-  `CREATE REL TABLE TAGGED_WITH(FROM Post TO Tag)`,
-  // Vacía al cargar: la llena con MERGE la página «Escritura y modelado». Se declara
-  // aquí porque Ladybug exige el esquema y en el curso se trabaja con Neo4j, donde
-  // basta el MERGE: así ningún ejercicio pide DDL propio de este motor.
-  `CREATE REL TABLE INTERESTED_IN(FROM User TO Tag, preguntas INT64)`
+// La carga se declara aquí y se muestra tal cual en la página: lo que el alumno
+// lee es exactamente lo que se ha ejecutado, y es Cypher de Neo4j. `$filas` es
+// una lista de mapas que la página construye a partir del JSONL y envía en
+// lotes de LOAD_BATCH_SIZE. El orden es el de una carga masiva en Neo4j:
+// primero los nodos, sin índices que mantener; después las restricciones de
+// unicidad, que crean el índice por el que se busca cada extremo; y al final
+// las relaciones. No hace falta declarar nada más: las etiquetas, los tipos de
+// relación y las propiedades existen en cuanto se crean, como INTERESTED_IN,
+// que crea con MERGE la página «Escritura y modelado».
+const LOAD_BATCH_SIZE = 10000;
+
+// Sin los nulos del JSONL: un mapa con una clave a null no crea la propiedad.
+function presentFields(document, fields) {
+  const row = {};
+  fields.forEach(function (field) {
+    if (document[field] !== null && document[field] !== undefined) row[field] = document[field];
+  });
+  return row;
+}
+
+function postTagNames(post) {
+  if (!post.Tags) return [];
+  return post.Tags.replace(/^</, "").replace(/>$/, "").split("><");
+}
+
+const NODE_LOADS = [
+  {
+    label: "User",
+    statement: `UNWIND $filas AS fila
+CREATE (:User {Id: fila.Id, DisplayName: fila.DisplayName, Reputation: fila.Reputation,
+               Location: fila.Location, CreationDate: datetime(fila.CreationDate)})`,
+    rows: function (documents) {
+      return documents.Users.map(function (user) {
+        return presentFields(user, ["Id", "DisplayName", "Reputation", "Location", "CreationDate"]);
+      });
+    }
+  },
+  {
+    label: "Post",
+    statement: `UNWIND $filas AS fila
+CREATE (:Post {Id: fila.Id, PostTypeId: fila.PostTypeId, Title: fila.Title, Score: fila.Score,
+               ViewCount: fila.ViewCount, CreationDate: datetime(fila.CreationDate)})`,
+    rows: function (documents) {
+      return documents.Posts.map(function (post) {
+        return presentFields(post, ["Id", "PostTypeId", "Title", "Score", "ViewCount", "CreationDate"]);
+      });
+    }
+  },
+  {
+    label: "Tag",
+    statement: `UNWIND $filas AS fila
+CREATE (:Tag {TagName: fila.TagName, Count: fila.Count})`,
+    rows: function (documents) {
+      return documents.Tags.map(function (tag) { return presentFields(tag, ["TagName", "Count"]); });
+    }
+  }
 ];
 
-const COPY_STATEMENTS = [
-  { table: "User", file: "user.csv" },
-  { table: "Post", file: "post.csv" },
-  { table: "Tag", file: "tag.csv" },
-  { table: "WROTE", file: "wrote.csv" },
-  { table: "ANSWERS", file: "answers.csv" },
-  { table: "TAGGED_WITH", file: "tagged_with.csv" }
+const CONSTRAINT_STATEMENTS = [
+  "CREATE CONSTRAINT user_id FOR (u:User) REQUIRE u.Id IS UNIQUE",
+  "CREATE CONSTRAINT post_id FOR (p:Post) REQUIRE p.Id IS UNIQUE",
+  "CREATE CONSTRAINT tag_name FOR (t:Tag) REQUIRE t.TagName IS UNIQUE"
+];
+
+// Una relación cuyo extremo no está en los datos no se crea: el MATCH no encuentra
+// el nodo y esa fila no produce nada.
+const RELATIONSHIP_LOADS = [
+  {
+    label: "WROTE",
+    statement: `UNWIND $filas AS fila
+MATCH (u:User {Id: fila.usuario})
+MATCH (p:Post {Id: fila.post})
+CREATE (u)-[:WROTE]->(p)`,
+    rows: function (documents) {
+      return documents.Posts
+        .filter(function (post) { return post.OwnerUserId !== null; })
+        .map(function (post) { return { usuario: post.OwnerUserId, post: post.Id }; });
+    }
+  },
+  {
+    label: "ANSWERS",
+    statement: `UNWIND $filas AS fila
+MATCH (respuesta:Post {Id: fila.respuesta})
+MATCH (pregunta:Post {Id: fila.pregunta})
+CREATE (respuesta)-[:ANSWERS]->(pregunta)`,
+    rows: function (documents) {
+      return documents.Posts
+        .filter(function (post) { return post.ParentId !== null; })
+        .map(function (post) { return { respuesta: post.Id, pregunta: post.ParentId }; });
+    }
+  },
+  {
+    label: "TAGGED_WITH",
+    statement: `UNWIND $filas AS fila
+MATCH (p:Post {Id: fila.post})
+MATCH (t:Tag {TagName: fila.etiqueta})
+CREATE (p)-[:TAGGED_WITH]->(t)`,
+    rows: function (documents) {
+      return documents.Posts.flatMap(function (post) {
+        return postTagNames(post).map(function (name) { return { post: post.Id, etiqueta: name }; });
+      });
+    }
+  }
 ];
 
 const LABEL_COLORS = {
@@ -114,21 +179,18 @@ function hasCypherCodeMirror() {
 }
 
 // El modo `cypher` de CodeMirror es el de Neo4j y arrastra algunos tropiezos que
-// en este grafo despistan: no conoce el DDL de Ladybug (`TABLE`, `PRIMARY KEY`,
-// los tipos de columna), toma `User` por la orden de administración de usuarios
-// y `Id` por la función `id()`, y deja como nombres corrientes `[:WROTE]` y los
-// números. Este modo delega en él y sólo reclasifica esos casos.
-const CYPHER_MODE = "ladybug-cypher";
-const LADYBUG_KEYWORDS = /^(node|rel|table|primary|key)$/i;
-const LADYBUG_TYPES = /^(string|int64|int32|int16|int8|double|float|boolean|date|timestamp|interval|serial)$/i;
+// en este grafo despistan: toma `User` por la orden de administración de usuarios
+// y `Id` por la función `id()`, no conoce `REQUIRE` (Neo4j 5) y deja como nombres
+// corrientes `[:WROTE]` y los números. Este modo delega en él y sólo reclasifica
+// esos casos.
+const CYPHER_MODE = "bdge-cypher";
+const EXTRA_KEYWORDS = /^(require)$/i;
+// Etiquetas y tipos de relación del grafo, que se colorean como tales también
+// fuera de un patrón (`FOR (u:User)` los separa del `:` en algunos casos).
+const GRAPH_NAMES = new Set(["user", "post", "tag", "wrote", "answers", "tagged_with", "interested_in"]);
 
-function defineLadybugCypherMode() {
+function defineGraphCypherMode() {
   if (!hasCypherCodeMirror() || window.CodeMirror.modes[CYPHER_MODE]) return;
-  // Las tablas del esquema (etiquetas y tipos de relación) se colorean como etiquetas
-  // también fuera de un patrón: en `CREATE NODE TABLE User` o en `COPY WROTE`.
-  const schemaNames = new Set(SCHEMA_STATEMENTS.map(function (statement) {
-    return /TABLE\s+(\w+)/i.exec(statement)[1].toLowerCase();
-  }));
   window.CodeMirror.defineMode(CYPHER_MODE, function (config) {
     const cypher = window.CodeMirror.getMode(config, "cypher");
     return Object.assign({}, cypher, {
@@ -136,17 +198,16 @@ function defineLadybugCypherMode() {
       token: function (stream, state) {
         const style = cypher.token(stream, state);
         const word = stream.current();
-        const afterDot = state.ladybugAfterDot;
-        state.ladybugAfterDot = style === "node" && word === ".";
+        const afterDot = state.graphAfterDot;
+        state.graphAfterDot = style === "node" && word === ".";
         if (style === null || style === "node" || style === "string" || style === "comment") {
           return style;
         }
         if (afterDot) return "property";
-        if (word.charAt(0) === ":" || schemaNames.has(word.toLowerCase())) return "atom";
+        if (word.charAt(0) === ":" || GRAPH_NAMES.has(word.toLowerCase())) return "atom";
         if (/^\d/.test(word)) return "number";
-        if (LADYBUG_KEYWORDS.test(word)) return "keyword";
-        if (LADYBUG_TYPES.test(word)) return "type";
-        // Una función sólo lo es si la sigue un paréntesis: `Id INT64` es una columna.
+        if (EXTRA_KEYWORDS.test(word)) return "keyword";
+        // Una función sólo lo es si la sigue un paréntesis: `fila.Id` o `Id:` no son `id()`.
         if (style === "builtin" && !stream.match(/^\s*\(/, false)) return "variable";
         return style;
       }
@@ -476,10 +537,11 @@ function showSolution(editorId) {
  * Construcción del grafo
  * ------------------------------------------------------------------ */
 
+// El JSONL guarda las fechas como {"$date": "2015-10-30T10:26:44.223Z"}: se quedan
+// en el texto ISO, que la carga convierte con datetime() como haría Neo4j.
 function reviveExtendedJson(key, value) {
   if (value !== null && typeof value === "object" && typeof value.$date === "string") {
-    // Ladybug espera un TIMESTAMP sin zona: 2015-10-30T10:26:44.223
-    return value.$date.replace("Z", "");
+    return value.$date;
   }
   return value;
 }
@@ -509,53 +571,16 @@ async function fetchCollection(base, name, variant) {
   return parseJsonl(text, filename);
 }
 
-function csvValue(value) {
-  if (value === null || value === undefined) return "";
-  return '"' + String(value).replace(/"/g, '""').replace(/[\r\n]+/g, " ") + '"';
-}
-
-function buildCsvFiles(documents) {
-  const users = documents.Users;
-  const posts = documents.Posts;
-  const tags = documents.Tags;
-  const knownTags = new Set(tags.map(function (tag) { return tag.TagName; }));
-  const files = {};
-  files["user.csv"] = users.map(function (user) {
-    return [user.Id, csvValue(user.DisplayName), user.Reputation, csvValue(user.Location),
-      csvValue(user.CreationDate)].join(",");
-  }).join("\n");
-  files["post.csv"] = posts.map(function (post) {
-    return [post.Id, post.PostTypeId, csvValue(post.Title), post.Score, post.ViewCount,
-      csvValue(post.CreationDate)].join(",");
-  }).join("\n");
-  files["tag.csv"] = tags.map(function (tag) {
-    return [csvValue(tag.TagName), tag.Count].join(",");
-  }).join("\n");
-  files["wrote.csv"] = posts.filter(function (post) { return post.OwnerUserId !== null; })
-    .map(function (post) { return post.OwnerUserId + "," + post.Id; }).join("\n");
-  files["answers.csv"] = posts.filter(function (post) { return post.ParentId !== null; })
-    .map(function (post) { return post.Id + "," + post.ParentId; }).join("\n");
-  const tagged = [];
-  posts.forEach(function (post) {
-    if (!post.Tags) return;
-    post.Tags.replace(/^</, "").replace(/>$/, "").split("><").forEach(function (name) {
-      if (knownTags.has(name)) tagged.push(post.Id + "," + csvValue(name));
-    });
-  });
-  files["tagged_with.csv"] = tagged.join("\n");
-  return files;
-}
-
-function copyStatement(entry) {
-  return "COPY " + entry.table + " FROM '/" + entry.file + "' (header=false)";
-}
-
 function renderSchemaSource() {
-  const source = SCHEMA_STATEMENTS.map(function (statement) {
-    return statement + ";";
-  }).join("\n\n") + "\n\n" + COPY_STATEMENTS.map(function (entry) {
-    return copyStatement(entry) + ";";
-  }).join("\n");
+  const statements = function (list) {
+    return list.map(function (entry) { return (entry.statement || entry) + ";"; }).join("\n\n");
+  };
+  const source = "// 1. Nodos, en lotes de " + formatCount(LOAD_BATCH_SIZE) + " filas por $filas\n"
+    + statements(NODE_LOADS)
+    + "\n\n// 2. Restricciones de unicidad: crean el índice de cada clave\n"
+    + statements(CONSTRAINT_STATEMENTS)
+    + "\n\n// 3. Relaciones, buscando sus extremos por esos índices\n"
+    + statements(RELATIONSHIP_LOADS);
   // Con CodeMirror y su addon runmode, el bloque se colorea con el mismo modo y
   // tema que los editores; si no cargaron, queda como texto plano.
   if (hasCypherCodeMirror() && typeof window.CodeMirror.runMode === "function") {
@@ -613,20 +638,26 @@ async function buildGraph(documents) {
   });
   closeGraphDatabase();
   graphEngine = openGraphEngine();
-  const version = await graphEngine.send("init", SCHEMA_STATEMENTS);
+  const version = await graphEngine.send("init", []);
 
-  setStatus("Preparando los datos para la carga", "loading");
-  await yieldToBrowser();
-  const files = buildCsvFiles(documents);
-  const encoder = new TextEncoder();
-  for (let index = 0; index < COPY_STATEMENTS.length; index += 1) {
-    const entry = COPY_STATEMENTS[index];
-    setStatus("Cargando " + entry.table + " (" + (index + 1) + "/" + COPY_STATEMENTS.length + ")", "loading");
-    await yieldToBrowser();
-    const bytes = encoder.encode(files[entry.file]);
-    delete files[entry.file];
-    await graphEngine.send("copy", { file: entry.file, statement: copyStatement(entry), bytes }, [bytes.buffer]);
+  const steps = NODE_LOADS.length + 1 + RELATIONSHIP_LOADS.length;
+  let step = 0;
+  async function loadRows(entry) {
+    step += 1;
+    const rows = entry.rows(documents);
+    for (let start = 0; start < rows.length; start += LOAD_BATCH_SIZE) {
+      setStatus("Cargando " + entry.label + " (" + step + "/" + steps + ") · "
+        + formatCount(start) + " de " + formatCount(rows.length), "loading");
+      await yieldToBrowser();
+      await graphEngine.send("load", { statement: entry.statement, rows: rows.slice(start, start + LOAD_BATCH_SIZE) });
+    }
   }
+  for (const entry of NODE_LOADS) await loadRows(entry);
+  step += 1;
+  setStatus("Creando las restricciones de unicidad (" + step + "/" + steps + ")", "loading");
+  await yieldToBrowser();
+  for (const statement of CONSTRAINT_STATEMENTS) await graphEngine.send("query", statement);
+  for (const entry of RELATIONSHIP_LOADS) await loadRows(entry);
   return version;
 }
 
@@ -712,7 +743,7 @@ async function loadEverything(variant) {
         updateDatasetToggleButton();
         const nodes = counts.slice(0, 3).reduce(function (sum, entry) { return sum + entry.total; }, 0);
         const edges = counts.slice(3).reduce(function (sum, entry) { return sum + entry.total; }, 0);
-        setStatus(target.readyLabel + " · " + formatCount(nodes) + " nodos y " + formatCount(edges) + " relaciones · Ladybug " + version, "ready");
+        setStatus(target.readyLabel + " · " + formatCount(nodes) + " nodos y " + formatCount(edges) + " relaciones · Grafeo " + version, "ready");
         messageEl.textContent = "Construido con " + target.name + " desde " + source.label + " en "
           + ((performance.now() - started) / 1000).toFixed(1) + " s.";
         document.querySelectorAll(".result").forEach(function (result) {
@@ -771,7 +802,7 @@ function isReadOnlyCypher(cypher) {
 function nodeCaption(node) {
   const property = node.DisplayName || node.Title || node.TagName;
   if (property) return String(property).length > 40 ? String(property).slice(0, 40) + "…" : String(property);
-  return node._label + " " + (node.Id !== undefined ? node.Id : "");
+  return nodeLabels(node).join(":") + " " + (node.Id !== undefined ? node.Id : "");
 }
 
 function destroyGraphs() {
@@ -802,21 +833,28 @@ function truncateText(text) {
     : text;
 }
 
-// Los INT64 de Ladybug llegan como BigInt: hay que darles formato a mano.
+// Propiedades de un nodo o una relación, sin los campos internos del motor (`_id`…).
+function propertiesText(value) {
+  const properties = Object.keys(value)
+    .filter(function (key) { return key.charAt(0) !== "_"; })
+    .map(function (key) { return key + ": " + displayValue(value[key]).text; })
+    .join(", ");
+  return properties ? " {" + truncateText(properties) + "}" : "";
+}
+
+// Un entero mayor que 2^53 llegaría como BigInt: se le da formato a mano.
 function displayValue(value) {
   if (value === null || value === undefined) return { text: "null", isNull: true };
   if (typeof value === "bigint") return { text: value.toString(), isNull: false };
   if (isNode(value)) {
-    const properties = Object.keys(value)
-      .filter(function (key) { return key.charAt(0) !== "_"; })
-      .map(function (key) { return key + ": " + displayValue(value[key]).text; })
-      .join(", ");
-    return { text: "(:" + value._label + " {" + truncateText(properties) + "})", isNull: false };
+    return { text: "(:" + nodeLabels(value).join(":") + propertiesText(value) + ")", isNull: false };
   }
-  if (isRelationship(value)) return { text: "[:" + value._label + "]", isNull: false };
+  if (isRelationship(value)) {
+    return { text: "[:" + relationshipType(value) + propertiesText(value) + "]", isNull: false };
+  }
   if (isPath(value)) {
     return {
-      text: value._nodes.map(function (node) { return nodeCaption(node); }).join(" → "),
+      text: pathNodes(value).map(function (node) { return nodeCaption(node); }).join(" → "),
       isNull: false
     };
   }
@@ -1067,7 +1105,7 @@ exerciseListEl.addEventListener("click", handleEditorClick);
 sandboxEl.addEventListener("click", handleEditorClick);
 window.addEventListener("popstate", showPageFromLocation);
 window.addEventListener("hashchange", showPageFromLocation);
-defineLadybugCypherMode();
+defineGraphCypherMode();
 renderSchemaSource();
 renderSandbox();
 showPageFromLocation();
