@@ -38,7 +38,7 @@
     a { border: 2px solid var(--rojo); border-radius: .4rem; color: var(--rojo); font-weight: 700; padding: .55rem .8rem; text-decoration: none; }
     a.principal { background: var(--rojo); color: white; }
     a:hover, a:focus-visible { box-shadow: 0 0 0 .2rem rgb(242 183 5 / 45%); outline: none; }
-    /* Versión alternativa de una sesión (SESSION_EXTRAS): franja a todo el ancho justo
+    /* Versión alternativa de una sesión (`extras_sesion` de datos.json; el estilo de cada una, `extra-<estilo>`): franja a todo el ancho justo
        debajo de la descripción (los márgenes negativos anulan el relleno de .tema), con
        el azul nocturno y la estrella de la escena 3D. En esa tarjeta el hueco libre no lo
        ocupa la descripción sino el margen inferior automático de la franja, así que los
@@ -47,8 +47,8 @@
     a.extra { background: radial-gradient(circle at 88% 30%, #2c4a6e, #0d1726 65%); border: 0; border-radius: 0; color: var(--oro); margin: 0 -1.5rem auto; padding: .7rem 1.5rem; }
     a.extra::before { content: "✦"; margin-right: .45rem; }
     a.extra small { color: #c9d6e4; font-size: .8rem; font-weight: 400; margin-left: .35rem; }
-    a.extra[href="dot-cloud-neo4j/"] { background: radial-gradient(circle at 88% 30%, #6c4536, #302039 70%); }
-    a.extra[href="dot-cloud-neo4j/"] small { color: #f0dfd2; }
+    a.extra.extra-neo4j { background: radial-gradient(circle at 88% 30%, #6c4536, #302039 70%); }
+    a.extra.extra-neo4j small { color: #f0dfd2; }
     .tira { margin: 0; text-align: center; }
     .tira img { border: 1px solid var(--linea); border-radius: .75rem; box-shadow: 0 .3rem 1rem rgb(24 35 45 / 8%); height: auto; max-width: min(100%, 46rem); }
     /* Los enlaces y el cuadro de búsqueda en una fila; el cuadro baja a la
@@ -70,13 +70,23 @@
   </style>
 </head>
 <body>
-  <svg class="adornos" aria-hidden="true" focusable="false"><symbol id="adorno-1" viewBox="0 0 200 40"><path d="M196 20C160 20 130 8 100 8C70 8 40 28 22 28A8 8 0 0 1 14 20A6.4 6.4 0 0 1 20.4 13.6A5.1 5.1 0 0 1 25.5 18.7A4.1 4.1 0 0 1 21.4 22.8A3.3 3.3 0 0 1 18.1 19.5A2.6 2.6 0 0 1 20.8 16.9A2.1 2.1 0 0 1 22.9 19M153.4 15.4C146.7 17.6 144.8 21.9 143.9 25.8A5 5 0 0 0 147.8 31.7A3.9 3.9 0 0 0 152.4 28.8A3 3 0 0 0 150.1 25.1A2.4 2.4 0 0 0 147.3 26.9A1.9 1.9 0 0 0 148.7 29.1A1.4 1.4 0 0 0 150.4 28"/><path d="M69 13.6C67.6 10.2 63.1 9.7 61.4 11.3C61.9 13.5 65.9 15.6 69 13.6z" fill="currentColor" stroke="none"/><circle cx="196" cy="20" r="2" fill="currentColor" stroke="none"/></symbol><symbol id="adorno-2" viewBox="0 0 200 40"><path d="M196 23C150 23 130 9 96 9C60 9 38 22 22 22A5 5 0 0 1 17 17A4 4 0 0 1 21 13A3.2 3.2 0 0 1 24.2 16.2A2.6 2.6 0 0 1 21.6 18.8A2 2 0 0 1 19.6 16.7A1.6 1.6 0 0 1 21.2 15.1"/><path d="M171.2 21.5C171.7 17.5 167.7 14.4 165.3 14.8C164.6 17.2 167.2 21.5 171.2 21.5zM146.1 17C146.9 13.1 143.3 9.6 140.9 9.7C139.9 12 142 16.6 146.1 17zM123.9 12C124.7 8.1 121 4.6 118.5 4.8C117.7 7.1 119.9 11.6 123.9 12zM101 9.1C101.2 5.1 97 2.3 94.6 2.8C94.1 5.3 97 9.4 101 9.1zM71.5 11C70.8 7 66.2 5.1 63.9 6.2C63.9 8.7 67.6 12.1 71.5 11zM48 16.5C46.9 12.6 42.1 11.2 39.9 12.5C40.2 15 44.2 18 48 16.5zM158.5 19.6C155.1 18.6 151.7 21.6 151.7 23.8C153.7 24.8 157.9 23.2 158.5 19.6zM113.2 10.2C109.7 9.3 106.5 12.5 106.6 14.7C108.7 15.6 112.8 13.8 113.2 10.2zM59 13.6C55.4 14 53.6 18.1 54.5 20.2C56.7 20.2 59.9 17.1 59 13.6z" fill="currentColor" stroke="none"/><circle cx="196" cy="23" r="2" fill="currentColor" stroke="none"/></symbol><symbol id="adorno-3" viewBox="0 0 200 40"><path d="M8 20H190M156 20c3-1 7-4 8-9M156 20c3 1 7 4 8 9M165 20c3-1 7-4 8-9M165 20c3 1 7 4 8 9M174 20c3-1 7-4 8-9M174 20c3 1 7 4 8 9"/><path d="M6 20l11-6.5c-2 4-2 9 0 13zM96 20C98.7 23.4 103.7 22.4 105 20C103.7 17.6 98.7 16.6 96 20zM96 20C93.3 16.6 88.3 17.6 87 20C88.3 22.4 93.3 23.4 96 20zM190.5 20L194 16.5L197.5 20L194 23.5z" fill="currentColor" stroke="none"/><circle cx="70" cy="20" r="1.6" fill="currentColor" stroke="none"/><circle cx="122" cy="20" r="1.6" fill="currentColor" stroke="none"/></symbol><symbol id="adorno-4" viewBox="0 0 200 40"><path d="M194 21A13 10 0 0 0 168 21A11 8.5 0 0 0 146 21A9 6.9 0 0 0 128 21A7 5.4 0 0 0 114 21A5.5 4.2 0 0 0 103 21M103 21C73 21 36 24 26 17A6 6 0 0 1 24.5 8.6A4.8 4.8 0 0 1 31.2 7.5A3.8 3.8 0 0 1 32.2 12.8A3.1 3.1 0 0 1 27.9 13.6A2.5 2.5 0 0 1 27.3 10.1A2 2 0 0 1 30 9.7A1.6 1.6 0 0 1 30.4 11.9"/><circle cx="181" cy="7" r="1.9" fill="currentColor" stroke="none"/><circle cx="157" cy="8.5" r="1.8" fill="currentColor" stroke="none"/><circle cx="137" cy="10.1" r="1.6" fill="currentColor" stroke="none"/><circle cx="121" cy="11.6" r="1.5" fill="currentColor" stroke="none"/><circle cx="108.5" cy="12.8" r="1.5" fill="currentColor" stroke="none"/><circle cx="194" cy="21" r="1.8" fill="currentColor" stroke="none"/></symbol><symbol id="adorno-5" viewBox="0 0 200 40"><path d="M32 20H112M130 20H196M4 20C12 11 24 11 32 20C24 29 12 29 4 20zM112 20c5-6 13-6 18 0c-5 6-13 6-18 0z"/><circle cx="18" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="121" cy="20" r="2.2" fill="currentColor" stroke="none"/><circle cx="196" cy="20" r="2.2" fill="currentColor" stroke="none"/><circle cx="70" cy="20" r="1.5" fill="currentColor" stroke="none"/><circle cx="160" cy="20" r="1.5" fill="currentColor" stroke="none"/></symbol><symbol id="adorno-6" viewBox="0 0 200 40"><path d="M58 20H190M58 20C49 20 49 11 53.5 11S58 20 49 20M58 20C49 20 49 29 53.5 29S58 20 49 20M49 20C37 20 37 8 43.0 8S49 20 37 20M49 20C37 20 37 32 43.0 32S49 20 37 20M37 20H18"/><path d="M2 20L10 14.5L18 20L10 25.5zM190.5 20L194 16.5L197.5 20L194 23.5z" fill="currentColor" stroke="none"/><circle cx="124" cy="20" r="1.6" fill="currentColor" stroke="none"/><circle cx="91" cy="20" r="1.3" fill="currentColor" stroke="none"/><circle cx="157" cy="20" r="1.3" fill="currentColor" stroke="none"/></symbol><symbol id="adorno-7" viewBox="0 0 200 40"><path d="M196 18C150 18 130 33 90 33C50 33 26 26 20 12A8 8 0 0 1 24.2 1.5A6.6 6.6 0 0 1 32.8 4.9A5.4 5.4 0 0 1 30 12A4.4 4.4 0 0 1 24.2 9.7A3.6 3.6 0 0 1 26.1 4.9A3 3 0 0 1 30 6.5A2.4 2.4 0 0 1 28.7 9.7A2 2 0 0 1 26.1 8.6M58.4 31.1C50.8 26.2 50.3 20.3 51.6 14.4A4.5 4.5 0 0 1 57 11.1A3.5 3.5 0 0 1 59.6 15.3A2.7 2.7 0 0 1 56.4 17.3A2.1 2.1 0 0 1 54.7 14.8A1.7 1.7 0 0 1 56.7 13.5A1.3 1.3 0 0 1 57.7 15.1"/><path d="M136 26.6C132.4 26.9 130.4 30.9 131.3 33C133.6 33.2 136.9 30.2 136 26.6zM34.5 24.9C36 21.5 33.3 18 31 17.7C29.8 19.7 31 24 34.5 24.9z" fill="currentColor" stroke="none"/><circle cx="196" cy="18" r="2.2" fill="currentColor" stroke="none"/></symbol><symbol id="adorno-8" viewBox="0 0 200 40"><path d="M20 20H163M177 20H196M20 20C25 20 27.2 17.1 28.2 14.3A4 4 0 0 0 25.8 9.1A3.2 3.2 0 0 0 21.7 11A2.6 2.6 0 0 0 23.2 14.3A2 2 0 0 0 25.9 13.1A1.6 1.6 0 0 0 24.9 11A1.3 1.3 0 0 0 23.2 11.8M20 20C25 20 27.2 22.9 28.2 25.7A4 4 0 0 1 25.8 30.9A3.2 3.2 0 0 1 21.7 29A2.6 2.6 0 0 1 23.2 25.7A2 2 0 0 1 25.9 26.9A1.6 1.6 0 0 1 24.9 29A1.3 1.3 0 0 1 23.2 28.2"/><path d="M3 20C9 13 17 15 20 20C17 25 9 27 3 20zM170 20C172.1 23.6 175.9 22.5 177 20C175.9 17.5 172.1 16.4 170 20zM170 20C166.4 22.1 167.5 25.9 170 27C172.5 25.9 173.6 22.1 170 20zM170 20C167.9 16.4 164.1 17.5 163 20C164.1 22.5 167.9 23.6 170 20zM170 20C173.6 17.9 172.5 14.1 170 13C167.5 14.1 166.4 17.9 170 20z" fill="currentColor" stroke="none"/><circle cx="196" cy="20" r="1.8" fill="currentColor" stroke="none"/></symbol><symbol id="adorno-9" viewBox="0 0 200 40"><path d="M196 20C176 20 164 12 148 12C132 12 124 28 108 28C92 28 84 12 68 12C52 12 44 20 30 20A6 6 0 0 0 24 26A4.8 4.8 0 0 0 28.8 30.8A3.8 3.8 0 0 0 32.6 27A3.1 3.1 0 0 0 29.6 23.9A2.5 2.5 0 0 0 27.1 26.3A2 2 0 0 0 29.1 28.3A1.6 1.6 0 0 0 30.6 26.7M196 20C176 20 164 28 148 28C132 28 124 12 108 12C92 12 84 28 68 28C52 28 44 20 30 20"/><circle cx="108" cy="20" r="1.8" fill="currentColor" stroke="none"/><circle cx="148" cy="20" r="1.5" fill="currentColor" stroke="none"/><circle cx="68" cy="20" r="1.5" fill="currentColor" stroke="none"/><circle cx="196" cy="20" r="2" fill="currentColor" stroke="none"/></symbol></svg>
+  <svg class="adornos" aria-hidden="true" focusable="false">
+    <symbol id="adorno-1" viewBox="0 0 200 40"><path d="M196 20C160 20 130 8 100 8C70 8 40 28 22 28A8 8 0 0 1 14 20A6.4 6.4 0 0 1 20.4 13.6A5.1 5.1 0 0 1 25.5 18.7A4.1 4.1 0 0 1 21.4 22.8A3.3 3.3 0 0 1 18.1 19.5A2.6 2.6 0 0 1 20.8 16.9A2.1 2.1 0 0 1 22.9 19M153.4 15.4C146.7 17.6 144.8 21.9 143.9 25.8A5 5 0 0 0 147.8 31.7A3.9 3.9 0 0 0 152.4 28.8A3 3 0 0 0 150.1 25.1A2.4 2.4 0 0 0 147.3 26.9A1.9 1.9 0 0 0 148.7 29.1A1.4 1.4 0 0 0 150.4 28"/><path d="M69 13.6C67.6 10.2 63.1 9.7 61.4 11.3C61.9 13.5 65.9 15.6 69 13.6z" fill="currentColor" stroke="none"/><circle cx="196" cy="20" r="2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="adorno-2" viewBox="0 0 200 40"><path d="M196 23C150 23 130 9 96 9C60 9 38 22 22 22A5 5 0 0 1 17 17A4 4 0 0 1 21 13A3.2 3.2 0 0 1 24.2 16.2A2.6 2.6 0 0 1 21.6 18.8A2 2 0 0 1 19.6 16.7A1.6 1.6 0 0 1 21.2 15.1"/><path d="M171.2 21.5C171.7 17.5 167.7 14.4 165.3 14.8C164.6 17.2 167.2 21.5 171.2 21.5zM146.1 17C146.9 13.1 143.3 9.6 140.9 9.7C139.9 12 142 16.6 146.1 17zM123.9 12C124.7 8.1 121 4.6 118.5 4.8C117.7 7.1 119.9 11.6 123.9 12zM101 9.1C101.2 5.1 97 2.3 94.6 2.8C94.1 5.3 97 9.4 101 9.1zM71.5 11C70.8 7 66.2 5.1 63.9 6.2C63.9 8.7 67.6 12.1 71.5 11zM48 16.5C46.9 12.6 42.1 11.2 39.9 12.5C40.2 15 44.2 18 48 16.5zM158.5 19.6C155.1 18.6 151.7 21.6 151.7 23.8C153.7 24.8 157.9 23.2 158.5 19.6zM113.2 10.2C109.7 9.3 106.5 12.5 106.6 14.7C108.7 15.6 112.8 13.8 113.2 10.2zM59 13.6C55.4 14 53.6 18.1 54.5 20.2C56.7 20.2 59.9 17.1 59 13.6z" fill="currentColor" stroke="none"/><circle cx="196" cy="23" r="2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="adorno-3" viewBox="0 0 200 40"><path d="M8 20H190M156 20c3-1 7-4 8-9M156 20c3 1 7 4 8 9M165 20c3-1 7-4 8-9M165 20c3 1 7 4 8 9M174 20c3-1 7-4 8-9M174 20c3 1 7 4 8 9"/><path d="M6 20l11-6.5c-2 4-2 9 0 13zM96 20C98.7 23.4 103.7 22.4 105 20C103.7 17.6 98.7 16.6 96 20zM96 20C93.3 16.6 88.3 17.6 87 20C88.3 22.4 93.3 23.4 96 20zM190.5 20L194 16.5L197.5 20L194 23.5z" fill="currentColor" stroke="none"/><circle cx="70" cy="20" r="1.6" fill="currentColor" stroke="none"/><circle cx="122" cy="20" r="1.6" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="adorno-4" viewBox="0 0 200 40"><path d="M194 21A13 10 0 0 0 168 21A11 8.5 0 0 0 146 21A9 6.9 0 0 0 128 21A7 5.4 0 0 0 114 21A5.5 4.2 0 0 0 103 21M103 21C73 21 36 24 26 17A6 6 0 0 1 24.5 8.6A4.8 4.8 0 0 1 31.2 7.5A3.8 3.8 0 0 1 32.2 12.8A3.1 3.1 0 0 1 27.9 13.6A2.5 2.5 0 0 1 27.3 10.1A2 2 0 0 1 30 9.7A1.6 1.6 0 0 1 30.4 11.9"/><circle cx="181" cy="7" r="1.9" fill="currentColor" stroke="none"/><circle cx="157" cy="8.5" r="1.8" fill="currentColor" stroke="none"/><circle cx="137" cy="10.1" r="1.6" fill="currentColor" stroke="none"/><circle cx="121" cy="11.6" r="1.5" fill="currentColor" stroke="none"/><circle cx="108.5" cy="12.8" r="1.5" fill="currentColor" stroke="none"/><circle cx="194" cy="21" r="1.8" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="adorno-5" viewBox="0 0 200 40"><path d="M32 20H112M130 20H196M4 20C12 11 24 11 32 20C24 29 12 29 4 20zM112 20c5-6 13-6 18 0c-5 6-13 6-18 0z"/><circle cx="18" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="121" cy="20" r="2.2" fill="currentColor" stroke="none"/><circle cx="196" cy="20" r="2.2" fill="currentColor" stroke="none"/><circle cx="70" cy="20" r="1.5" fill="currentColor" stroke="none"/><circle cx="160" cy="20" r="1.5" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="adorno-6" viewBox="0 0 200 40"><path d="M58 20H190M58 20C49 20 49 11 53.5 11S58 20 49 20M58 20C49 20 49 29 53.5 29S58 20 49 20M49 20C37 20 37 8 43.0 8S49 20 37 20M49 20C37 20 37 32 43.0 32S49 20 37 20M37 20H18"/><path d="M2 20L10 14.5L18 20L10 25.5zM190.5 20L194 16.5L197.5 20L194 23.5z" fill="currentColor" stroke="none"/><circle cx="124" cy="20" r="1.6" fill="currentColor" stroke="none"/><circle cx="91" cy="20" r="1.3" fill="currentColor" stroke="none"/><circle cx="157" cy="20" r="1.3" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="adorno-7" viewBox="0 0 200 40"><path d="M196 18C150 18 130 33 90 33C50 33 26 26 20 12A8 8 0 0 1 24.2 1.5A6.6 6.6 0 0 1 32.8 4.9A5.4 5.4 0 0 1 30 12A4.4 4.4 0 0 1 24.2 9.7A3.6 3.6 0 0 1 26.1 4.9A3 3 0 0 1 30 6.5A2.4 2.4 0 0 1 28.7 9.7A2 2 0 0 1 26.1 8.6M58.4 31.1C50.8 26.2 50.3 20.3 51.6 14.4A4.5 4.5 0 0 1 57 11.1A3.5 3.5 0 0 1 59.6 15.3A2.7 2.7 0 0 1 56.4 17.3A2.1 2.1 0 0 1 54.7 14.8A1.7 1.7 0 0 1 56.7 13.5A1.3 1.3 0 0 1 57.7 15.1"/><path d="M136 26.6C132.4 26.9 130.4 30.9 131.3 33C133.6 33.2 136.9 30.2 136 26.6zM34.5 24.9C36 21.5 33.3 18 31 17.7C29.8 19.7 31 24 34.5 24.9z" fill="currentColor" stroke="none"/><circle cx="196" cy="18" r="2.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="adorno-8" viewBox="0 0 200 40"><path d="M20 20H163M177 20H196M20 20C25 20 27.2 17.1 28.2 14.3A4 4 0 0 0 25.8 9.1A3.2 3.2 0 0 0 21.7 11A2.6 2.6 0 0 0 23.2 14.3A2 2 0 0 0 25.9 13.1A1.6 1.6 0 0 0 24.9 11A1.3 1.3 0 0 0 23.2 11.8M20 20C25 20 27.2 22.9 28.2 25.7A4 4 0 0 1 25.8 30.9A3.2 3.2 0 0 1 21.7 29A2.6 2.6 0 0 1 23.2 25.7A2 2 0 0 1 25.9 26.9A1.6 1.6 0 0 1 24.9 29A1.3 1.3 0 0 1 23.2 28.2"/><path d="M3 20C9 13 17 15 20 20C17 25 9 27 3 20zM170 20C172.1 23.6 175.9 22.5 177 20C175.9 17.5 172.1 16.4 170 20zM170 20C166.4 22.1 167.5 25.9 170 27C172.5 25.9 173.6 22.1 170 20zM170 20C167.9 16.4 164.1 17.5 163 20C164.1 22.5 167.9 23.6 170 20zM170 20C173.6 17.9 172.5 14.1 170 13C167.5 14.1 166.4 17.9 170 20z" fill="currentColor" stroke="none"/><circle cx="196" cy="20" r="1.8" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="adorno-9" viewBox="0 0 200 40"><path d="M196 20C176 20 164 12 148 12C132 12 124 28 108 28C92 28 84 12 68 12C52 12 44 20 30 20A6 6 0 0 0 24 26A4.8 4.8 0 0 0 28.8 30.8A3.8 3.8 0 0 0 32.6 27A3.1 3.1 0 0 0 29.6 23.9A2.5 2.5 0 0 0 27.1 26.3A2 2 0 0 0 29.1 28.3A1.6 1.6 0 0 0 30.6 26.7M196 20C176 20 164 28 148 28C132 28 124 12 108 12C92 12 84 28 68 28C52 28 44 20 30 20"/><circle cx="108" cy="20" r="1.8" fill="currentColor" stroke="none"/><circle cx="148" cy="20" r="1.5" fill="currentColor" stroke="none"/><circle cx="68" cy="20" r="1.5" fill="currentColor" stroke="none"/><circle cx="196" cy="20" r="2" fill="currentColor" stroke="none"/></symbol>
+  </svg>
   <nav class="menu-secciones" aria-label="Secciones de la página">
     <ul>
-        <li><a href="#transparencias">Transparencias</a></li>
-        <li><a href="#boletines">Boletines prácticos</a></li>
-        <li><a href="#trabajos">Trabajos</a></li>
-        <li><a href="#practicas-interactivas">Prácticas interactivas</a></li>
+      <li><a href="#transparencias">Transparencias</a></li>
+      <li><a href="#boletines">Boletines prácticos</a></li>
+      <li><a href="#trabajos">Trabajos</a></li>
+      <li><a href="#practicas-interactivas">Prácticas interactivas</a></li>
     </ul>
   </nav>
   <header>
@@ -148,7 +158,7 @@
       <article class="tema con-extra">
         <h3>Sesión 5 · Bases de datos columnares: Cassandra</h3>
         <p>Bases de datos columnares y Apache Cassandra — modelo de datos, distribución, arquitectura y acceso desde Python</p>
-        <a class="extra" href="cassandra-3d/" target="_blank" rel="noopener noreferrer"><span>Expedición 3D</span> <small>prólogo experimental</small></a>
+        <a class="extra extra-cassandra" href="cassandra-3d/" target="_blank" rel="noopener noreferrer"><span>Expedición 3D</span> <small>prólogo experimental</small></a>
         <nav aria-label="Formatos de Sesión 5 · Bases de datos columnares: Cassandra">
           <a class="principal" href="sesion5.html" target="_blank" rel="noopener noreferrer">Ver transparencias</a>
           <a href="sesion5.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
@@ -157,7 +167,7 @@
       <article class="tema con-extra">
         <h3>Sesión 6 · Bases de datos de grafos: Neo4j</h3>
         <p>Bases de datos de grafos, Neo4j y el lenguaje Cypher — modelado, algoritmos y rendimiento</p>
-        <a class="extra" href="dot-cloud-neo4j/" target="_blank" rel="noopener noreferrer"><span>Grafo 3D</span> <small>recorre las transparencias con Cypher</small></a>
+        <a class="extra extra-neo4j" href="dot-cloud-neo4j/" target="_blank" rel="noopener noreferrer"><span>Grafo 3D</span> <small>¡navega con Cypher!</small></a>
         <nav aria-label="Formatos de Sesión 6 · Bases de datos de grafos: Neo4j">
           <a class="principal" href="sesion6.html" target="_blank" rel="noopener noreferrer">Ver transparencias</a>
           <a href="sesion6.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
@@ -165,9 +175,9 @@
       </article>
       </div>
     </section>
-  <section aria-labelledby="boletines">
-    <h2 id="boletines" class="titulo-seccion"><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg><span>Boletines prácticos</span><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg></h2>
-    <div class="temas">
+    <section aria-labelledby="boletines">
+      <h2 id="boletines" class="titulo-seccion"><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg><span>Boletines prácticos</span><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg></h2>
+      <div class="temas">
       <article class="tema tema-boletin">
         <p class="etiqueta">Introducción</p>
         <h3>Sesión 0 — Jupyter Notebook/Colab, importación de datos de Stackoverflow, esquemas, Parquet, DuckDB y programación asíncrona, curso 2026-27</h3>
@@ -238,11 +248,11 @@
           <a href="https://github.com/dsevilla/bdge/tree/26-27/cassandra" target="_blank" rel="noopener noreferrer">Directorio</a>
         </nav>
       </article>
-    </div>
-  </section>
-  <section aria-labelledby="trabajos">
-    <h2 id="trabajos" class="titulo-seccion"><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg><span>Trabajos</span><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg></h2>
-    <div class="temas">
+      </div>
+    </section>
+    <section aria-labelledby="trabajos">
+      <h2 id="trabajos" class="titulo-seccion"><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg><span>Trabajos</span><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg></h2>
+      <div class="temas">
       <article class="tema tema-boletin">
         <p class="etiqueta">Trabajos</p>
         <h3>Trabajos Bases de Datos a Gran Escala, 2026-2027</h3>
@@ -253,12 +263,12 @@
           <a href="https://github.com/dsevilla/bdge/blob/26-27/addendum/trabajos/creatrabajos.sql" target="_blank" rel="noopener noreferrer">Ver guion SQL</a>
           <a href="https://github.com/dsevilla/bdge/tree/26-27/addendum/trabajos" target="_blank" rel="noopener noreferrer">Directorio</a>
         </nav>
-</article>
-    </div>
-  </section>
-  <section aria-labelledby="practicas-interactivas">
-    <h2 id="practicas-interactivas" class="titulo-seccion"><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg><span>Prácticas interactivas</span><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg></h2>
-    <div class="temas">
+      </article>
+      </div>
+    </section>
+    <section aria-labelledby="practicas-interactivas">
+      <h2 id="practicas-interactivas" class="titulo-seccion"><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg><span>Prácticas interactivas</span><svg class="adorno" viewBox="0 0 200 40" aria-hidden="true" focusable="false"><use href="#adorno-1"/></svg></h2>
+      <div class="temas">
       <article class="tema tema-boletin">
         <p class="etiqueta">SQL · Banco de ejercicios</p>
         <h3>Práctica SQL en el navegador</h3>
@@ -291,8 +301,8 @@
           <a class="principal" href="practice-web/cypher/" target="_blank" rel="noopener noreferrer">Abrir práctica</a>
         </nav>
       </article>
-    </div>
-  </section>
+      </div>
+    </section>
     <figure class="tira">
       <img src="img/comic-rosetta.svg" alt="Tira «La piedra de los datos»: un explorador encuentra una piedra Rosetta con el mismo dato escrito en XML, CSV, JSON y Parquet" loading="lazy">
     </figure>
@@ -301,7 +311,7 @@
   <script>
     const adorno = "#adorno-" + (1 + Math.floor(Math.random() * 9));
     document.querySelectorAll(".adorno use").forEach((uso) => uso.setAttribute("href", adorno));
-    const separadores = ["✣", "✤", "✥", "❖", "✦", "✧", "❦", "❧", "⁂", "※", "✿", "❀", "❁", "✻", "❋", "⁘", "⁙", "◆"];
+    const separadores = ["\u2723", "\u2724", "\u2725", "\u2756", "\u2726", "\u2727", "\u2766", "\u2767", "\u2042", "\u203b", "\u273f", "\u2740", "\u2741", "\u273b", "\u274b", "\u2058", "\u2059", "\u25c6"];
     const separador = separadores[Math.floor(Math.random() * separadores.length)];
     document.documentElement.style.setProperty("--separador", JSON.stringify(separador));
   </script>
