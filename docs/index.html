@@ -47,6 +47,8 @@
     a.extra { background: radial-gradient(circle at 88% 30%, #2c4a6e, #0d1726 65%); border: 0; border-radius: 0; color: var(--oro); margin: 0 -1.5rem auto; padding: .7rem 1.5rem; }
     a.extra::before { content: "✦"; margin-right: .45rem; }
     a.extra small { color: #c9d6e4; font-size: .8rem; font-weight: 400; margin-left: .35rem; }
+    a.extra[href="dot-cloud-neo4j/"] { background: radial-gradient(circle at 88% 30%, #6c4536, #302039 70%); }
+    a.extra[href="dot-cloud-neo4j/"] small { color: #f0dfd2; }
     .tira { margin: 0; text-align: center; }
     .tira img { border: 1px solid var(--linea); border-radius: .75rem; box-shadow: 0 .3rem 1rem rgb(24 35 45 / 8%); height: auto; max-width: min(100%, 46rem); }
     /* Los enlaces y el cuadro de búsqueda en una fila; el cuadro baja a la
@@ -152,9 +154,10 @@
           <a href="sesion5.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
         </nav>
       </article>
-      <article class="tema">
+      <article class="tema con-extra">
         <h3>Sesión 6 · Bases de datos de grafos: Neo4j</h3>
         <p>Bases de datos de grafos, Neo4j y el lenguaje Cypher — modelado, algoritmos y rendimiento</p>
+        <a class="extra" href="dot-cloud-neo4j/" target="_blank" rel="noopener noreferrer"><span>Grafo 3D</span> <small>recorre las transparencias con Cypher</small></a>
         <nav aria-label="Formatos de Sesión 6 · Bases de datos de grafos: Neo4j">
           <a class="principal" href="sesion6.html" target="_blank" rel="noopener noreferrer">Ver transparencias</a>
           <a href="sesion6.pdf" target="_blank" rel="noopener noreferrer">PDF</a>

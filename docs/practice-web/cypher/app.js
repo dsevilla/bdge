@@ -1,4 +1,5 @@
 import { PRACTICE_PAGES } from "./pages/index.js";
+import { collectGraphElements, drawResultGraph, isNode, isPath, isRelationship } from "./graph-result.mjs";
 "use strict";
 /*
  * Motor común de la práctica de grafos. Descarga el JSONL completo, construye
@@ -8,12 +9,6 @@ import { PRACTICE_PAGES } from "./pages/index.js";
  * ejercicios.
  */
 
-// Se usa el build síncrono a propósito: el asíncrono arranca un Web Worker, y
-// un Worker no se puede crear desde un script de otro origen, así que no
-// funciona servido desde un CDN. Las consultas tardan milisegundos, de modo
-// que bloquear el hilo principal no se nota; la carga inicial sí, y por eso va
-// informando de cada paso.
-const LBUG_URL = "https://cdn.jsdelivr.net/npm/@ladybugdb/wasm-core@0.20.4/sync/index.js";
 // Los assets de una release de GitHub no envían cabeceras CORS: la página lee
 // la copia versionada en el repositorio de datos, que sí las envía.
 const DATA_SOURCES = [
@@ -101,9 +96,7 @@ const sandboxEl = document.getElementById("sandbox");
 const loadRemoteButton = document.getElementById("load-remote");
 const toggleDatasetButton = document.getElementById("toggle-dataset");
 
-let lbug = null;
-let database = null;
-let connection = null;
+let graphEngine = null;
 let loading = false;
 let activeDataVariant = null;
 let requestedDataVariant = "full";
@@ -574,8 +567,44 @@ function renderSchemaSource() {
   schemaSourceEl.textContent = source;
 }
 
+function openGraphEngine() {
+  const worker = new Worker(new URL("./engine-worker.mjs", import.meta.url), { type: "module" });
+  const pending = new Map();
+  let sequence = 0;
+  let closed;
+
+  function close(error = new Error("Se ha cerrado el grafo.")) {
+    closed = error;
+    worker.terminate();
+    pending.forEach(function (call) { call.reject(error); });
+    pending.clear();
+  }
+
+  worker.addEventListener("error", function (event) {
+    close(new Error(event.message || "El motor de grafos dejó de responder."));
+  });
+  worker.addEventListener("message", function ({ data }) {
+    const call = pending.get(data.id);
+    if (!call) return;
+    pending.delete(data.id);
+    if (data.error) call.reject(new Error(data.error));
+    else call.resolve(data.result);
+  });
+  return {
+    close,
+    send: function (action, value, transfer = []) {
+      if (closed) return Promise.reject(closed);
+      return new Promise(function (resolve, reject) {
+        const id = ++sequence;
+        pending.set(id, { resolve, reject });
+        worker.postMessage({ id, action, value }, transfer);
+      });
+    }
+  };
+}
+
 async function buildGraph(documents) {
-  setStatus("Creando el esquema del grafo", "loading");
+  setStatus("Cargando el motor y creando el esquema del grafo", "loading");
   await yieldToBrowser();
   destroyGraphs();
   resultStates.clear();
@@ -583,39 +612,35 @@ async function buildGraph(documents) {
     result.replaceChildren();
   });
   closeGraphDatabase();
-  database = new lbug.Database();
-  connection = new lbug.Connection(database);
-  SCHEMA_STATEMENTS.forEach(function (statement) { connection.query(statement); });
+  graphEngine = openGraphEngine();
+  const version = await graphEngine.send("init", SCHEMA_STATEMENTS);
 
   setStatus("Preparando los datos para la carga", "loading");
   await yieldToBrowser();
   const files = buildCsvFiles(documents);
-  const fs = await lbug.getFS();
-  Object.keys(files).forEach(function (name) {
-    const path = "/" + name;
-    if (fs.analyzePath(path).exists) fs.unlink(path);
-    fs.createDataFile("/", name, files[name], true, true);
-  });
-
+  const encoder = new TextEncoder();
   for (let index = 0; index < COPY_STATEMENTS.length; index += 1) {
     const entry = COPY_STATEMENTS[index];
     setStatus("Cargando " + entry.table + " (" + (index + 1) + "/" + COPY_STATEMENTS.length + ")", "loading");
     await yieldToBrowser();
-    connection.query(copyStatement(entry));
+    const bytes = encoder.encode(files[entry.file]);
+    delete files[entry.file];
+    await graphEngine.send("copy", { file: entry.file, statement: copyStatement(entry), bytes }, [bytes.buffer]);
   }
+  return version;
 }
 
-function graphCounts() {
-  const counts = [];
-  [["User", "(:User)"], ["Post", "(:Post)"], ["Tag", "(:Tag)"]].forEach(function (entry) {
-    const result = connection.query("MATCH (n:" + entry[0] + ") RETURN count(*) AS n");
-    counts.push({ label: entry[1], total: Number(result.getAllObjects()[0].n) });
-  });
-  [["WROTE", "[:WROTE]"], ["ANSWERS", "[:ANSWERS]"], ["TAGGED_WITH", "[:TAGGED_WITH]"]].forEach(function (entry) {
-    const result = connection.query("MATCH ()-[r:" + entry[0] + "]->() RETURN count(*) AS n");
-    counts.push({ label: entry[1], total: Number(result.getAllObjects()[0].n) });
-  });
-  return counts;
+async function graphCounts() {
+  const queries = [
+    ...["(:User)", "(:Post)", "(:Tag)"].map(function (label) { return [label, label]; }),
+    ...["[:WROTE]", "[:ANSWERS]", "[:TAGGED_WITH]"].map(function (label) {
+      return [label, "()-" + label + "->()"];
+    })
+  ];
+  return Promise.all(queries.map(async function ([label, pattern]) {
+    const result = await graphEngine.send("query", "MATCH " + pattern + " RETURN count(*) AS n");
+    return { label: label, total: Number(result.rows[0].n) };
+  }));
 }
 
 function renderCounts(counts) {
@@ -637,7 +662,7 @@ function updateDatasetToggleButton() {
 }
 
 async function loadEverything(variant) {
-  if (loading || !lbug) return;
+  if (loading) return;
   const targetVariant = variant || activeDataVariant || "full";
   const target = DATA_VARIANTS[targetVariant];
   const releasedForVariantChange = Boolean(activeDataVariant && activeDataVariant !== targetVariant);
@@ -680,14 +705,14 @@ async function loadEverything(variant) {
           documents[name] = await fetchCollection(source.base, name, targetVariant);
         }
         graphBuildStarted = true;
-        await buildGraph(documents);
-        const counts = graphCounts();
+        const version = await buildGraph(documents);
+        const counts = await graphCounts();
         renderCounts(counts);
         activeDataVariant = targetVariant;
         updateDatasetToggleButton();
         const nodes = counts.slice(0, 3).reduce(function (sum, entry) { return sum + entry.total; }, 0);
         const edges = counts.slice(3).reduce(function (sum, entry) { return sum + entry.total; }, 0);
-        setStatus(target.readyLabel + " · " + formatCount(nodes) + " nodos y " + formatCount(edges) + " relaciones", "ready");
+        setStatus(target.readyLabel + " · " + formatCount(nodes) + " nodos y " + formatCount(edges) + " relaciones · Ladybug " + version, "ready");
         messageEl.textContent = "Construido con " + target.name + " desde " + source.label + " en "
           + ((performance.now() - started) / 1000).toFixed(1) + " s.";
         document.querySelectorAll(".result").forEach(function (result) {
@@ -743,53 +768,10 @@ function isReadOnlyCypher(cypher) {
   return !WRITE_CLAUSES.test(stripStringsAndComments(cypher));
 }
 
-function isNode(value) {
-  return Boolean(value) && typeof value === "object" && value._id && value._label && !value._src;
-}
-
-function isRelationship(value) {
-  return Boolean(value) && typeof value === "object" && value._src && value._dst;
-}
-
-function isPath(value) {
-  return Boolean(value) && typeof value === "object" && Array.isArray(value._nodes) && Array.isArray(value._rels);
-}
-
-function internalId(reference) {
-  return reference.table + ":" + reference.offset;
-}
-
 function nodeCaption(node) {
   const property = node.DisplayName || node.Title || node.TagName;
   if (property) return String(property).length > 40 ? String(property).slice(0, 40) + "…" : String(property);
   return node._label + " " + (node.Id !== undefined ? node.Id : "");
-}
-
-function collectGraphElements(rows) {
-  const nodes = new Map();
-  const edges = new Map();
-  const visit = function (value) {
-    if (Array.isArray(value)) {
-      value.forEach(visit);
-      return;
-    }
-    if (isPath(value)) {
-      value._nodes.forEach(visit);
-      value._rels.forEach(visit);
-      return;
-    }
-    if (isNode(value)) {
-      const id = internalId(value._id);
-      if (!nodes.has(id)) nodes.set(id, value);
-      return;
-    }
-    if (isRelationship(value)) {
-      const id = internalId(value._id);
-      if (!edges.has(id)) edges.set(id, value);
-    }
-  };
-  rows.forEach(function (row) { Object.keys(row).forEach(function (key) { visit(row[key]); }); });
-  return { nodes: nodes, edges: edges };
 }
 
 function destroyGraphs() {
@@ -798,67 +780,20 @@ function destroyGraphs() {
 }
 
 function closeGraphDatabase() {
-  if (connection) {
-    connection.close();
-    connection = null;
-  }
-  if (database) {
-    database.close();
-    database = null;
-  }
+  const engine = graphEngine;
+  graphEngine = null;
+  engine?.close();
 }
 
 function renderGraph(container, elements, resultId) {
   if (typeof window.vis === "undefined") return null;
   const previous = graphInstances.get(resultId);
-  if (previous) {
-    previous.destroy();
-    graphInstances.delete(resultId);
-  }
-  const labels = new Set();
-  const nodes = [];
-  Array.from(elements.nodes.entries()).slice(0, GRAPH_NODE_LIMIT).forEach(function (entry) {
-    const node = entry[1];
-    labels.add(node._label);
-    nodes.push({
-      id: entry[0],
-      label: nodeCaption(node),
-      title: node._label,
-      color: { background: LABEL_COLORS[node._label] || "#666", border: "#2b2620" },
-      font: { color: "#fffdf8", size: 13 }
-    });
+  if (previous) previous.destroy();
+  const graph = drawResultGraph(window.vis.Network, container, elements, {
+    caption: nodeCaption, colors: LABEL_COLORS, limit: GRAPH_NODE_LIMIT
   });
-  const known = new Set(nodes.map(function (node) { return node.id; }));
-  const edges = [];
-  elements.edges.forEach(function (edge) {
-    const from = internalId(edge._src);
-    const to = internalId(edge._dst);
-    if (!known.has(from) || !known.has(to)) return;
-    edges.push({ from: from, to: to, label: edge._label, arrows: "to", color: { color: "#9a8f79" },
-      font: { size: 10, color: "#6d675d", strokeWidth: 3, strokeColor: "#fffdf8" } });
-  });
-  const view = document.createElement("div");
-  view.className = "graph-view";
-  container.append(view);
-  const network = new window.vis.Network(view, { nodes: nodes, edges: edges }, {
-    nodes: { shape: "dot", size: 14 },
-    edges: { smooth: { type: "dynamic" } },
-    physics: { stabilization: { iterations: 120 }, barnesHut: { springLength: 130 } },
-    interaction: { hover: true, tooltipDelay: 200 }
-  });
-  graphInstances.set(resultId, network);
-  if (labels.size) {
-    const legend = document.createElement("p");
-    legend.className = "graph-legend";
-    Array.from(labels).sort().forEach(function (label) {
-      const item = document.createElement("span");
-      item.style.setProperty("--swatch", LABEL_COLORS[label] || "#666");
-      item.textContent = label;
-      legend.append(item);
-    });
-    container.append(legend);
-  }
-  return { nodes: nodes.length, edges: edges.length, hidden: elements.nodes.size - nodes.length };
+  graphInstances.set(resultId, graph.network);
+  return graph;
 }
 
 function truncateText(text) {
@@ -991,16 +926,6 @@ function showError(container, message) {
   container.append(error);
 }
 
-function runCypher(cypher) {
-  const result = connection.query(cypher);
-  const results = Array.isArray(result) ? result : [result];
-  const last = results[results.length - 1];
-  return {
-    columns: last.getColumnNames(),
-    rows: last.getAllObjects()
-  };
-}
-
 function canonicalValue(value) {
   if (value === null || value === undefined) return "null";
   if (typeof value === "bigint") return "int:" + value.toString();
@@ -1061,7 +986,7 @@ function runExercise(editorId, resultId, compare) {
   const container = document.getElementById(resultId);
   if (!container) return;
   resultStates.delete(resultId);
-  if (!connection) {
+  if (!graphEngine || loading) {
     showError(container, "El grafo todavía no está cargado.");
     return;
   }
@@ -1090,20 +1015,26 @@ function runExercise(editorId, resultId, compare) {
   waiting.className = "result-summary";
   waiting.textContent = compare ? "Comprobando…" : "Ejecutando…";
   container.append(waiting);
-  window.setTimeout(function () {
+  const engine = graphEngine;
+  window.setTimeout(async function () {
     try {
-      const mine = runCypher(cypher);
+      const [mine, reference] = compare
+        ? await engine.send("compare", [cypher, exercise.solution])
+        : [await engine.send("query", cypher)];
+      if (engine !== graphEngine || !container.isConnected) return;
       const state = {
         container: container,
         columns: mine.columns,
         rows: mine.rows,
         pageIndex: 0,
-        check: compare ? compareResults(mine, runCypher(exercise.solution)) : null
+        check: reference ? compareResults(mine, reference) : null
       };
       resultStates.set(resultId, state);
       renderResult(state);
     } catch (error) {
-      showError(container, "Error de Cypher: " + (error && error.message ? error.message : String(error)));
+      if (engine === graphEngine) {
+        showError(container, "Error de Cypher: " + (error && error.message ? error.message : String(error)));
+      }
     } finally {
       buttons.forEach(function (button) { button.disabled = false; });
     }
@@ -1152,18 +1083,4 @@ toggleDatasetButton.addEventListener("click", function () {
 });
 updateDatasetToggleButton();
 
-async function initialize() {
-  try {
-    setStatus("Cargando el motor de grafos…", "loading");
-    lbug = (await import(LBUG_URL)).default;
-    await lbug.init();
-    setStatus("Motor listo · Ladybug " + lbug.getVersion(), "loading");
-    await loadEverything("full");
-  } catch (error) {
-    setStatus("No se pudo iniciar el motor de grafos", "error");
-    messageEl.textContent = "No se pudo cargar Ladybug desde jsDelivr: "
-      + (error && error.message ? error.message : String(error));
-  }
-}
-
-initialize();
+loadEverything("full");
