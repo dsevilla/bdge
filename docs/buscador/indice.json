@@ -6,7 +6,7 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 0",
    "url": "../sesion0.html",
    "colab": null,
-   "miniatura": "miniaturas/996d95ad853948b7.jpg",
+   "miniatura": "miniaturas/f492a89c1b710668.jpg",
    "bd": "bd/222e99ae8d8d8d5c.sqlite3.gz"
   },
   {
@@ -14,7 +14,7 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 1",
    "url": "../sesion1.html",
    "colab": null,
-   "miniatura": "miniaturas/bb9469c6b5c8310a.jpg",
+   "miniatura": "miniaturas/371259cd82aed52b.jpg",
    "bd": "bd/97285b1a22c2a1f9.sqlite3.gz"
   },
   {
@@ -22,7 +22,7 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 2",
    "url": "../sesion2.html",
    "colab": null,
-   "miniatura": "miniaturas/881ae3cfab7f785a.jpg",
+   "miniatura": "miniaturas/7243764de6c421de.jpg",
    "bd": "bd/d0f4652bba898345.sqlite3.gz"
   },
   {
@@ -30,7 +30,7 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 3",
    "url": "../sesion3.html",
    "colab": null,
-   "miniatura": "miniaturas/e687c7df082d6438.jpg",
+   "miniatura": "miniaturas/0dc65887cfa7cbe3.jpg",
    "bd": "bd/5a1f87fee009cd41.sqlite3.gz"
   },
   {
@@ -38,7 +38,7 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 4",
    "url": "../sesion4.html",
    "colab": null,
-   "miniatura": "miniaturas/f6ec6e0886a2c6bd.jpg",
+   "miniatura": "miniaturas/c6731eae21de235b.jpg",
    "bd": "bd/0bfd0395743d2672.sqlite3.gz"
   },
   {
@@ -46,7 +46,7 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 5",
    "url": "../sesion5.html",
    "colab": null,
-   "miniatura": "miniaturas/a17fdb79aa0d0e83.jpg",
+   "miniatura": "miniaturas/cf9067378a64789e.jpg",
    "bd": "bd/6634e85f29c85eb8.sqlite3.gz"
   },
   {
@@ -54,8 +54,8 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 6",
    "url": "../sesion6.html",
    "colab": null,
-   "miniatura": "miniaturas/6dca5f0811442701.jpg",
-   "bd": "bd/28870d24ec5d8ecf.sqlite3.gz"
+   "miniatura": "miniaturas/c46191ddcb51a4ab.jpg",
+   "bd": "bd/467d19c6a0d066a4.sqlite3.gz"
   },
   {
    "tipo": "cuaderno",
@@ -110,7 +110,7 @@
    "titulo": "Sesión 6 — Cassandra (II), curso 2026-27",
    "url": "https://github.com/dsevilla/bdge/blob/26-27/cassandra/sesion6.ipynb",
    "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/cassandra/sesion6.ipynb",
-   "miniatura": "miniaturas/10a56a5275b53736.jpg",
+   "miniatura": "miniaturas/670e451221a8b55a.jpg",
    "bd": "bd/90aea0542852d339.sqlite3.gz"
   },
   {
