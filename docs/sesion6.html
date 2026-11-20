@@ -225,7 +225,7 @@ Facultad de Informática · Universidad de Murcia</p>
 <p>Y sólo estamos bajando <strong>un</strong> nivel. Si bajáramos otro, se complicaría mucho más por los <code>JOIN</code></p>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="20" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-theme="bdge" data-lang="es" lang="es" data-marpit-pagination="20" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="20" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-class="compact small-table" data-theme="bdge" data-lang="es" lang="es" class="compact small-table" data-marpit-pagination="20" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--class:compact small-table;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
 <h1 id="el-experimento-de-neo4j-in-action">El experimento de <em>Neo4j in Action</em></h1>
 <p>Partner y Vukotic compararon Neo4j y MySQL con esta tabla, buscando amigos de amigos en diferentes profundidades, en una red de 1 millón de personas con ~50 amigos cada una. (Experimento de 2014; el principio de eficiencia se mantiene en versiones modernas.)</p>
 <table>
@@ -368,8 +368,8 @@ result: EagerResult = driver.execute_query(cypher_query)
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="31" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-theme="bdge" data-lang="es" lang="es" data-marpit-pagination="31" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
 <h1 id="cypher-repetici%C3%B3n-de-relaciones">Cypher: repetición de relaciones</h1>
 <p>Repetida un número acotado o no acotado de veces:</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher">(nodo1)-[<span class="hljs-title class_">:RELACIÓN</span>*<span class="hljs-number">1.</span><span class="hljs-number">.10</span>]-&gt;(nodo2)
-(nodo3)-[<span class="hljs-title class_">:RELACIÓN</span>*<span class="hljs-number">0.</span>.]-&gt;(nodoX)
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher">(nodo1)-[<span class="hljs-title class_">:RELACIÓN</span>*<span class="hljs-number">1</span>..<span class="hljs-number">10</span>]-&gt;(nodo2)
+(nodo3)-[<span class="hljs-title class_">:RELACIÓN</span>*<span class="hljs-number">0</span>..]-&gt;(nodoX)
 </code></pre>
 <p>Conjunto no limitado de relaciones, de forma general:</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher">(nodo1)-[*]-(nodo2)
@@ -395,16 +395,16 @@ result: EagerResult = driver.execute_query(cypher_query)
 [<span class="hljs-keyword">LIMIT</span> x]
 <span class="hljs-keyword">RETURN</span> [<span class="hljs-keyword">DISTINCT</span>] nodos
 </code></pre>
-<p><code>MATCH</code> también se usa para seleccionar nodos a crear (<code>CREATE</code>) o borrar (<code>DELETE</code>/<code>DETACH DELETE</code>). Retorna todos los <em>posts</em>:</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (n<span class="hljs-title class_">:Post</span>) <span class="hljs-keyword">RETURN</span> n
-</code></pre>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="34" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-theme="bdge" data-lang="es" lang="es" data-marpit-pagination="34" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
-<h1 id="consultas-restricciones">Consultas: restricciones</h1>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (n { <span class="hljs-attr">nombre</span>: <span class="hljs-string">&#x27;Diego&#x27;</span> }) <span class="hljs-keyword">RETURN</span> n.edad;
+<h1 id="consultas-match-ii">Consultas: <code>MATCH</code> (ii)</h1>
+<p><code>MATCH</code> también se usa para seleccionar nodos a crear (<code>CREATE</code>) o borrar (<code>DELETE</code>/<code>DETACH DELETE</code>). Retorna todos los <em>posts</em>:</p>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (n<span class="hljs-title class_">:Post</span>) <span class="hljs-keyword">RETURN</span> n
 </code></pre>
 <p>En este caso se devuelve una tabla, no un subgrafo</p>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (n { <span class="hljs-attr">nombre</span>: <span class="hljs-string">&#x27;Diego&#x27;</span> }) <span class="hljs-keyword">RETURN</span> n.edad;
+</code></pre>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="35" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-theme="bdge" data-lang="es" lang="es" data-marpit-pagination="35" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
@@ -440,34 +440,39 @@ result: EagerResult = driver.execute_query(cypher_query)
 </ul>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="37" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-class="compact" data-theme="bdge" data-lang="es" lang="es" class="compact" data-marpit-pagination="37" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--class:compact;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="37" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-class="compact small-table" data-theme="bdge" data-lang="es" lang="es" class="compact small-table" data-marpit-pagination="37" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--class:compact small-table;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
 <h1 id="un-ejemplo-peque%C3%B1o-para-seguir-las-filas">Un ejemplo pequeño para seguir las filas</h1>
-<p>Datos <strong>ilustrativos</strong>, con los nombres y relaciones del boletín: Luis (<code>Id: 2</code>) escribió cuatro respuestas, dos de ellas a la misma pregunta</p>
+<p>Datos <strong>ilustrativos</strong>, con los nombres y relaciones del boletín: Luis (<code>u.Id = 2</code>) escribió cuatro respuestas, dos de ellas a la misma pregunta. Cada fila indica también quién escribió la pregunta, que no es Luis</p>
 <table>
 <thead>
 <tr>
+<th>Quién responde <code>u.Id</code></th>
 <th>Respuesta <code>a.Id</code></th>
 <th>Pregunta <code>q.Id</code></th>
-<th>Autor <code>autor_pregunta.Id</code></th>
+<th>Autor de la pregunta <code>autor_pregunta.Id</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td>2 (Luis)</td>
 <td>21</td>
 <td>10</td>
 <td>1 (Ana)</td>
 </tr>
 <tr>
+<td>2 (Luis)</td>
 <td>22</td>
 <td>10</td>
 <td>1 (Ana)</td>
 </tr>
 <tr>
+<td>2 (Luis)</td>
 <td>23</td>
 <td>11</td>
 <td>1 (Ana)</td>
 </tr>
 <tr>
+<td>2 (Luis)</td>
 <td>24</td>
 <td>12</td>
 <td>3 (Marta)</td>
@@ -475,9 +480,6 @@ result: EagerResult = driver.execute_query(cypher_query)
 </tbody>
 </table>
 <p>Hay <strong>cuatro respuestas</strong>, <strong>tres preguntas</strong> y <strong>dos autores de preguntas</strong></p>
-<blockquote>
-<p>Repetir una pregunta en las filas no significa que haya nodos duplicados: hay varias coincidencias del patrón</p>
-</blockquote>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="38" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-class="compact" data-theme="bdge" data-lang="es" lang="es" class="compact" data-marpit-pagination="38" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--class:compact;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
@@ -717,7 +719,7 @@ result: EagerResult = driver.execute_query(cypher_query)
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="52" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-theme="bdge" data-lang="es" lang="es" data-marpit-pagination="52" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
 <h1 id="variables-de-caminos">Variables de caminos</h1>
 <p>Se pueden asignar caminos completos a variables:</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> p = (a<span class="hljs-title class_">:Persona</span>)-[<span class="hljs-title class_">:AMIGO_DE</span>*<span class="hljs-number">1.</span><span class="hljs-number">.3</span>]-&gt;(b<span class="hljs-title class_">:Persona</span>)
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> p = (a<span class="hljs-title class_">:Persona</span>)-[<span class="hljs-title class_">:AMIGO_DE</span>*<span class="hljs-number">1</span>..<span class="hljs-number">3</span>]-&gt;(b<span class="hljs-title class_">:Persona</span>)
 <span class="hljs-keyword">WHERE</span> a.nombre = <span class="hljs-string">&#x27;Ana&#x27;</span> <span class="hljs-keyword">AND</span> b.nombre = <span class="hljs-string">&#x27;Carlos&#x27;</span>
 <span class="hljs-keyword">RETURN</span> p, <span class="hljs-built_in">length</span>(p)
 </code></pre>
@@ -744,7 +746,7 @@ result: EagerResult = driver.execute_query(cypher_query)
 <span class="hljs-keyword">RETURN</span> u.nombre, amigo.nombre, r.desde
 </code></pre>
 <p>También en patrones de camino variable:</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (a)-[r<span class="hljs-title class_">:CONOCE</span>*<span class="hljs-number">1.</span><span class="hljs-number">.3</span> <span class="hljs-keyword">WHERE</span> r.confianza &gt; <span class="hljs-number">0.7</span>]-&gt;(b)
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (a)-[r<span class="hljs-title class_">:CONOCE</span>*<span class="hljs-number">1</span>..<span class="hljs-number">3</span> <span class="hljs-keyword">WHERE</span> r.confianza &gt; <span class="hljs-number">0.7</span>]-&gt;(b)
 <span class="hljs-keyword">RETURN</span> a, b
 </code></pre>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>
@@ -1022,8 +1024,8 @@ result: EagerResult = driver.execute_query(cypher_query)
 <span class="hljs-comment">// Uso</span>
 <span class="hljs-keyword">CALL</span> db.index.fulltext.queryNodes(
   <span class="hljs-string">&#x27;postContent&#x27;</span>, <span class="hljs-string">&#x27;Neo4j AND graphs&#x27;</span>
-) <span class="hljs-keyword">YIELD</span> <span class="hljs-keyword">node</span>, score
-<span class="hljs-keyword">RETURN</span> <span class="hljs-keyword">node</span>.title, score
+) <span class="hljs-keyword">YIELD</span> node, score
+<span class="hljs-keyword">RETURN</span> node.title, score
 </code></pre>
 <p>Ver índices y <em>constraints</em>:</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">INDEXES</span>;
@@ -1042,8 +1044,8 @@ result: EagerResult = driver.execute_query(cypher_query)
   (Lucy) -[<span class="hljs-title class_">:BORN_IN</span>]-&gt;(Idaho)
 </code></pre>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span>
-(person)-[<span class="hljs-title class_">:BORN_IN</span>]-&gt;()-[<span class="hljs-title class_">:WITHIN</span>*<span class="hljs-number">0.</span>.]-&gt;(us<span class="hljs-title class_">:Location</span> {name:<span class="hljs-string">&#x27;United States&#x27;</span>}),
-(person)-[<span class="hljs-title class_">:LIVES_IN</span>]-&gt;()-[<span class="hljs-title class_">:WITHIN</span>*<span class="hljs-number">0.</span>.]-&gt;(eu<span class="hljs-title class_">:Location</span> {name:<span class="hljs-string">&#x27;Europe&#x27;</span>})
+(person)-[<span class="hljs-title class_">:BORN_IN</span>]-&gt;()-[<span class="hljs-title class_">:WITHIN</span>*<span class="hljs-number">0</span>..]-&gt;(us<span class="hljs-title class_">:Location</span> {name:<span class="hljs-string">&#x27;United States&#x27;</span>}),
+(person)-[<span class="hljs-title class_">:LIVES_IN</span>]-&gt;()-[<span class="hljs-title class_">:WITHIN</span>*<span class="hljs-number">0</span>..]-&gt;(eu<span class="hljs-title class_">:Location</span> {name:<span class="hljs-string">&#x27;Europe&#x27;</span>})
 <span class="hljs-keyword">RETURN</span> person.name
 </code></pre>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>

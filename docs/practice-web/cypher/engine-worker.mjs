@@ -1,3 +1,5 @@
+import { splitStatements } from "./statements.mjs";
+
 // Motor de la práctica: Grafeo compilado a WebAssembly, en un worker propio.
 // Cada carga tiene su worker y su base en memoria; al cerrar el worker se libera
 // todo de una vez.
@@ -19,45 +21,6 @@ async function openDatabase() {
   glue.__wbg_set_wasm(instance.exports);
   instance.exports.__wbindgen_start();
   return new glue.Database();
-}
-
-// Separa las sentencias de un texto por los `;` que no están dentro de una
-// cadena ni de un comentario, como hace Neo4j Browser.
-function splitStatements(text) {
-  const statements = [];
-  let current = "";
-  let quote = null;
-  for (let index = 0; index < text.length; index += 1) {
-    const char = text[index];
-    const next = text[index + 1];
-    if (quote) {
-      current += char;
-      if (char === "\\") {
-        current += next ?? "";
-        index += 1;
-      } else if (char === quote) {
-        quote = null;
-      }
-      continue;
-    }
-    if (char === "'" || char === '"' || char === "`") {
-      quote = char;
-      current += char;
-    } else if (char === "/" && next === "/") {
-      const end = text.indexOf("\n", index);
-      index = end === -1 ? text.length : end - 1;
-    } else if (char === "/" && next === "*") {
-      const end = text.indexOf("*/", index + 2);
-      index = end === -1 ? text.length : end + 1;
-    } else if (char === ";") {
-      statements.push(current);
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-  statements.push(current);
-  return statements.map(function (statement) { return statement.trim(); }).filter(Boolean);
 }
 
 // Ejecuta una sentencia y devuelve sus columnas, en orden aunque no haya filas,

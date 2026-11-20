@@ -1,72 +1,55 @@
 /*
- * Nodos, relaciones y caminos que devuelven los dos motores Cypher del navegador:
+ * Nodos, relaciones y caminos que devuelve Grafeo, el motor Cypher que usan en
+ * el navegador la práctica de grafos y el grafo del curso
+ * (teoria/dot-cloud-neo4j/):
  *
- * - Grafeo (la práctica de grafos): nodo {_id, _labels, ...propiedades},
- *   relación {_id, _source, _target, _type, ...}, camino {_type: "path", nodes, edges}.
- *   Los _id de nodos y relaciones se numeran por separado.
- * - Ladybug (el grafo del curso, teoria/dot-cloud-neo4j/): nodo {_id: {table, offset},
- *   _label, ...}, relación {_src, _dst, _label, ...}, camino {_nodes, _rels}.
+ * - nodo {_id, _labels, ...propiedades};
+ * - relación {_id, _source, _target, _type, ...propiedades};
+ * - camino {_type: "path", nodes, edges}.
  *
- * Cuando el grafo del curso pase también a Grafeo, sobra la rama de Ladybug.
+ * Los _id de nodos y relaciones se numeran por separado; por eso las claves
+ * llevan delante «n» o «e».
  */
-function isGrafeoNode(value) {
-  return Array.isArray(value._labels);
-}
-
-function isGrafeoRelationship(value) {
-  return "_source" in value && "_target" in value;
-}
-
 export function isNode(value) {
-  if (!value || typeof value !== "object") return false;
-  return isGrafeoNode(value) || Boolean(value._id && value._label && !value._src);
+  return Boolean(value) && typeof value === "object" && Array.isArray(value._labels);
 }
 
 export function isRelationship(value) {
-  if (!value || typeof value !== "object") return false;
-  return isGrafeoRelationship(value) || Boolean(value._src && value._dst);
+  return Boolean(value) && typeof value === "object" && "_source" in value && "_target" in value;
 }
 
 export function isPath(value) {
-  if (!value || typeof value !== "object") return false;
-  return (value._type === "path" && Array.isArray(value.nodes) && Array.isArray(value.edges))
-    || (Array.isArray(value._nodes) && Array.isArray(value._rels));
+  return Boolean(value) && typeof value === "object"
+    && value._type === "path" && Array.isArray(value.nodes) && Array.isArray(value.edges);
 }
 
 export function nodeLabels(node) {
-  return isGrafeoNode(node) ? node._labels : [node._label];
+  return node._labels;
 }
 
 export function relationshipType(relationship) {
-  return isGrafeoRelationship(relationship) ? relationship._type : relationship._label;
+  return relationship._type;
 }
 
 export function pathNodes(path) {
-  return path.nodes || path._nodes;
+  return path.nodes;
 }
 
 export function pathRelationships(path) {
-  return path.edges || path._rels;
+  return path.edges;
 }
 
-// Identificador interno de Ladybug (tabla y desplazamiento).
-export function internalId(reference) {
-  return reference.table + ":" + reference.offset;
-}
-
-// Clave única de un nodo o una relación en el resultado, sea del motor que sea.
+// Clave única de un nodo o una relación en el resultado.
 export function nodeKey(node) {
-  return isGrafeoNode(node) ? "n" + node._id : internalId(node._id);
+  return "n" + node._id;
 }
 
 export function relationshipKey(relationship) {
-  return isGrafeoRelationship(relationship) ? "e" + relationship._id : internalId(relationship._id);
+  return "e" + relationship._id;
 }
 
 export function endpointKeys(relationship) {
-  return isGrafeoRelationship(relationship)
-    ? ["n" + relationship._source, "n" + relationship._target]
-    : [internalId(relationship._src), internalId(relationship._dst)];
+  return ["n" + relationship._source, "n" + relationship._target];
 }
 
 export function collectGraphElements(rows) {

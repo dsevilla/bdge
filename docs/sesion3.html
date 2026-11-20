@@ -897,8 +897,8 @@ preguntas[11] → { título: &quot;...&quot;, usuario: 1 }
 </code></pre>
 <p>Consulta:</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span>
-(person) -[<span class="hljs-title class_">:BORN_IN</span>]-&gt; () -[<span class="hljs-title class_">:WITHIN</span>*<span class="hljs-number">0.</span>.]-&gt; (us<span class="hljs-title class_">:Location</span> {name:<span class="hljs-string">&#x27;United States&#x27;</span>}),
-(person) -[<span class="hljs-title class_">:LIVES_IN</span>]-&gt; () -[<span class="hljs-title class_">:WITHIN</span>*<span class="hljs-number">0.</span>.]-&gt; (eu<span class="hljs-title class_">:Location</span> {name:<span class="hljs-string">&#x27;Europe&#x27;</span>})
+(person) -[<span class="hljs-title class_">:BORN_IN</span>]-&gt; () -[<span class="hljs-title class_">:WITHIN</span>*<span class="hljs-number">0</span>..]-&gt; (us<span class="hljs-title class_">:Location</span> {name:<span class="hljs-string">&#x27;United States&#x27;</span>}),
+(person) -[<span class="hljs-title class_">:LIVES_IN</span>]-&gt; () -[<span class="hljs-title class_">:WITHIN</span>*<span class="hljs-number">0</span>..]-&gt; (eu<span class="hljs-title class_">:Location</span> {name:<span class="hljs-string">&#x27;Europe&#x27;</span>})
 <span class="hljs-keyword">RETURN</span> person.name
 </code></pre>
 <footer>BDGE · Sesión 3 · Curso 2026/2027</footer>
