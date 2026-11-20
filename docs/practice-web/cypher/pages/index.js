@@ -6,5 +6,6 @@
 import { page as patrones } from "./patrones.js";
 import { page as recorridos } from "./recorridos.js";
 import { page as escritura } from "./escritura.js";
+import { page as repaso } from "./repaso.js";
 
-export const PRACTICE_PAGES = [patrones, recorridos, escritura];
+export const PRACTICE_PAGES = [patrones, recorridos, escritura, repaso];

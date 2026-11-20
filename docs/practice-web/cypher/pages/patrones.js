@@ -5,7 +5,7 @@
 export const page = {
   id: "patrones",
   title: "1 · Patrones",
-  description: "MATCH, filtros, proyección, orden, OPTIONAL MATCH, DISTINCT y agregación sobre el grafo.",
+  description: "MATCH, filtros, proyección, orden, OPTIONAL MATCH, NOT EXISTS, expresiones regulares, DISTINCT y agregación sobre el grafo.",
   exercises: [
     {
       id: "contar-usuarios",
@@ -13,6 +13,14 @@ export const page = {
       prompt: "Cuenta cuántos nodos :User hay en el grafo.",
       solution: `MATCH (u:User)
 RETURN count(*) AS usuarios`
+    },
+    {
+      id: "nodos-por-etiqueta",
+      title: "Cuántos nodos hay de cada tipo",
+      prompt: "Antes de preguntar nada conviene saber qué hay en el grafo. Devuelve, para cada combinación de etiquetas, cuántos nodos tiene, ordenado por número de nodos descendente. Usa labels(n).",
+      solution: `MATCH (n)
+RETURN labels(n) AS etiquetas, count(*) AS nodos
+ORDER BY nodos DESC, etiquetas`
     },
     {
       id: "preguntas-mas-vistas",
@@ -23,6 +31,16 @@ WHERE p.PostTypeId = 1
 RETURN p.Id AS id, p.Title AS titulo, p.ViewCount AS vistas
 ORDER BY vistas DESC, id
 LIMIT 10`
+    },
+    {
+      id: "respuestas-mejor-valoradas",
+      title: "Las respuestas mejor valoradas",
+      prompt: "Las respuestas son los :Post con PostTypeId = 2 y apuntan a su pregunta con [:ANSWERS]. Devuelve las ocho respuestas con más puntuación, con su Id, su puntuación y el título de la pregunta a la que responden, desempatando por Id.",
+      solution: `MATCH (a:Post)-[:ANSWERS]->(q:Post)
+WHERE a.PostTypeId = 2
+RETURN a.Id AS id, a.Score AS puntuacion, q.Title AS pregunta
+ORDER BY puntuacion DESC, id
+LIMIT 8`
     },
     {
       id: "autor-de-la-pregunta",
@@ -70,6 +88,30 @@ WHERE respuestas = 0
 RETURN count(*) AS sin_respuesta`
     },
     {
+      id: "preguntas-sin-respuesta-not-exists",
+      title: "Lo que no está, sin OPTIONAL MATCH: NOT EXISTS",
+      prompt: "La misma idea que en el ejercicio anterior, pero devolviendo las preguntas en vez de contarlas y sin OPTIONAL MATCH: filtra con NOT EXISTS { MATCH ... }. Devuelve las cinco preguntas sin respuesta con más vistas, con su Id, su título y ViewCount, desempatando por Id.",
+      solution: `MATCH (p:Post)
+WHERE p.PostTypeId = 1
+  AND NOT EXISTS { MATCH (:Post)-[:ANSWERS]->(p) }
+RETURN p.Id AS id, p.Title AS titulo, p.ViewCount AS vistas
+ORDER BY vistas DESC, id
+LIMIT 5`
+    },
+    {
+      id: "autor-y-numero-de-respuestas",
+      title: "Autor y número de respuestas en una sola consulta",
+      prompt: "Para las cinco preguntas más vistas que tengan autor en el grafo (desempata por Id), devuelve en una sola consulta su Id, el nombre de quien la escribió y cuántas respuestas tiene. Las respuestas se cuentan con OPTIONAL MATCH después de quedarte con las cinco preguntas, para que una pregunta sin respuestas aparezca con 0. Ordena por Id de pregunta.",
+      solution: `MATCH (u:User)-[:WROTE]->(p:Post)
+WHERE p.PostTypeId = 1
+WITH u, p
+ORDER BY p.ViewCount DESC, p.Id
+LIMIT 5
+OPTIONAL MATCH (a:Post)-[:ANSWERS]->(p)
+RETURN p.Id AS pregunta, u.DisplayName AS autor, count(a) AS respuestas
+ORDER BY pregunta`
+    },
+    {
       id: "etiquetas-mas-usadas",
       title: "Agrupa contando relaciones",
       prompt: "Devuelve las diez etiquetas con más publicaciones asociadas, con su nombre y el número de publicaciones, desempatando por nombre.",
@@ -77,6 +119,15 @@ RETURN count(*) AS sin_respuesta`
 RETURN t.TagName AS etiqueta, count(*) AS publicaciones
 ORDER BY publicaciones DESC, etiqueta
 LIMIT 10`
+    },
+    {
+      id: "etiquetas-por-expresion-regular",
+      title: "Filtra con una expresión regular",
+      prompt: "Un predicado puede usar una expresión regular con =~, que debe coincidir con el valor entero. Devuelve las etiquetas cuyo nombre empieza por «python» (la propia «python», «python-3.x»...) con su número de usos, Count, ordenadas por usos descendente y por nombre.",
+      solution: `MATCH (t:Tag)
+WHERE t.TagName =~ 'python.*'
+RETURN t.TagName AS etiqueta, t.Count AS usos
+ORDER BY usos DESC, etiqueta`
     },
     {
       id: "usuarios-de-una-etiqueta",

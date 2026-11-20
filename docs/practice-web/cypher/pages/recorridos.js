@@ -6,7 +6,7 @@
 export const page = {
   id: "recorridos",
   title: "2 · Recorridos",
-  description: "Caminos de varios saltos, coaparición de etiquetas, reciprocidad y recomendaciones explicables.",
+  description: "Caminos de varios saltos, coaparición de etiquetas, reciprocidad, recomendaciones explicables y caminos mínimos.",
   exercises: [
     {
       id: "quien-responde-a-quien",
@@ -83,6 +83,27 @@ WHERE t.TagName = 'sql' AND otra.TagName <> 'sql'
 RETURN otra.TagName AS etiqueta, count(*) AS caminos
 ORDER BY caminos DESC, etiqueta
 LIMIT 10`
+    },
+    {
+      id: "camino-minimo",
+      title: "El camino más corto entre dos usuarios",
+      prompt: "¿Cuántos saltos separan a los usuarios con Id 20 y 22? Usa shortestPath sobre cualquier tipo de relación y en cualquier dirección ([*]), y devuelve la longitud del camino con length(). Un salto es una relación, no un nodo. Cuando lo tengas, devuelve el propio camino en vez de su longitud para verlo dibujado.",
+      solution: `MATCH ruta = shortestPath((a:User {Id: 20})-[*]-(b:User {Id: 22}))
+RETURN length(ruta) AS saltos`
+    },
+    {
+      id: "todos-los-caminos-minimos",
+      title: "Todos los caminos mínimos",
+      prompt: "shortestPath devuelve un camino de los más cortos; allShortestPaths los devuelve todos. Cuenta cuántos caminos mínimos hay entre los usuarios 20 y 22 y devuelve ese número junto con su longitud.",
+      solution: `MATCH ruta = allShortestPaths((a:User {Id: 20})-[*]-(b:User {Id: 22}))
+RETURN count(ruta) AS caminos, length(ruta) AS saltos`
+    },
+    {
+      id: "camino-por-tipos",
+      title: "Limita los tipos de relación del recorrido",
+      prompt: "El camino anterior puede pasar por etiquetas (:Tag). Repite la búsqueda entre los usuarios 20 y 22 pero recorriendo sólo [:WROTE|ANSWERS], es decir, a través de preguntas y respuestas, y devuelve la longitud. Restringir el recorrido nunca puede acortar el camino: compáralo con el del ejercicio anterior.",
+      solution: `MATCH ruta = shortestPath((a:User {Id: 20})-[:WROTE|ANSWERS*]-(b:User {Id: 22}))
+RETURN length(ruta) AS saltos`
     }
   ]
 };
