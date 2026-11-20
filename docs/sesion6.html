@@ -429,12 +429,12 @@ result: EagerResult = driver.execute_query(cypher_query)
 <p>En el grafo, <code>User</code> representa un usuario; <code>Question</code> y <code>Answer</code> son también nodos <code>Post</code></p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (u<span class="hljs-title class_">:User</span>)-[<span class="hljs-title class_">:WROTE</span>]-&gt;(a<span class="hljs-title class_">:Answer</span>)-[<span class="hljs-title class_">:ANSWERS</span>]-&gt;(q<span class="hljs-title class_">:Question</span>)
       &lt;-[<span class="hljs-title class_">:WROTE</span>]-(autor_pregunta<span class="hljs-title class_">:User</span>)
-<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">2</span>
+<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">13971</span>
 <span class="hljs-keyword">RETURN</span> a.Id, q.Id, autor_pregunta.Id
 </code></pre>
 <ul>
 <li><code>WROTE</code>: autor → publicación; <code>ANSWERS</code>: respuesta → pregunta</li>
-<li>Buscamos las respuestas del usuario 2 y quién escribió cada pregunta</li>
+<li>Buscamos las respuestas del usuario 13971 y quién escribió cada pregunta</li>
 <li>Cada coincidencia del patrón produce una fila con <code>u</code>, <code>a</code>, <code>q</code> y <code>autor_pregunta</code></li>
 <li>Este patrón exige que ambas publicaciones tengan autor representado en el grafo</li>
 </ul>
@@ -442,7 +442,7 @@ result: EagerResult = driver.execute_query(cypher_query)
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="37" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-class="compact small-table" data-theme="bdge" data-lang="es" lang="es" class="compact small-table" data-marpit-pagination="37" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--class:compact small-table;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
 <h1 id="un-ejemplo-peque%C3%B1o-para-seguir-las-filas">Un ejemplo pequeño para seguir las filas</h1>
-<p>Datos <strong>ilustrativos</strong>, con los nombres y relaciones del boletín: Luis (<code>u.Id = 2</code>) escribió cuatro respuestas, dos de ellas a la misma pregunta. Cada fila indica también quién escribió la pregunta, que no es Luis</p>
+<p>Datos de la <strong>muestra reducida</strong> de la práctica, que carga la consola Cypher de la presentación: el usuario 13971 (<code>sibok666</code>) escribió cuatro respuestas, dos de ellas a la misma pregunta. Cada fila indica también quién escribió la pregunta</p>
 <table>
 <thead>
 <tr>
@@ -454,39 +454,39 @@ result: EagerResult = driver.execute_query(cypher_query)
 </thead>
 <tbody>
 <tr>
-<td>2 (Luis)</td>
-<td>21</td>
-<td>10</td>
-<td>1 (Ana)</td>
+<td>13971</td>
+<td>22769</td>
+<td>22760</td>
+<td>13968 (<code>Mauricio</code>)</td>
 </tr>
 <tr>
-<td>2 (Luis)</td>
-<td>22</td>
-<td>10</td>
-<td>1 (Ana)</td>
+<td>13971</td>
+<td>24366</td>
+<td>24272</td>
+<td>3754 (<code>afal3d</code>)</td>
 </tr>
 <tr>
-<td>2 (Luis)</td>
-<td>23</td>
-<td>11</td>
-<td>1 (Ana)</td>
+<td>13971</td>
+<td>25121</td>
+<td>24272</td>
+<td>3754 (<code>afal3d</code>)</td>
 </tr>
 <tr>
-<td>2 (Luis)</td>
-<td>24</td>
-<td>12</td>
-<td>3 (Marta)</td>
+<td>13971</td>
+<td>25122</td>
+<td>10752</td>
+<td>6811 (<code>Ventur</code>)</td>
 </tr>
 </tbody>
 </table>
-<p>Hay <strong>cuatro respuestas</strong>, <strong>tres preguntas</strong> y <strong>dos autores de preguntas</strong></p>
+<p>Hay <strong>cuatro respuestas</strong>, <strong>tres preguntas</strong> y <strong>tres autores de preguntas</strong></p>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="38" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-class="compact" data-theme="bdge" data-lang="es" lang="es" class="compact" data-marpit-pagination="38" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--class:compact;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
 <h1 id="with-pasar-de-una-etapa-a-otra"><code>WITH</code>: pasar de una etapa a otra</h1>
 <p><code>WITH</code> proyecta las filas intermedias: elige variables, calcula expresiones y les da nombres con <code>AS</code></p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (u<span class="hljs-title class_">:User</span>)-[<span class="hljs-title class_">:WROTE</span>]-&gt;(a<span class="hljs-title class_">:Answer</span>)-[<span class="hljs-title class_">:ANSWERS</span>]-&gt;(q<span class="hljs-title class_">:Question</span>)
-<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">2</span>
+<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">13971</span>
 <span class="hljs-keyword">WITH</span> a.Id <span class="hljs-keyword">AS</span> respuesta, q.Id <span class="hljs-keyword">AS</span> pregunta
 <span class="hljs-keyword">RETURN</span> respuesta, pregunta
 <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> respuesta
@@ -503,12 +503,12 @@ result: EagerResult = driver.execute_query(cypher_query)
 <h1 id="agregaciones-%C2%BFqu%C3%A9-estamos-contando">Agregaciones: ¿qué estamos contando?</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (u<span class="hljs-title class_">:User</span>)-[<span class="hljs-title class_">:WROTE</span>]-&gt;(a<span class="hljs-title class_">:Answer</span>)-[<span class="hljs-title class_">:ANSWERS</span>]-&gt;(q<span class="hljs-title class_">:Question</span>)
       &lt;-[<span class="hljs-title class_">:WROTE</span>]-(autor_pregunta<span class="hljs-title class_">:User</span>)
-<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">2</span>
+<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">13971</span>
 <span class="hljs-keyword">RETURN</span> <span class="hljs-built_in">count</span>(a) <span class="hljs-keyword">AS</span> respuestas,
        <span class="hljs-built_in">count</span>(<span class="hljs-keyword">DISTINCT</span> q) <span class="hljs-keyword">AS</span> preguntas,
        <span class="hljs-built_in">count</span>(<span class="hljs-keyword">DISTINCT</span> autor_pregunta) <span class="hljs-keyword">AS</span> autores
 </code></pre>
-<p>Resultado: <strong>4 respuestas, 3 preguntas y 2 autores</strong></p>
+<p>Resultado: <strong>4 respuestas, 3 preguntas y 3 autores</strong></p>
 <p><code>count(a)</code> cuenta sus apariciones no nulas; <code>DISTINCT</code> cuenta valores diferentes de la expresión elegida</p>
 <blockquote>
 <p>Si ampliamos el patrón con las etiquetas de cada pregunta, una respuesta puede aparecer varias veces: para contar respuestas usaríamos <code>count(DISTINCT a)</code></p>
@@ -520,7 +520,7 @@ result: EagerResult = driver.execute_query(cypher_query)
 <p>Las expresiones proyectadas que no se agregan determinan los grupos</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (u<span class="hljs-title class_">:User</span>)-[<span class="hljs-title class_">:WROTE</span>]-&gt;(a<span class="hljs-title class_">:Answer</span>)-[<span class="hljs-title class_">:ANSWERS</span>]-&gt;(q<span class="hljs-title class_">:Question</span>)
       &lt;-[<span class="hljs-title class_">:WROTE</span>]-(autor_pregunta<span class="hljs-title class_">:User</span>)
-<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">2</span>
+<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">13971</span>
 <span class="hljs-keyword">RETURN</span> autor_pregunta.Id <span class="hljs-keyword">AS</span> autor, <span class="hljs-built_in">count</span>(a) <span class="hljs-keyword">AS</span> respuestas
 <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> autor
 </code></pre>
@@ -533,11 +533,15 @@ result: EagerResult = driver.execute_query(cypher_query)
 </thead>
 <tbody>
 <tr>
-<td>1</td>
-<td>3</td>
+<td>3754</td>
+<td>2</td>
 </tr>
 <tr>
-<td>3</td>
+<td>6811</td>
+<td>1</td>
+</tr>
+<tr>
+<td>13968</td>
 <td>1</td>
 </tr>
 </tbody>
@@ -547,18 +551,18 @@ result: EagerResult = driver.execute_query(cypher_query)
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="41" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-class="compact" data-theme="bdge" data-lang="es" lang="es" class="compact" data-marpit-pagination="41" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--class:compact;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
 <h1 id="with-agregar-y-filtrar-el-resultado"><code>WITH</code>: agregar y filtrar el resultado</h1>
-<p>¿A qué autores ha respondido Luis más de una vez?</p>
+<p>¿A qué autores ha respondido el usuario 13971 más de una vez?</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (u<span class="hljs-title class_">:User</span>)-[<span class="hljs-title class_">:WROTE</span>]-&gt;(a<span class="hljs-title class_">:Answer</span>)-[<span class="hljs-title class_">:ANSWERS</span>]-&gt;(q<span class="hljs-title class_">:Question</span>)
       &lt;-[<span class="hljs-title class_">:WROTE</span>]-(autor_pregunta<span class="hljs-title class_">:User</span>)
-<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">2</span>
+<span class="hljs-keyword">WHERE</span> u.Id = <span class="hljs-number">13971</span>
 <span class="hljs-keyword">WITH</span> autor_pregunta, <span class="hljs-built_in">count</span>(a) <span class="hljs-keyword">AS</span> respuestas
 <span class="hljs-keyword">WHERE</span> respuestas &gt; <span class="hljs-number">1</span>
 <span class="hljs-keyword">RETURN</span> autor_pregunta.Id <span class="hljs-keyword">AS</span> autor, respuestas
 </code></pre>
 <ul>
 <li>El <code>MATCH</code> produce las cuatro filas del ejemplo</li>
-<li><code>WITH</code> las agrupa por nodo autor: Ana → 3; Marta → 1</li>
-<li>El segundo <code>WHERE</code> deja sólo Ana → 3, como un <code>HAVING</code> en SQL</li>
+<li><code>WITH</code> las agrupa por nodo autor: 3754 → 2; 6811 → 1; 13968 → 1</li>
+<li>El segundo <code>WHERE</code> deja sólo 3754 → 2, como un <code>HAVING</code> en SQL</li>
 <li><code>a</code>, <code>q</code> y <code>u</code> dejan de estar disponibles después del <code>WITH</code></li>
 </ul>
 <footer>BDGE · Sesión 6 · Curso 2026/2027</footer>
@@ -840,7 +844,7 @@ result: EagerResult = driver.execute_query(cypher_query)
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="62" data-paginate="true" data-footer="BDGE · Sesión 6 · Curso 2026/2027" data-class="compact" data-theme="bdge" data-lang="es" lang="es" class="compact" data-marpit-pagination="62" style="--paginate:true;--footer:BDGE · Sesión 6 · Curso 2026/2027;--class:compact;--theme:bdge;--lang:es;" data-marpit-pagination-total="122" data-size="16:9">
 <h1 id="create-%C2%BFqu%C3%A9-ocurre-al-repetirlo"><code>CREATE</code>: ¿qué ocurre al repetirlo?</h1>
-<p>Sobre el usuario 2 y el post 21 ya existentes en el ejemplo:</p>
+<p>Sobre un usuario 2 y un post 21 ya existentes (datos ilustrativos):</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-cypher"><span class="hljs-keyword">MATCH</span> (u<span class="hljs-title class_">:User</span> {<span class="hljs-attr">Id</span>: <span class="hljs-number">2</span>}), (p<span class="hljs-title class_">:Post</span> {<span class="hljs-attr">Id</span>: <span class="hljs-number">21</span>})
 <span class="hljs-keyword">CREATE</span> (u)-[<span class="hljs-title class_">:WROTE</span>]-&gt;(p)
 </code></pre>

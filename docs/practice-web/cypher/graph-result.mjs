@@ -82,14 +82,17 @@ export function collectGraphElements(rows) {
 }
 
 // La práctica y el grafo del curso dibujan con esta función sus resultados.
-// Un nodo con varias etiquetas toma el color de la primera que lo tenga.
+// Un nodo con varias etiquetas toma el color de la primera de `colors` que
+// tenga: Grafeo devuelve las etiquetas en orden alfabético, así que el orden de
+// la paleta decide que un :Post:Question se pinte como pregunta.
 export function drawResultGraph(Network, container, elements, { caption, colors, limit, onNodeClick, palette = {} }) {
   const labels = new Set();
   const nodes = [];
   Array.from(elements.nodes.entries()).slice(0, limit).forEach(function (entry) {
     const node = entry[1];
     const nodeLabelList = nodeLabels(node);
-    const label = nodeLabelList.find(function (candidate) { return colors[candidate]; }) || nodeLabelList[0];
+    const label = Object.keys(colors).find(function (candidate) { return nodeLabelList.includes(candidate); })
+      || nodeLabelList[0];
     labels.add(label);
     const title = document.createElement("span");
     title.textContent = nodeLabelList.join(":");
