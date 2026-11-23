@@ -29,35 +29,39 @@ function postTagNames(post) {
   return post.Tags.replace(/^</, "").replace(/>$/, "").split("><");
 }
 
+// `source` es el fichero del que salen las filas de cada carga. La página lee
+// cada fichero por lotes y, para cada documento, `row()` devuelve la fila de un
+// nodo y `rows()`, las filas de sus relaciones (ninguna, una o varias): así los
+// nodos se envían al motor mientras el fichero aún se descarga, sin tenerlo
+// entero en memoria.
 export const NODE_LOADS = [
   {
     label: "User",
+    source: "Users",
     statement: `UNWIND $filas AS fila
 CREATE (:User {Id: fila.Id, DisplayName: fila.DisplayName, Reputation: fila.Reputation,
                Location: fila.Location, CreationDate: datetime(fila.CreationDate)})`,
-    rows: function (documents) {
-      return documents.Users.map(function (user) {
-        return presentFields(user, ["Id", "DisplayName", "Reputation", "Location", "CreationDate"]);
-      });
+    row: function (user) {
+      return presentFields(user, ["Id", "DisplayName", "Reputation", "Location", "CreationDate"]);
     }
   },
   {
     label: "Post",
+    source: "Posts",
     statement: `UNWIND $filas AS fila
 CREATE (:Post {Id: fila.Id, PostTypeId: fila.PostTypeId, Title: fila.Title, Score: fila.Score,
                ViewCount: fila.ViewCount, CreationDate: datetime(fila.CreationDate)})`,
-    rows: function (documents) {
-      return documents.Posts.map(function (post) {
-        return presentFields(post, ["Id", "PostTypeId", "Title", "Score", "ViewCount", "CreationDate"]);
-      });
+    row: function (post) {
+      return presentFields(post, ["Id", "PostTypeId", "Title", "Score", "ViewCount", "CreationDate"]);
     }
   },
   {
     label: "Tag",
+    source: "Tags",
     statement: `UNWIND $filas AS fila
 CREATE (:Tag {TagName: fila.TagName, Count: fila.Count})`,
-    rows: function (documents) {
-      return documents.Tags.map(function (tag) { return presentFields(tag, ["TagName", "Count"]); });
+    row: function (tag) {
+      return presentFields(tag, ["TagName", "Count"]);
     }
   }
 ];
@@ -73,41 +77,56 @@ export const CONSTRAINT_STATEMENTS = [
 export const RELATIONSHIP_LOADS = [
   {
     label: "WROTE",
+    source: "Posts",
     statement: `UNWIND $filas AS fila
 MATCH (u:User {Id: fila.usuario})
 MATCH (p:Post {Id: fila.post})
 CREATE (u)-[:WROTE]->(p)`,
-    rows: function (documents) {
-      return documents.Posts
-        .filter(function (post) { return post.OwnerUserId !== null; })
-        .map(function (post) { return { usuario: post.OwnerUserId, post: post.Id }; });
+    rows: function (post) {
+      return post.OwnerUserId !== null ? [{ usuario: post.OwnerUserId, post: post.Id }] : [];
     }
   },
   {
     label: "ANSWERS",
+    source: "Posts",
     statement: `UNWIND $filas AS fila
 MATCH (respuesta:Post {Id: fila.respuesta})
 MATCH (pregunta:Post {Id: fila.pregunta})
 CREATE (respuesta)-[:ANSWERS]->(pregunta)`,
-    rows: function (documents) {
-      return documents.Posts
-        .filter(function (post) { return post.ParentId !== null; })
-        .map(function (post) { return { respuesta: post.Id, pregunta: post.ParentId }; });
+    rows: function (post) {
+      return post.ParentId !== null ? [{ respuesta: post.Id, pregunta: post.ParentId }] : [];
     }
   },
   {
     label: "TAGGED_WITH",
+    source: "Posts",
     statement: `UNWIND $filas AS fila
 MATCH (p:Post {Id: fila.post})
 MATCH (t:Tag {TagName: fila.etiqueta})
 CREATE (p)-[:TAGGED_WITH]->(t)`,
-    rows: function (documents) {
-      return documents.Posts.flatMap(function (post) {
-        return postTagNames(post).map(function (name) { return { post: post.Id, etiqueta: name }; });
-      });
+    rows: function (post) {
+      return postTagNames(post).map(function (name) { return { post: post.Id, etiqueta: name }; });
     }
   }
 ];
+
+// Las filas que salen de un lote de documentos de `source`: la fila de cada nodo
+// y las filas de cada relación. Lo usan la página y las pruebas, de modo que
+// ambas construyen el grafo igual.
+export function rowsForBatch(source, documents) {
+  return {
+    nodes: NODE_LOADS
+      .filter(function (entry) { return entry.source === source; })
+      .map(function (entry) {
+        return { entry, rows: documents.map(function (document) { return entry.row(document); }) };
+      }),
+    relationships: RELATIONSHIP_LOADS
+      .filter(function (entry) { return entry.source === source; })
+      .map(function (entry) {
+        return { entry, rows: documents.flatMap(function (document) { return entry.rows(document); }) };
+      })
+  };
+}
 
 // El JSONL guarda las fechas como {"$date": "2015-10-30T10:26:44.223Z"}: se quedan
 // en el texto ISO, que la carga convierte con datetime() como haría Neo4j.

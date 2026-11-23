@@ -4,7 +4,8 @@ import {
   nodeLabels, pathNodes, relationshipType
 } from "./graph-result.mjs";
 import {
-  CONSTRAINT_STATEMENTS, LOAD_BATCH_SIZE, NODE_LOADS, RELATIONSHIP_LOADS, reviveExtendedJson
+  CONSTRAINT_STATEMENTS, LOAD_BATCH_SIZE, NODE_LOADS, RELATIONSHIP_LOADS, reviveExtendedJson,
+  rowsForBatch
 } from "./graph-load.mjs";
 "use strict";
 /*
@@ -16,15 +17,18 @@ import {
  */
 
 // Los assets de una release de GitHub no envían cabeceras CORS: la página lee
-// la copia versionada en el repositorio de datos, que sí las envía.
+// la copia versionada en el repositorio de datos, que sí las envía. Se empieza
+// por raw.githubusercontent.com porque jsDelivr rechaza con 403 los ficheros que
+// pasan de su límite de tamaño, como el Posts.jsonl.gz completo; queda de
+// respaldo para cuando raw no responda.
 const DATA_SOURCES = [
-  {
-    label: "jsDelivr",
-    base: "https://cdn.jsdelivr.net/gh/dsevilla/bd2-data@main/es.stackoverflow/jsonl"
-  },
   {
     label: "raw.githubusercontent.com",
     base: "https://raw.githubusercontent.com/dsevilla/bd2-data/main/es.stackoverflow/jsonl"
+  },
+  {
+    label: "jsDelivr",
+    base: "https://cdn.jsdelivr.net/gh/dsevilla/bd2-data@main/es.stackoverflow/jsonl"
   }
 ];
 const DATA_VARIANTS = {
@@ -32,6 +36,10 @@ const DATA_VARIANTS = {
   sample: { name: "la muestra reducida", readyLabel: "Muestra reducida" }
 };
 const SOURCE_FILES = ["Users", "Posts", "Tags"];
+// Lotes que un fichero puede tener en el motor sin terminar: acotan la memoria de
+// las filas ya convertidas y dejan que el siguiente se lea mientras se carga el
+// anterior.
+const MAX_PENDING_BATCHES = 2;
 const RESULT_PAGE_SIZE = 25;
 const GRAPH_NODE_LIMIT = 300;
 const SANDBOX_EDITOR_ID = "cypher-sandbox";
@@ -435,29 +443,48 @@ function showSolution(editorId) {
  * Construcción del grafo
  * ------------------------------------------------------------------ */
 
-function parseJsonl(text, label) {
-  const documents = [];
-  const lines = text.split("\n");
-  for (let index = 0; index < lines.length; index += 1) {
-    if (!lines[index]) continue;
-    try {
-      documents.push(JSON.parse(lines[index], reviveExtendedJson));
-    } catch (error) {
-      throw new Error("Línea " + (index + 1) + " de " + label + " ilegible: " + error.message);
-    }
-  }
-  return documents;
-}
-
-async function fetchCollection(base, name, variant) {
+// Lee un JSONL comprimido por lotes de LOAD_BATCH_SIZE documentos a medida que
+// llega, sin esperar al final de la descarga ni guardarlo entero.
+async function* readCollection(base, name, variant, signal) {
   const filename = name + (variant === "sample" ? "-sample" : "") + ".jsonl.gz";
-  const response = await fetch(base + "/" + filename, { mode: "cors" });
+  const response = await fetch(base + "/" + filename, { mode: "cors", signal });
   if (!response.ok) throw new Error(filename + " respondió HTTP " + response.status + ".");
   if (!response.body) throw new Error("El navegador no permitió leer " + filename + ".");
-  const text = await new Response(
-    response.body.pipeThrough(new DecompressionStream("gzip"))
-  ).text();
-  return parseJsonl(text, filename);
+  const reader = response.body
+    .pipeThrough(new DecompressionStream("gzip"))
+    .pipeThrough(new TextDecoderStream())
+    .getReader();
+  let tail = "";
+  let lineNumber = 0;
+  let documents = [];
+  function parseLine(line) {
+    lineNumber += 1;
+    if (!line) return;
+    try {
+      documents.push(JSON.parse(line, reviveExtendedJson));
+    } catch (error) {
+      throw new Error("Línea " + lineNumber + " de " + filename + " ilegible: " + error.message);
+    }
+  }
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const lines = (tail + value).split("\n");
+      tail = lines.pop();
+      for (const line of lines) {
+        parseLine(line);
+        if (documents.length >= LOAD_BATCH_SIZE) {
+          yield documents;
+          documents = [];
+        }
+      }
+    }
+    parseLine(tail);
+    if (documents.length) yield documents;
+  } finally {
+    reader.cancel().catch(function () {});
+  }
 }
 
 function renderSchemaSource() {
@@ -517,36 +544,86 @@ function openGraphEngine() {
   };
 }
 
-async function buildGraph(documents) {
-  setStatus("Cargando el motor y creando el esquema del grafo", "loading");
-  await yieldToBrowser();
-  destroyGraphs();
-  resultStates.clear();
-  document.querySelectorAll(".result").forEach(function (result) {
-    result.replaceChildren();
-  });
-  closeGraphDatabase();
+// Construye el grafo a medida que llegan los datos. Cada fichero se lee por
+// lotes y cada lote de nodos se envía al motor sin esperar a que termine la
+// descarga ni a los otros ficheros; el motor se abre mientras tanto. Las
+// relaciones salen de los mismos documentos, pero necesitan todos los nodos y sus
+// índices: sus filas se guardan y se envían al final, tras las restricciones.
+// `readers` asocia cada fichero de SOURCE_FILES con una función que devuelve sus
+// lotes de documentos.
+async function buildGraph(readers) {
   graphEngine = openGraphEngine();
-  const version = await graphEngine.send("init", []);
+  const engine = graphEngine;
+  const opened = engine.send("init", []);
 
-  const steps = NODE_LOADS.length + 1 + RELATIONSHIP_LOADS.length;
-  let step = 0;
-  async function loadRows(entry) {
-    step += 1;
-    const rows = entry.rows(documents);
+  const reading = new Map(SOURCE_FILES.map(function (name) { return [name, 0]; }));
+  let loadingText = "";
+  function report() {
+    const parts = [];
+    if (reading.size) {
+      parts.push("Leyendo " + Array.from(reading, function ([name, rows]) {
+        return name + " (" + formatCount(rows) + ")";
+      }).join(", "));
+    }
+    parts.push(loadingText || "Abriendo el motor de grafos");
+    setStatus(parts.join(" · "), "loading");
+  }
+  report();
+
+  async function sendRows(entry, rows) {
+    await opened;
     for (let start = 0; start < rows.length; start += LOAD_BATCH_SIZE) {
-      setStatus("Cargando " + entry.label + " (" + step + "/" + steps + ") · "
-        + formatCount(start) + " de " + formatCount(rows.length), "loading");
-      await yieldToBrowser();
-      await graphEngine.send("load", { statement: entry.statement, rows: rows.slice(start, start + LOAD_BATCH_SIZE) });
+      await engine.send("load", { statement: entry.statement, rows: rows.slice(start, start + LOAD_BATCH_SIZE) });
     }
   }
-  for (const entry of NODE_LOADS) await loadRows(entry);
-  step += 1;
-  setStatus("Creando las restricciones de unicidad (" + step + "/" + steps + ")", "loading");
+
+  const relationshipRows = new Map(RELATIONSHIP_LOADS.map(function (entry) { return [entry, []]; }));
+  async function ingestCollection(name) {
+    const pending = [];
+    let read = 0;
+    for await (const documents of readers[name]()) {
+      read += documents.length;
+      reading.set(name, read);
+      const { nodes, relationships } = rowsForBatch(name, documents);
+      nodes.forEach(function ({ entry, rows }) {
+        loadingText = "Cargando " + entry.label + " · " + formatCount(read) + " filas";
+        const sent = sendRows(entry, rows);
+        sent.catch(function () {});
+        pending.push(sent);
+      });
+      relationships.forEach(function ({ entry, rows }) {
+        const saved = relationshipRows.get(entry);
+        rows.forEach(function (row) { saved.push(row); });
+      });
+      report();
+      while (pending.length >= MAX_PENDING_BATCHES) await pending.shift();
+      await yieldToBrowser();
+    }
+    await Promise.all(pending);
+    reading.delete(name);
+    report();
+  }
+
+  // Promise.all falla en cuanto falla la apertura del motor, una lectura o una
+  // carga, sin esperar al resto.
+  const [version] = await Promise.all([opened, ...SOURCE_FILES.map(ingestCollection)]);
+
+  loadingText = "Creando las restricciones de unicidad";
+  report();
   await yieldToBrowser();
-  for (const statement of CONSTRAINT_STATEMENTS) await graphEngine.send("query", statement);
-  for (const entry of RELATIONSHIP_LOADS) await loadRows(entry);
+  for (const statement of CONSTRAINT_STATEMENTS) await engine.send("query", statement);
+
+  for (const entry of RELATIONSHIP_LOADS) {
+    const rows = relationshipRows.get(entry);
+    for (let start = 0; start < rows.length; start += LOAD_BATCH_SIZE) {
+      loadingText = "Cargando " + entry.label + " · "
+        + formatCount(start) + " de " + formatCount(rows.length);
+      report();
+      await yieldToBrowser();
+      await engine.send("load", { statement: entry.statement, rows: rows.slice(start, start + LOAD_BATCH_SIZE) });
+    }
+    relationshipRows.set(entry, []);
+  }
   return version;
 }
 
@@ -581,51 +658,56 @@ function updateDatasetToggleButton() {
     : "Usar muestra reducida (6,9 MB)";
 }
 
+function showEmptyResults(text) {
+  document.querySelectorAll(".result").forEach(function (result) {
+    result.replaceChildren();
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = text;
+    result.append(empty);
+  });
+}
+
+// Un lector por fichero de una fuente, que devuelve sus lotes de documentos. Los
+// ficheros se leen a la vez, cada uno al ritmo con que el motor consume sus lotes.
+function sourceReaders(base, variant, signal) {
+  const readers = {};
+  SOURCE_FILES.forEach(function (name) {
+    readers[name] = function () { return readCollection(base, name, variant, signal); };
+  });
+  return readers;
+}
+
 async function loadEverything(variant) {
   if (loading) return;
   const targetVariant = variant || activeDataVariant || "full";
   const target = DATA_VARIANTS[targetVariant];
-  const releasedForVariantChange = Boolean(activeDataVariant && activeDataVariant !== targetVariant);
   requestedDataVariant = targetVariant;
   loading = true;
   loadRemoteButton.disabled = true;
   toggleDatasetButton.disabled = true;
   const failures = [];
-  let graphBuildStarted = false;
+  // La descarga y la carga se solapan, así que el grafo anterior se cierra antes
+  // de empezar: dos grafos completos a la vez no caben en la memoria del navegador.
+  destroyGraphs();
+  resultStates.clear();
+  closeGraphDatabase();
+  activeDataVariant = null;
+  collectionListEl.replaceChildren();
+  showEmptyResults("Cargando el conjunto de datos…");
   try {
-    if (releasedForVariantChange) {
-      destroyGraphs();
-      resultStates.clear();
-      closeGraphDatabase();
-      activeDataVariant = null;
-      collectionListEl.replaceChildren();
-      document.querySelectorAll(".result").forEach(function (result) {
-        result.replaceChildren();
-        const empty = document.createElement("p");
-        empty.className = "empty";
-        empty.textContent = "Cargando el nuevo conjunto de datos…";
-        result.append(empty);
-      });
-      setStatus("Liberando el grafo anterior", "loading");
-      await yieldToBrowser();
-    }
+    setStatus("Liberando el grafo anterior", "loading");
+    await yieldToBrowser();
     messageEl.textContent = "Descargando " + target.name + " y construyendo el grafo en el navegador.";
     if (typeof DecompressionStream === "undefined") {
       throw new Error("Este navegador no ofrece DecompressionStream, necesario para leer los ficheros .gz.");
     }
     for (let index = 0; index < DATA_SOURCES.length; index += 1) {
       const source = DATA_SOURCES[index];
+      const attempt = new AbortController();
       try {
         const started = performance.now();
-        const documents = {};
-        for (let fileIndex = 0; fileIndex < SOURCE_FILES.length; fileIndex += 1) {
-          const name = SOURCE_FILES[fileIndex];
-          setStatus("Descargando " + name + " (" + (fileIndex + 1) + "/" + SOURCE_FILES.length + ")", "loading");
-          await yieldToBrowser();
-          documents[name] = await fetchCollection(source.base, name, targetVariant);
-        }
-        graphBuildStarted = true;
-        const version = await buildGraph(documents);
+        const version = await buildGraph(sourceReaders(source.base, targetVariant, attempt.signal));
         const counts = await graphCounts();
         renderCounts(counts);
         activeDataVariant = targetVariant;
@@ -635,35 +717,25 @@ async function loadEverything(variant) {
         setStatus(target.readyLabel + " · " + formatCount(nodes) + " nodos y " + formatCount(edges) + " relaciones · Grafeo " + version, "ready");
         messageEl.textContent = "Construido con " + target.name + " desde " + source.label + " en "
           + ((performance.now() - started) / 1000).toFixed(1) + " s.";
-        document.querySelectorAll(".result").forEach(function (result) {
-          result.replaceChildren();
-          const empty = document.createElement("p");
-          empty.className = "empty";
-          empty.textContent = "Grafo cargado. Ejecuta la consulta para ver el resultado.";
-          result.append(empty);
-        });
+        showEmptyResults("Grafo cargado. Ejecuta la consulta para ver el resultado.");
         return;
       } catch (error) {
+        // Cancela las descargas que sigan en curso y descarta el grafo a medias.
+        attempt.abort();
+        closeGraphDatabase();
         failures.push(source.label + ": " + error.message);
       }
     }
     throw new Error(failures.join(" | "));
   } catch (error) {
-    if (graphBuildStarted) {
-      destroyGraphs();
-      resultStates.clear();
-      closeGraphDatabase();
-      activeDataVariant = null;
-      collectionListEl.replaceChildren();
-    }
+    destroyGraphs();
+    resultStates.clear();
+    closeGraphDatabase();
+    activeDataVariant = null;
+    collectionListEl.replaceChildren();
     setStatus("No se pudo construir el grafo", "error");
     messageEl.textContent = "No se pudo descargar " + target.name + " o construir el grafo."
-      + (activeDataVariant
-        ? " Se mantiene el conjunto anterior."
-        : releasedForVariantChange
-          ? " El conjunto anterior se liberó al cambiar de tamaño."
-          : " No quedó un grafo activo.")
-      + " Puedes reintentar la misma carga. Detalle: " + error.message;
+      + " No quedó un grafo activo. Puedes reintentar la misma carga. Detalle: " + error.message;
   } finally {
     loading = false;
     loadRemoteButton.disabled = false;
