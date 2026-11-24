@@ -10,15 +10,19 @@
 #   NEO4J_BOLT_URL=<URL Bolt pública>               (sólo si se abre el túnel)
 # Si el túnel no se abre, se imprime una línea "[AVISO] ...".
 #
-# Con BDGE_SIN_TUNEL no vacía (el colab-check del CI la define) no se descarga
-# frpc ni se abre el túnel: en el CI no sirve para nada y la descarga del
-# binario de frp como root hace saltar el EDR del runner.
+# El túnel necesita la clave del curso, que cambia cada año y se da en clase: el
+# cuaderno la pasa en la variable de entorno BDGE_CLAVE_TUNEL. Sin ella no se
+# descarga frpc ni se abre el túnel.
+#
+# Con BDGE_SIN_TUNEL no vacía (el colab-check del CI la define) tampoco se abre:
+# en el CI no sirve para nada y la descarga del binario de frp como root hace
+# saltar el EDR del runner.
 
 FRP_VERSION="0.72.0"
 FRP_SERVER="dsevilla-proxy.inf.um.es"
 FRP_SERVER_PORT="8080"
-# Debe coincidir con auth.token de frps.toml. No es un secreto (ver frps.toml).
-FRP_TOKEN="bdge-neo4j"
+# Debe coincidir con la clave del servidor frps (repositorio privado).
+FRP_TOKEN="${BDGE_CLAVE_TUNEL:-}"
 
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y ca-certificates gnupg default-jre-headless
@@ -142,8 +146,10 @@ print(puertos["http"], puertos["bolt"])
 
 if [ -n "${BDGE_SIN_TUNEL:-}" ]; then
   echo "[AVISO] BDGE_SIN_TUNEL definida: no se abre el túnel frp; Neo4j Browser no será accesible desde fuera, pero la conexión Bolt local funciona."
+elif [ -z "$FRP_TOKEN" ]; then
+  echo "[AVISO] Falta la clave del túnel (CLAVE_TUNEL en el cuaderno): no se abre el túnel frp; Neo4j Browser no será accesible desde fuera, pero la conexión Bolt local funciona."
 elif ! abrir_tunel; then
   [ -n "${frpc_pid:-}" ] && kill "$frpc_pid" 2>/dev/null
   tail -n 20 frpc.log 2>/dev/null >&2 || true
-  echo "[AVISO] No se pudo contactar con el proxy frp; Neo4j Browser no será accesible desde fuera, pero la conexión Bolt local funciona."
+  echo "[AVISO] No se pudo abrir el túnel frp (¿clave del túnel incorrecta o servidor inalcanzable? ver frpc.log arriba); Neo4j Browser no será accesible desde fuera, pero la conexión Bolt local funciona."
 fi
