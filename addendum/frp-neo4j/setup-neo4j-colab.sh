@@ -9,6 +9,10 @@
 #   NEO4J_HTTP_URL=<URL pública de Neo4j Browser>   (sólo si se abre el túnel)
 #   NEO4J_BOLT_URL=<URL Bolt pública>               (sólo si se abre el túnel)
 # Si el túnel no se abre, se imprime una línea "[AVISO] ...".
+#
+# Con BDGE_SIN_TUNEL no vacía (el colab-check del CI la define) no se descarga
+# frpc ni se abre el túnel: en el CI no sirve para nada y la descarga del
+# binario de frp como root hace saltar el EDR del runner.
 
 FRP_VERSION="0.72.0"
 FRP_SERVER="dsevilla-proxy.inf.um.es"
@@ -136,7 +140,9 @@ print(puertos["http"], puertos["bolt"])
     "$FRP_SERVER" "$http_port" "$FRP_SERVER" "$bolt_port"
 }
 
-if ! abrir_tunel; then
+if [ -n "${BDGE_SIN_TUNEL:-}" ]; then
+  echo "[AVISO] BDGE_SIN_TUNEL definida: no se abre el túnel frp; Neo4j Browser no será accesible desde fuera, pero la conexión Bolt local funciona."
+elif ! abrir_tunel; then
   [ -n "${frpc_pid:-}" ] && kill "$frpc_pid" 2>/dev/null
   tail -n 20 frpc.log 2>/dev/null >&2 || true
   echo "[AVISO] No se pudo contactar con el proxy frp; Neo4j Browser no será accesible desde fuera, pero la conexión Bolt local funciona."

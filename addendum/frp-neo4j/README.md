@@ -38,6 +38,11 @@ y la URL Bolt pública (`NEO4J_HTTP_URL=...` y `NEO4J_BOLT_URL=...`). Si el
 túnel no se abre, imprime una línea `[AVISO]` y
 la conexión local por Bolt sigue funcionando.
 
+Con la variable de entorno `BDGE_SIN_TUNEL` no vacía, el script no descarga
+`frpc` ni abre el túnel, e imprime también un `[AVISO]`. La define el
+`colab-check` del CI: allí el túnel no sirve para nada, y descargar el binario
+de frp como root hizo saltar el EDR del runner.
+
 ## Actualizar frp
 
 La versión aparece en dos sitios, `docker-compose.yml` (etiqueta de la imagen)
