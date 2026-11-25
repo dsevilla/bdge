@@ -16,8 +16,7 @@ export const page = {
       id: "poblar-interes",
       title: "MERGE para no duplicar",
       prompt: "Vas a derivar los intereses de cada usuario a partir de las etiquetas de sus preguntas. Crea la relación INTERESTED_IN, de :User a :Tag, con una propiedad preguntas que guarde cuántas preguntas ha escrito sobre esa etiqueta. Usa MERGE, que crea la relación sólo si no existe, y SET para dejar el contador. Termina devolviendo cuántas relaciones han quedado. Tarda un poco: recorre todo el grafo.",
-      solution: `MATCH (u:User)-[:WROTE]->(p:Post)-[:TAGGED_WITH]->(t:Tag)
-WHERE p.PostTypeId = 1
+      solution: `MATCH (u:User)-[:WROTE]->(:Question)-[:TAGGED_WITH]->(t:Tag)
 WITH u, t, count(*) AS preguntas
 MERGE (u)-[i:INTERESTED_IN]->(t)
 SET i.preguntas = preguntas
@@ -36,9 +35,9 @@ LIMIT 10`
     {
       id: "interes-sin-derivada",
       title: "El mismo resultado sin la relación derivada",
-      prompt: "INTERESTED_IN abarata la consulta anterior, pero alguien tiene que mantenerla al día. Calcula lo mismo sin ella: recorre (:User)-[:WROTE]->(:Post)-[:TAGGED_WITH]->(:Tag), cuenta las preguntas (PostTypeId = 1) de cada usuario sobre «python» (agrupa por usuario, no por nombre: hay nombres repetidos) y devuelve los diez primeros con su nombre y su recuento, desempatando por nombre. Debe coincidir con el ejercicio anterior: aquí no hay nada que mantener, a cambio de repetir el recorrido en cada consulta.",
-      solution: `MATCH (u:User)-[:WROTE]->(p:Post)-[:TAGGED_WITH]->(t:Tag)
-WHERE p.PostTypeId = 1 AND t.TagName = 'python'
+      prompt: "INTERESTED_IN abarata la consulta anterior, pero alguien tiene que mantenerla al día. Calcula lo mismo sin ella: recorre (:User)-[:WROTE]->(:Question)-[:TAGGED_WITH]->(:Tag), cuenta las preguntas de cada usuario sobre «python» (agrupa por usuario, no por nombre: hay nombres repetidos) y devuelve los diez primeros con su nombre y su recuento, desempatando por nombre. Debe coincidir con el ejercicio anterior: aquí no hay nada que mantener, a cambio de repetir el recorrido en cada consulta.",
+      solution: `MATCH (u:User)-[:WROTE]->(:Question)-[:TAGGED_WITH]->(t:Tag)
+WHERE t.TagName = 'python'
 WITH u, count(*) AS preguntas
 RETURN u.DisplayName AS usuario, preguntas
 ORDER BY preguntas DESC, usuario
@@ -120,11 +119,11 @@ RETURN n`
     },
     {
       id: "modelar-pregunta-respuesta",
-      title: "Preguntas y respuestas en el mismo tipo de nodo",
-      prompt: "Preguntas y respuestas son nodos :Post y se distinguen por la propiedad PostTypeId (1 pregunta, 2 respuesta), como en el dump. Comprueba el reparto: cuenta las publicaciones por PostTypeId, en orden ascendente.",
+      title: "Preguntas y respuestas: una propiedad y dos etiquetas",
+      prompt: "En el dump, preguntas y respuestas son publicaciones que se distinguen por PostTypeId (1 pregunta, 2 respuesta). En el grafo todas son :Post, y la carga ha añadido a partir de esa propiedad la etiqueta :Question o :Answer, como en el boletín, para poder escribir (:Question) en un patrón. Comprueba que concuerdan: cuenta las publicaciones por PostTypeId y por combinación de etiquetas (labels(p)), ordenando por tipo. Verás también tipos que no son ni lo uno ni lo otro y se quedan sólo con :Post.",
       solution: `MATCH (p:Post)
-RETURN p.PostTypeId AS tipo, count(*) AS publicaciones
-ORDER BY tipo`
+RETURN p.PostTypeId AS tipo, labels(p) AS etiquetas, count(*) AS publicaciones
+ORDER BY tipo, etiquetas`
     }
   ]
 };

@@ -345,15 +345,18 @@
         Como en Neo4j, no hay que declarar nada antes de crear nodos: el esquema es opcional y cada nodo lleva
         sus propiedades consigo. Las etiquetas, los tipos de relación y las propiedades existen en cuanto se usan
         por primera vez, y un nodo puede tener varias etiquetas (<code>SET u:Experto</code> le añade una).
-        Aquí la distinción pregunta/respuesta va en la propiedad <code>PostTypeId</code> (1 pregunta, 2 respuesta),
-        como en el <em>dump</em> original, y no en una etiqueta.
+        Es el mismo grafo que construye el boletín de la sesión 7: cada post conserva las propiedades del documento
+        que lo enlazan con los demás (<code>OwnerUserId</code>, <code>ParentId</code>, <code>AcceptedAnswerId</code> y
+        <code>Tags</code>) y, a partir de ellas, se añaden las etiquetas <code>:Question</code> y <code>:Answer</code>
+        según <code>PostTypeId</code> (1 pregunta, 2 respuesta) y se crean las relaciones.
       </p>
       <p>
         La carga sigue el orden de una carga masiva en Neo4j. Primero se crean los nodos con
         <code>UNWIND</code> sobre una lista de mapas, <code>$filas</code>, que la página prepara a partir del JSONL.
         Después se crean las <strong>restricciones de unicidad</strong> de cada clave, que construyen su índice.
-        Al final se crean las relaciones: cada fila busca sus dos extremos por esos índices con <code>MATCH</code>
-        y los une con <code>CREATE</code>. Sin el índice, cada búsqueda recorrería todos los nodos de la etiqueta.
+        Al final, las sentencias del boletín derivan dentro del grafo las etiquetas y las relaciones: cada post busca
+        con <code>MERGE</code> o <code>MATCH</code> el nodo al que apunta su propiedad, por esos índices, y los une con
+        <code>MERGE</code>. Sin el índice, cada búsqueda recorrería todos los nodos de la etiqueta.
         Las fechas se convierten con <code>datetime()</code>, así que <code>p.CreationDate.year</code> funciona
         como en el boletín.
       </p>
@@ -366,16 +369,16 @@
         </thead>
         <tbody>
           <tr><td><code>Users</code></td><td>nodo <code>(:User)</code>, identificado por <code>Id</code></td></tr>
-          <tr><td><code>Posts</code></td><td>nodo <code>(:Post)</code>, con <code>PostTypeId</code> para distinguir pregunta de respuesta</td></tr>
+          <tr><td><code>Posts</code></td><td>nodo <code>(:Post)</code> que conserva <code>OwnerUserId</code>, <code>ParentId</code>, <code>AcceptedAnswerId</code> y <code>Tags</code>; además <code>:Question</code> si <code>PostTypeId</code> es 1 y <code>:Answer</code> si es 2</td></tr>
           <tr><td><code>Tags</code></td><td>nodo <code>(:Tag)</code>, identificado por <code>TagName</code></td></tr>
-          <tr><td><code>Posts.OwnerUserId</code></td><td><code>(:User)-[:WROTE]-&gt;(:Post)</code></td></tr>
-          <tr><td><code>Posts.ParentId</code></td><td><code>(:Post)-[:ANSWERS]-&gt;(:Post)</code></td></tr>
-          <tr><td><code>Posts.Tags</code> («<code>&lt;una&gt;&lt;otra&gt;</code>»)</td><td><code>(:Post)-[:TAGGED_WITH]-&gt;(:Tag)</code></td></tr>
+          <tr><td><code>Posts.OwnerUserId</code></td><td><code>(:User)-[:WROTE {CreationDate}]-&gt;(:Post)</code></td></tr>
+          <tr><td><code>Posts.ParentId</code></td><td><code>(:Answer)-[:ANSWERS]-&gt;(:Question)</code></td></tr>
+          <tr><td><code>Posts.Tags</code> («<code>&lt;una&gt;&lt;otra&gt;</code>»)</td><td><code>(:Question)-[:TAGGED_WITH]-&gt;(:Tag)</code> y la inversa <code>(:Tag)-[:TAGS]-&gt;(:Question)</code></td></tr>
         </tbody>
       </table>
       <details class="schema-details">
         <summary>Ver las sentencias que se acaban de ejecutar</summary>
-        <p class="connection-result">Esto es literalmente lo que corre la página al cargar, y funciona igual en Neo4j. Las sentencias con <code>$filas</code> necesitan ese parámetro, así que no se pueden pegar tal cual en un editor de abajo; las restricciones sí (<code>SHOW INDEXES</code> lista los índices que crean).</p>
+        <p class="connection-result">Esto es literalmente lo que corre la página al cargar, y funciona igual en Neo4j. Las sentencias con <code>$filas</code> necesitan ese parámetro, así que no se pueden pegar tal cual en un editor de abajo; las restricciones y las derivaciones sí (<code>SHOW INDEXES</code> lista los índices que crean).</p>
         <pre id="schema-source" class="cypher-block">…</pre>
       </details>
     </section>

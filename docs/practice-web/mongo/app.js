@@ -9,21 +9,25 @@ import { translatePythonQuery } from "./pymongo-compat.js";
 const MINGO_URL = "https://cdn.jsdelivr.net/npm/mingo@7.2.4/+esm";
 const COLLECTION_NAMES = ["Posts", "Users", "Comments", "Votes", "Tags"];
 // Los assets de una release de GitHub no envían cabeceras CORS, así que la
-// página lee la copia versionada en el repositorio, que sí las envía.
+// página lee la copia versionada en el repositorio, que sí las envía. jsDelivr va
+// segunda: responde 403 con Posts.jsonl.gz y Comments.jsonl.gz completos, que
+// pasan de su límite de tamaño.
 const DATA_SOURCES = [
-  {
-    label: "jsDelivr",
-    base: "https://cdn.jsdelivr.net/gh/dsevilla/bd2-data@main/es.stackoverflow/jsonl"
-  },
   {
     label: "raw.githubusercontent.com",
     base: "https://raw.githubusercontent.com/dsevilla/bd2-data/main/es.stackoverflow/jsonl"
+  },
+  {
+    label: "jsDelivr",
+    base: "https://cdn.jsdelivr.net/gh/dsevilla/bd2-data@main/es.stackoverflow/jsonl"
   }
 ];
 const DATA_VARIANTS = {
   full: { name: "el conjunto completo", readyLabel: "Datos completos cargados" },
   sample: { name: "la muestra reducida", readyLabel: "Muestra reducida cargada" }
 };
+// Documentos de cada lote al leer un JSONL; entre lote y lote la página repinta.
+const LOAD_BATCH_SIZE = 10000;
 const RESULT_PAGE_SIZE = 25;
 const MAX_TEXT_LENGTH = 1000;
 const DATE_SENTINEL = "\u0000datetime\u0000";
@@ -66,18 +70,6 @@ function hasPythonCodeMirror() {
 function setStatus(message, kind) {
   statusEl.textContent = message;
   statusEl.className = "status " + kind;
-}
-
-function formatBytes(bytes) {
-  if (bytes < 1024) return bytes + " B";
-  const units = ["KB", "MB", "GB", "TB"];
-  let value = bytes / 1024;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  return value.toFixed(value < 10 ? 1 : 0) + " " + units[unit];
 }
 
 function formatCount(value) {
@@ -383,61 +375,90 @@ function reviveExtendedJson(key, value) {
   return value;
 }
 
-function parseJsonl(text, label) {
-  const documents = [];
-  const lines = text.split("\n");
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (!line) continue;
+function yieldToBrowser() {
+  return new Promise(function (resolve) { window.setTimeout(resolve, 0); });
+}
+
+// Lee un JSONL por lotes de LOAD_BATCH_SIZE documentos a medida que llega, sin
+// guardar nunca el texto entero: en memoria sólo quedan los documentos.
+async function* readJsonl(stream, label) {
+  const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
+  let tail = "";
+  let lineNumber = 0;
+  let documents = [];
+  function parseLine(line) {
+    lineNumber += 1;
+    if (!line) return;
     try {
       documents.push(JSON.parse(line, reviveExtendedJson));
     } catch (error) {
-      throw new Error("Línea " + (index + 1) + " de " + label + " ilegible: " + error.message);
+      throw new Error("Línea " + lineNumber + " de " + label + " ilegible: " + error.message);
     }
   }
-  return documents;
-}
-
-async function streamToText(stream, label) {
-  let total = 0;
-  let lastUpdate = 0;
-  const countedStream = stream.pipeThrough(new TransformStream({
-    transform: function (chunk, controller) {
-      total += chunk.byteLength;
-      const now = performance.now();
-      if (now - lastUpdate > 250) {
-        setStatus(label + " · " + formatBytes(total) + " descomprimidos", "loading");
-        lastUpdate = now;
-      }
-      controller.enqueue(chunk);
-    }
-  }));
   try {
-    return await new Response(countedStream).text();
-  } catch (error) {
-    throw new Error(label + " falló tras producir " + formatBytes(total) + " descomprimidos ("
-      + error.name + ": " + error.message + ").");
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const lines = (tail + value).split("\n");
+      tail = lines.pop();
+      for (const line of lines) {
+        parseLine(line);
+        if (documents.length >= LOAD_BATCH_SIZE) {
+          yield documents;
+          documents = [];
+        }
+      }
+    }
+    parseLine(tail);
+    if (documents.length) yield documents;
+  } finally {
+    reader.cancel().catch(function () {});
   }
 }
 
-async function fetchCollection(base, name, variant) {
+async function* readRemoteCollection(base, name, variant, signal) {
   const filename = name + (variant === "sample" ? "-sample" : "") + ".jsonl.gz";
-  const url = base + "/" + filename;
-  const response = await fetch(url, { mode: "cors" });
+  const response = await fetch(base + "/" + filename, { mode: "cors", signal });
   if (!response.ok) throw new Error(filename + " respondió HTTP " + response.status + ".");
   if (!response.body) throw new Error("El navegador no permitió leer " + filename + ".");
-  const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
-  return parseJsonl(await streamToText(stream, "Descargando " + name), filename);
+  yield* readJsonl(response.body.pipeThrough(new DecompressionStream("gzip")), filename);
 }
 
-async function loadFromSource(source, variant) {
+// Lee a la vez todas las colecciones de `readers`, que asocia cada nombre con una
+// función que devuelve sus lotes de documentos. Promise.all falla en cuanto falla
+// una lectura, sin esperar al resto.
+async function readCollections(readers) {
   const loaded = {};
-  for (let index = 0; index < COLLECTION_NAMES.length; index += 1) {
-    const name = COLLECTION_NAMES[index];
-    setStatus("Descargando " + name + " (" + (index + 1) + "/" + COLLECTION_NAMES.length + ")", "loading");
-    loaded[name] = await fetchCollection(source.base, name, variant);
+  const reading = new Map(Object.keys(readers).map(function (name) { return [name, 0]; }));
+  function report() {
+    setStatus("Leyendo " + Array.from(reading, function ([name, count]) {
+      return name + " (" + formatCount(count) + ")";
+    }).join(", "), "loading");
   }
+  report();
+  await Promise.all(Object.keys(readers).map(async function (name) {
+    const documents = [];
+    for await (const batch of readers[name]()) {
+      for (const document of batch) documents.push(document);
+      reading.set(name, documents.length);
+      report();
+      await yieldToBrowser();
+    }
+    reading.delete(name);
+    if (reading.size) report();
+    loaded[name] = documents;
+  }));
   return loaded;
+}
+
+// Un lector por colección de una fuente remota; todos comparten `signal`, que
+// cancela las descargas pendientes si una falla.
+function remoteReaders(base, variant, signal) {
+  const readers = {};
+  COLLECTION_NAMES.forEach(function (name) {
+    readers[name] = function () { return readRemoteCollection(base, name, variant, signal); };
+  });
+  return readers;
 }
 
 function createDemoCollections() {
@@ -764,9 +785,10 @@ async function loadRemoteData(variant) {
     }
     for (let index = 0; index < DATA_SOURCES.length; index += 1) {
       const source = DATA_SOURCES[index];
+      const attempt = new AbortController();
       try {
         const started = performance.now();
-        const loaded = await loadFromSource(source, targetVariant);
+        const loaded = await readCollections(remoteReaders(source.base, targetVariant, attempt.signal));
         const total = COLLECTION_NAMES.reduce(function (sum, name) { return sum + loaded[name].length; }, 0);
         activeDataVariant = targetVariant;
         activeDataLabel = target.readyLabel + " · " + formatCount(total) + " documentos";
@@ -776,6 +798,8 @@ async function loadRemoteData(variant) {
           + ((performance.now() - started) / 1000).toFixed(1) + " s.";
         return;
       } catch (error) {
+        // Cancela las descargas que sigan en curso antes de probar otra fuente.
+        attempt.abort();
         failures.push(source.label + ": " + error.message);
       }
     }
@@ -803,10 +827,9 @@ async function loadLocalFiles(files) {
   if (!files || !files.length || !mingo || loading) return;
   loading = true;
   setLoadingControls(true);
-  const loaded = {};
   try {
-    for (let index = 0; index < files.length; index += 1) {
-      const file = files[index];
+    const readers = {};
+    Array.from(files).forEach(function (file) {
       const name = COLLECTION_NAMES.find(function (candidate) {
         return file.name.toLowerCase().startsWith(candidate.toLowerCase() + ".jsonl");
       });
@@ -814,12 +837,14 @@ async function loadLocalFiles(files) {
         throw new Error("No reconozco el fichero " + file.name
           + "; usa los nombres publicados (Posts.jsonl.gz, Users.jsonl.gz, …).");
       }
-      setStatus("Leyendo " + file.name, "loading");
-      const text = file.name.toLowerCase().endsWith(".gz")
-        ? await streamToText(file.stream().pipeThrough(new DecompressionStream("gzip")), "Leyendo " + file.name)
-        : await file.text();
-      loaded[name] = parseJsonl(text, file.name);
-    }
+      readers[name] = function () {
+        const stream = file.name.toLowerCase().endsWith(".gz")
+          ? file.stream().pipeThrough(new DecompressionStream("gzip"))
+          : file.stream();
+        return readJsonl(stream, file.name);
+      };
+    });
+    const loaded = await readCollections(readers);
     const missing = COLLECTION_NAMES.filter(function (name) { return !loaded[name]; });
     missing.forEach(function (name) { loaded[name] = []; });
     const total = COLLECTION_NAMES.reduce(function (sum, name) { return sum + loaded[name].length; }, 0);

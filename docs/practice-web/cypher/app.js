@@ -4,8 +4,8 @@ import {
   nodeLabels, pathNodes, relationshipType
 } from "./graph-result.mjs";
 import {
-  CONSTRAINT_STATEMENTS, LOAD_BATCH_SIZE, NODE_LOADS, RELATIONSHIP_LOADS, reviveExtendedJson,
-  rowsForBatch
+  CONSTRAINT_STATEMENTS, DERIVED_STATEMENTS, LOAD_BATCH_SIZE, NODE_LOADS, nodeRowsForBatch,
+  reviveExtendedJson
 } from "./graph-load.mjs";
 "use strict";
 /*
@@ -495,8 +495,8 @@ function renderSchemaSource() {
     + statements(NODE_LOADS)
     + "\n\n// 2. Restricciones de unicidad: crean el índice de cada clave\n"
     + statements(CONSTRAINT_STATEMENTS)
-    + "\n\n// 3. Relaciones, buscando sus extremos por esos índices\n"
-    + statements(RELATIONSHIP_LOADS);
+    + "\n\n// 3. Etiquetas y relaciones, derivadas de las propiedades de cada post\n"
+    + statements(DERIVED_STATEMENTS);
   // Con CodeMirror y su addon runmode, el bloque se colorea con el mismo modo y
   // tema que los editores; si no cargaron, queda como texto plano.
   if (hasCypherCodeMirror() && typeof window.CodeMirror.runMode === "function") {
@@ -547,8 +547,8 @@ function openGraphEngine() {
 // Construye el grafo a medida que llegan los datos. Cada fichero se lee por
 // lotes y cada lote de nodos se envía al motor sin esperar a que termine la
 // descarga ni a los otros ficheros; el motor se abre mientras tanto. Las
-// relaciones salen de los mismos documentos, pero necesitan todos los nodos y sus
-// índices: sus filas se guardan y se envían al final, tras las restricciones.
+// etiquetas :Question/:Answer y las relaciones se derivan al final, tras las
+// restricciones, de las propiedades de los posts (DERIVED_STATEMENTS).
 // `readers` asocia cada fichero de SOURCE_FILES con una función que devuelve sus
 // lotes de documentos.
 async function buildGraph(readers) {
@@ -577,23 +577,17 @@ async function buildGraph(readers) {
     }
   }
 
-  const relationshipRows = new Map(RELATIONSHIP_LOADS.map(function (entry) { return [entry, []]; }));
   async function ingestCollection(name) {
     const pending = [];
     let read = 0;
     for await (const documents of readers[name]()) {
       read += documents.length;
       reading.set(name, read);
-      const { nodes, relationships } = rowsForBatch(name, documents);
-      nodes.forEach(function ({ entry, rows }) {
+      nodeRowsForBatch(name, documents).forEach(function ({ entry, rows }) {
         loadingText = "Cargando " + entry.label + " · " + formatCount(read) + " filas";
         const sent = sendRows(entry, rows);
         sent.catch(function () {});
         pending.push(sent);
-      });
-      relationships.forEach(function ({ entry, rows }) {
-        const saved = relationshipRows.get(entry);
-        rows.forEach(function (row) { saved.push(row); });
       });
       report();
       while (pending.length >= MAX_PENDING_BATCHES) await pending.shift();
@@ -613,16 +607,14 @@ async function buildGraph(readers) {
   await yieldToBrowser();
   for (const statement of CONSTRAINT_STATEMENTS) await engine.send("query", statement);
 
-  for (const entry of RELATIONSHIP_LOADS) {
-    const rows = relationshipRows.get(entry);
-    for (let start = 0; start < rows.length; start += LOAD_BATCH_SIZE) {
-      loadingText = "Cargando " + entry.label + " · "
-        + formatCount(start) + " de " + formatCount(rows.length);
-      report();
-      await yieldToBrowser();
-      await engine.send("load", { statement: entry.statement, rows: rows.slice(start, start + LOAD_BATCH_SIZE) });
-    }
-    relationshipRows.set(entry, []);
+  // Cada sentencia recorre el grafo entero en el motor; entre una y otra, la
+  // página repinta el progreso.
+  for (let index = 0; index < DERIVED_STATEMENTS.length; index += 1) {
+    const entry = DERIVED_STATEMENTS[index];
+    loadingText = "Creando " + entry.label + " (" + (index + 1) + "/" + DERIVED_STATEMENTS.length + ")";
+    report();
+    await yieldToBrowser();
+    await engine.send("query", entry.statement);
   }
   return version;
 }
@@ -630,7 +622,7 @@ async function buildGraph(readers) {
 async function graphCounts() {
   const queries = [
     ...["(:User)", "(:Post)", "(:Tag)"].map(function (label) { return [label, label]; }),
-    ...["[:WROTE]", "[:ANSWERS]", "[:TAGGED_WITH]"].map(function (label) {
+    ...["[:WROTE]", "[:ANSWERS]", "[:TAGGED_WITH]", "[:TAGS]"].map(function (label) {
       return [label, "()-" + label + "->()"];
     })
   ];

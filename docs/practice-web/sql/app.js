@@ -1,5 +1,5 @@
 import { PRACTICE_PAGES } from "./pages/index.js";
-import { createDatabase, openCursor, validateStatement, quoteIdentifier, quoteString } from "./engine.js";
+import { createDatabase, createParquetTables, openCursor, validateStatement } from "./engine.js";
 "use strict";
 const DATA_TABLES = ["Posts", "Users", "Tags", "Comments", "Votes"];
 const DATA_BASE = "https://raw.githubusercontent.com/dsevilla/bd2-data/main/es.stackoverflow/parquet/";
@@ -421,29 +421,21 @@ async function loadDataset(label, build) {
   }
 }
 
-async function createParquetDatabase(groups) {
-  const next = await createDatabase();
-  try {
-    for (let tableIndex = 0; tableIndex < groups.length; tableIndex += 1) {
-      const [table, files] = groups[tableIndex];
-      const paths = [];
-      for (let index = 0; index < files.length; index += 1) {
-        const file = files[index];
-        const path = typeof file === "string" ? file : table + "-" + index + ".parquet";
-        if (typeof file !== "string") await next.registerParquet(path, file);
-        paths.push(quoteString(path));
+// Los Parquet remotos se descargan todos a la vez mientras DuckDB materializa las
+// tablas de una en una (véase createParquetTables en engine.js).
+function createParquetDatabase(groups) {
+  return createParquetTables(createDatabase, groups, {
+    progress({ table, index, tables, downloaded, downloads }) {
+      const fetched = downloads ? " · " + downloaded + " de " + downloads + " Parquet descargados" : "";
+      if (!table) {
+        setStatus("Abriendo DuckDB" + fetched, "loading");
+        return;
       }
-      setStatus("Descargando y materializando " + table + " (" + (tableIndex + 1) + "/" + groups.length + ")", "loading");
-      messageEl.textContent = "DuckDB está leyendo " + paths.length + " fichero(s) Parquet de " + table
-        + " y creando la tabla local. Al terminar, las consultas usarán esta tabla en memoria.";
-      await next.connection.query("CREATE TABLE " + quoteIdentifier(table)
-        + " AS SELECT * FROM read_parquet([" + paths.join(", ") + "])");
+      setStatus("Materializando " + table + " (" + (index + 1) + "/" + tables + ")" + fetched, "loading");
+      messageEl.textContent = "DuckDB crea la tabla local " + table + " en cuanto llegan sus ficheros Parquet,"
+        + " mientras siguen descargándose los de las demás. Al terminar, las consultas usarán las tablas en memoria.";
     }
-    return next;
-  } catch (error) {
-    await next.close();
-    throw error;
-  }
+  });
 }
 
 async function loadRemoteDatabase() {
@@ -464,7 +456,8 @@ async function loadLocalFiles(files) {
     await loadDataset("Parquet locales", async () => {
       const groups = new Map();
       for (const file of files) {
-        const match = /^(Posts|Users|Tags|Comments|Votes)(?:-\d+)?\.parquet$/i.exec(file.name);
+        // Posts.parquet entero o en trozos (Posts1.parquet, Posts-2.parquet…).
+        const match = /^(Posts|Users|Tags|Comments|Votes)(?:-?\d+)?\.parquet$/i.exec(file.name);
         if (!match) throw new Error("Selecciona los Parquet de la release 26-27: Posts, Users, Tags, Comments y Votes.");
         const table = DATA_TABLES.find(name => name.toLowerCase() === match[1].toLowerCase());
         if (!groups.has(table)) groups.set(table, []);
@@ -473,7 +466,7 @@ async function loadLocalFiles(files) {
       for (const table of DATA_TABLES) {
         if (!groups.has(table)) throw new Error("Falta " + table + ".parquet. Selecciona juntos los cinco Parquet de la release 26-27.");
       }
-      return createParquetDatabase(groups);
+      return createParquetDatabase(DATA_TABLES.map(table => [table, groups.get(table)]));
     });
   } finally {
     localFileInput.value = "";

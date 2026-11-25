@@ -93,25 +93,33 @@ export function questionsFromJsonl(postsText, usersText, { year = SAMPLE_YEAR, m
     .sort((left, right) => left.preguntaid - right.preguntaid);
 }
 
-async function fetchText(base, filename, onProgress) {
-  const response = await fetch(`${base}/${filename}`, { mode: "cors" });
+async function fetchText(base, filename, signal) {
+  const response = await fetch(`${base}/${filename}`, { mode: "cors", signal });
   if (!response.ok) throw new Error(`${filename} respondió HTTP ${response.status}.`);
   if (!response.body) throw new Error(`El navegador no permitió leer ${filename}.`);
-  onProgress?.(`Descargando ${filename}…`);
   const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
   return new Response(stream).text();
 }
 
-/** Descarga Posts y Users de la muestra reducida y devuelve las preguntas del año. */
+/**
+ * Descarga Posts y Users de la muestra reducida y devuelve las preguntas del
+ * año. Los dos ficheros se piden a la vez; si uno falla, se cancela el otro y
+ * se prueba con la fuente siguiente.
+ */
 export async function loadRemoteQuestions(onProgress) {
   const errors = [];
   for (const source of DATA_SOURCES) {
+    const attempt = new AbortController();
     try {
-      const posts = await fetchText(source.base, "Posts-sample.jsonl.gz", onProgress);
-      const users = await fetchText(source.base, "Users-sample.jsonl.gz", onProgress);
+      onProgress?.(`Descargando Posts-sample y Users-sample desde ${source.label}…`);
+      const [posts, users] = await Promise.all([
+        fetchText(source.base, "Posts-sample.jsonl.gz", attempt.signal),
+        fetchText(source.base, "Users-sample.jsonl.gz", attempt.signal),
+      ]);
       onProgress?.("Preparando las preguntas…");
       return { questions: questionsFromJsonl(posts, users), source: source.label };
     } catch (error) {
+      attempt.abort();
       errors.push(`${source.label}: ${error.message}`);
     }
   }

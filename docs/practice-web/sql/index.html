@@ -301,7 +301,7 @@ SELECT * FROM read_parquet([
         <div><dt>Comments</dt><dd>Comments.parquet</dd></div>
         <div><dt>Votes</dt><dd>Votes.parquet</dd></div>
       </dl>
-      <p>La aplicación repite esa operación para las cinco tablas. Una vez cargadas, los ejercicios consultan <code>Posts</code>, <code>Users</code>, <code>Tags</code>, <code>Comments</code> y <code>Votes</code> dentro de DuckDB; cada consulta SQL usa esas tablas y no vuelve a leer ni descargar los Parquet. Se conservan en la memoria del navegador durante esta sesión: si recargas la página o eliges otra base, hay que cargarlos otra vez.</p>
+      <p>La aplicación repite esa operación para las cinco tablas. Para no esperar a la red tabla a tabla, descarga antes los siete ficheros a la vez y DuckDB lee cada copia en cuanto llega. Una vez cargadas, los ejercicios consultan <code>Posts</code>, <code>Users</code>, <code>Tags</code>, <code>Comments</code> y <code>Votes</code> dentro de DuckDB; cada consulta SQL usa esas tablas y no vuelve a leer ni descargar los Parquet. Se conservan en la memoria del navegador durante esta sesión: si recargas la página o eliges otra base, hay que cargarlos otra vez.</p>
     </section>
 
     <section class="database-panel" aria-labelledby="database-title">

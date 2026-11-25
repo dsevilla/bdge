@@ -30,6 +30,13 @@ export async function createDatabase() {
         // FileReader en el worker permite leer rangos sin copiar todo el fichero.
         await bindings.registerFileHandle(name, file, duckdb.DuckDBDataProtocol.BROWSER_FILEREADER, true);
       },
+      async registerBuffer(name, bytes) {
+        // Transfiere los bytes al worker: `bytes` queda vacío en esta página.
+        await bindings.registerFileBuffer(name, bytes);
+      },
+      async dropFile(name) {
+        await bindings.dropFile(name);
+      },
       async close() {
         try { await connection.close(); }
         finally { await bindings.terminate(); }
@@ -40,6 +47,75 @@ export async function createDatabase() {
     throw error;
   } finally {
     URL.revokeObjectURL(workerUrl);
+  }
+}
+
+async function downloadBytes(url, signal) {
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    throw new Error(decodeURIComponent(url.split("/").pop()) + " respondió HTTP " + response.status + ".");
+  }
+  return new Uint8Array(await response.arrayBuffer());
+}
+
+// Crea en una base nueva una tabla por cada grupo `[tabla, ficheros]`, a partir de
+// sus Parquet: una URL se descarga y un `File` local se lee en su sitio.
+//
+// Las descargas empiezan todas a la vez, antes incluso de abrir la base con
+// `open()`. DuckDB-Wasm sin hilos (Pages no envía COOP/COEP) ejecuta una sentencia
+// cada vez, así que las tablas se materializan de una en una y en orden, en cuanto
+// han llegado sus ficheros, mientras siguen llegando los de las demás. Cada fichero
+// se suelta en cuanto su tabla está creada. Si falla una descarga, se cancelan las
+// demás y se cierra la base a medias.
+//
+// `progress({ table, index, tables, downloaded, downloads })` informa de la tabla
+// que se materializa (null mientras se abre la base) y de cuántas descargas han
+// terminado.
+export async function createParquetTables(open, groups, { download = downloadBytes, progress = () => {} } = {}) {
+  const controller = new AbortController();
+  const downloads = new Map();
+  let downloaded = 0;
+  let failure = null;
+  let current = { table: null, index: 0, tables: groups.length };
+  const report = () => progress({ ...current, downloaded, downloads: downloads.size });
+  for (const [, files] of groups) {
+    for (const file of files) {
+      if (typeof file !== "string" || downloads.has(file)) continue;
+      const pending = download(file, controller.signal);
+      // El primer fallo cancela el resto sin esperar a que le llegue el turno, y
+      // es el que se informa, no el AbortError de las descargas canceladas.
+      pending.then(
+        () => { downloaded += 1; report(); },
+        error => { failure ??= error; controller.abort(); }
+      );
+      downloads.set(file, pending);
+    }
+  }
+  report();
+  let database = null;
+  try {
+    database = await open();
+    for (let index = 0; index < groups.length; index += 1) {
+      const [table, files] = groups[index];
+      current = { table, index, tables: groups.length };
+      report();
+      const paths = [];
+      for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
+        const file = files[fileIndex];
+        const path = table + "-" + fileIndex + ".parquet";
+        if (typeof file === "string") await database.registerBuffer(path, await downloads.get(file));
+        else await database.registerParquet(path, file);
+        paths.push(path);
+      }
+      await database.connection.query("CREATE TABLE " + quoteIdentifier(table)
+        + " AS SELECT * FROM read_parquet([" + paths.map(quoteString).join(", ") + "])");
+      for (const path of paths) await database.dropFile(path);
+    }
+    return database;
+  } catch (error) {
+    controller.abort();
+    if (database) await database.close();
+    throw error?.name === "AbortError" && failure ? failure : error;
   }
 }
 
