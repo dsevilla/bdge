@@ -5,12 +5,13 @@
  * escriben cambian el grafo y no tienen comprobación automática: el botón
  * «Reconstruir el grafo» del panel de arriba lo deja como estaba. Los ejercicios de
  * carga trabajan con etiquetas ajenas al curso (`PruebaCarga`, `RegistroUnico`) y
- * empiezan borrando lo suyo para poder repetirse.
+ * empiezan borrando lo suyo para poder repetirse; los dos de «¿CREATE o MERGE?»
+ * borran igual sus relaciones (ACCEPTED, ANSWERED).
  */
 export const page = {
   id: "escritura",
   title: "3 · Escritura y modelado",
-  description: "Una relación derivada, MERGE frente a CREATE, ON CREATE y ON MATCH, la carga con UNWIND, restricciones de unicidad y cómo se distinguen preguntas y respuestas.",
+  description: "Una relación derivada, MERGE frente a CREATE (y cuándo basta CREATE), ON CREATE y ON MATCH, la carga con UNWIND, restricciones de unicidad y cómo se distinguen preguntas y respuestas.",
   exercises: [
     {
       id: "poblar-interes",
@@ -94,6 +95,37 @@ ON MATCH SET n.cargas = n.cargas + 1
 SET n.visitas = visitas;
 MATCH (n:PruebaCarga {Id: 7})
 RETURN count(n) AS copias, n.visitas AS visitas, n.cargas AS cargas`
+    },
+    {
+      id: "create-o-merge-aceptada",
+      title: "¿CREATE o MERGE? Cuando cada par sale una sola vez",
+      prompt: "La carga de esta página crea WROTE, ANSWERS, TAGGED_WITH y TAGS con CREATE y no con MERGE (lo verás en «Cómo se ha creado este grafo»): de los datos sale cada par una sola vez, y MERGE perdería tiempo buscando una relación que no puede existir todavía. Crea ahora la relación ACCEPTED, de cada :Question a su respuesta aceptada (la :Answer cuyo Id es el AcceptedAnswerId de la pregunta), y elige tú entre CREATE y MERGE: ¿puede tu MATCH devolver dos veces la misma pareja de pregunta y respuesta? Devuelve cuántas relaciones has creado. La primera sentencia borra las ACCEPTED para que puedas repetir el ejercicio: sin ella, una segunda ejecución con CREATE las duplicaría todas, que es el precio de no buscar antes.",
+      solution: `MATCH ()-[r:ACCEPTED]->() DELETE r;
+// Una pregunta tiene un único AcceptedAnswerId: cada pareja sale una vez y
+// CREATE basta. Ejecutada dos veces sin el DELETE, duplicaría las relaciones.
+MATCH (q:Question)
+WHERE q.AcceptedAnswerId IS NOT NULL
+MATCH (a:Post {Id: q.AcceptedAnswerId})
+WHERE a:Answer
+CREATE (q)-[:ACCEPTED]->(a)
+RETURN count(*) AS aceptadas`
+    },
+    {
+      id: "create-o-merge-respondio",
+      title: "¿CREATE o MERGE? Cuando el mismo par se repite",
+      prompt: "Relaciona cada usuario con las preguntas que ha respondido, (:User)-[:ANSWERED]->(:Question), recorriendo (u:User)-[:WROTE]->(:Answer)-[:ANSWERS]->(q:Question). Vuelve a elegir entre CREATE y MERGE: ahora cada fila del MATCH es una respuesta, y un usuario puede responder más de una vez a la misma pregunta. Queremos una sola relación por usuario y pregunta. Termina devolviendo cuántas respuestas recorre el patrón y cuántas relaciones ANSWERED han quedado: la diferencia son las que CREATE habría duplicado. Como antes, la primera sentencia borra las ANSWERED para poder repetirlo. Tarda unos segundos: recorre todas las respuestas.",
+      solution: `MATCH ()-[r:ANSWERED]->() DELETE r;
+// El mismo (u, q) sale una vez por cada respuesta de u a q: CREATE lo
+// duplicaría. MERGE no, y además se puede repetir sin el DELETE. Otra opción
+// es agrupar antes (WITH DISTINCT u, q) y entonces sí basta CREATE. El MERGE
+// se escribe desde la pregunta, que tiene pocas relaciones: Grafeo busca la
+// existente entre las del primer nodo, y un usuario puede tener miles.
+MATCH (u:User)-[:WROTE]->(:Answer)-[:ANSWERS]->(q:Question)
+MERGE (q)<-[:ANSWERED]-(u);
+MATCH (:User)-[:WROTE]->(:Answer)-[:ANSWERS]->(:Question)
+WITH count(*) AS respuestas
+MATCH ()-[r:ANSWERED]->()
+RETURN respuestas, count(r) AS relaciones`
     },
     {
       id: "carga-con-unwind-y-nulos",

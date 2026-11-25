@@ -78,18 +78,23 @@ export const CONSTRAINT_STATEMENTS = [
 
 // Las etiquetas :Question y :Answer y las relaciones se derivan dentro del grafo
 // de las propiedades de cada post, con las mismas sentencias que
-// neo4j/sesion7.ipynb, salvo tres cambios que en Neo4j no alteran nada y en Grafeo
-// deciden si la sentencia termina antes de su límite de 30 s (medido el
+// neo4j/sesion7.ipynb, salvo dos cambios que en Neo4j no alteran el resultado y
+// en Grafeo deciden si la sentencia termina antes de su límite de 30 s (medido el
 // 2026-11-25 en Node con el grafo completo):
-// - MERGE escribe la relación desde el extremo con pocas relaciones,
-//   `(n)<-[r:WROTE]-(u)` y `(q)<-[:TAGS]-(t)`: Grafeo busca si ya existe
-//   recorriendo las del primer nodo, y un usuario o una etiqueta tienen miles.
-//   WROTE tardaba 25,5 s escrito como en el cuaderno y 7,3 s así; TAGS, 13,4 s
-//   frente a 2 s ya con la muestra.
+// - Las cuatro relaciones se crean con CREATE y no con MERGE, porque cada par sale
+//   una sola vez: un post tiene un único OwnerUserId, una respuesta un único
+//   ParentId, Tags no repite etiquetas en una misma pregunta y la carga parte del
+//   grafo vacío. MERGE busca antes si la relación ya existe, y Grafeo lo hace
+//   recorriendo las relaciones de un extremo, que en un usuario o una etiqueta son
+//   miles: WROTE tardaba 25,5 s escrito como en el cuaderno, 7,3 s con MERGE
+//   desde el post y 7,8 s con CREATE; TAGGED_WITH y TAGS, 14,9 s con MERGE desde
+//   la pregunta y 8,9 s con CREATE. Repetir una de estas sentencias duplicaría
+//   sus relaciones; la página y las pruebas siempre las ejecutan sobre un grafo
+//   nuevo.
 // - ANSWERS busca la pregunta como `(q:Post {Id: a.ParentId}) WHERE q:Question`
 //   y no como `(q:Question:Post {Id: a.ParentId})`: con dos etiquetas Grafeo no
 //   usa el índice de Post.Id y pasaba de los 30 s ya con la muestra.
-// Un MERGE que no encuentra el usuario de OwnerUserId lo crea, como en el
+// El MERGE que no encuentra el usuario de OwnerUserId lo crea, como en el
 // cuaderno; con estos datos todos existen.
 export const DERIVED_STATEMENTS = [
   {
@@ -107,7 +112,7 @@ SET n:Answer`
     statement: `MATCH (n:Post)
 WHERE n.OwnerUserId IS NOT NULL AND n.OwnerUserId > 0
 MERGE (u:User {Id: n.OwnerUserId})
-MERGE (n)<-[r:WROTE]-(u)
+CREATE (u)-[r:WROTE]->(n)
 SET r.CreationDate = n.CreationDate`
   },
   {
@@ -115,7 +120,7 @@ SET r.CreationDate = n.CreationDate`
     statement: `MATCH (a:Answer)
 MATCH (q:Post {Id: a.ParentId})
 WHERE q:Question
-MERGE (a)-[:ANSWERS]->(q)`
+CREATE (a)-[:ANSWERS]->(q)`
   },
   {
     label: "TAGGED_WITH y TAGS",
@@ -123,8 +128,8 @@ MERGE (a)-[:ANSWERS]->(q)`
 WHERE q.Tags IS NOT NULL AND size(q.Tags) > 2
 UNWIND split(substring(q.Tags, 1, size(q.Tags) - 2), '><') AS tag_name
 MERGE (t:Tag {TagName: tag_name})
-MERGE (q)-[:TAGGED_WITH]->(t)
-MERGE (q)<-[:TAGS]-(t)`
+CREATE (q)-[:TAGGED_WITH]->(t)
+CREATE (t)-[:TAGS]->(q)`
   }
 ];
 

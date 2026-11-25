@@ -356,7 +356,10 @@
         Después se crean las <strong>restricciones de unicidad</strong> de cada clave, que construyen su índice.
         Al final, las sentencias del boletín derivan dentro del grafo las etiquetas y las relaciones: cada post busca
         con <code>MERGE</code> o <code>MATCH</code> el nodo al que apunta su propiedad, por esos índices, y los une con
-        <code>MERGE</code>. Sin el índice, cada búsqueda recorrería todos los nodos de la etiqueta.
+        <code>CREATE</code>. Sin el índice, cada búsqueda recorrería todos los nodos de la etiqueta. El boletín los une
+        con <code>MERGE</code>, pero aquí cada par sale una sola vez de los datos y el grafo parte vacío, así que
+        <code>MERGE</code> sólo perdería tiempo buscando una relación que aún no existe; a cambio, ejecutar dos veces
+        una de esas sentencias duplicaría sus relaciones.
         Las fechas se convierten con <code>datetime()</code>, así que <code>p.CreationDate.year</code> funciona
         como en el boletín.
       </p>
