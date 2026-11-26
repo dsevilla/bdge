@@ -115,6 +115,14 @@
   },
   {
    "tipo": "cuaderno",
+   "titulo": "Sesión 7 — Neo4j (grafos), curso 2026-27",
+   "url": "https://github.com/dsevilla/bdge/blob/26-27/neo4j/sesion7.ipynb",
+   "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/neo4j/sesion7.ipynb",
+   "miniatura": "miniaturas/61c30ca9ad5bfc54.jpg",
+   "bd": "bd/3f4df93a8b35bd60.sqlite3.gz"
+  },
+  {
+   "tipo": "cuaderno",
    "titulo": "Trabajos",
    "url": "../trabajos.html",
    "colab": null,
