@@ -54,8 +54,8 @@
    "titulo": "Bases de Datos a Gran Escala — Sesión 6",
    "url": "../sesion6.html",
    "colab": null,
-   "miniatura": "miniaturas/51e6107ce8b78ba4.jpg",
-   "bd": "bd/65e2360720b15e90.sqlite3.gz"
+   "miniatura": "miniaturas/cf7c569318d3b297.jpg",
+   "bd": "bd/6d5b5c70acd84cd2.sqlite3.gz"
   },
   {
    "tipo": "cuaderno",
@@ -118,8 +118,8 @@
    "titulo": "Sesión 7 — Neo4j (grafos), curso 2026-27",
    "url": "https://github.com/dsevilla/bdge/blob/26-27/neo4j/sesion7.ipynb",
    "colab": "https://colab.research.google.com/github/dsevilla/bdge/blob/26-27/neo4j/sesion7.ipynb",
-   "miniatura": "miniaturas/61c30ca9ad5bfc54.jpg",
-   "bd": "bd/3f4df93a8b35bd60.sqlite3.gz"
+   "miniatura": "miniaturas/efdde2a9c5378eb7.jpg",
+   "bd": "bd/1ed5e782194743d3.sqlite3.gz"
   },
   {
    "tipo": "cuaderno",
